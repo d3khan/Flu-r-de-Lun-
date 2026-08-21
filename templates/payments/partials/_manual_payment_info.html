@@ -1,0 +1,34 @@
+{% load static i18n humanize %}
+{# Manual payment info block. Context: payment_info, order (optional) #}
+{% if payment_info %}
+    <dl class="bank-details">
+        <div class="bank-details__row">
+            <dt>{% trans "Bank" %}</dt>
+            <dd>{{ payment_info.bank_name }}</dd>
+        </div>
+        <div class="bank-details__row">
+            <dt>{% trans "Account Name" %}</dt>
+            <dd>{{ payment_info.account_name }}</dd>
+        </div>
+        <div class="bank-details__row">
+            <dt>{% trans "Account Number" %}</dt>
+            <dd>{{ payment_info.account_number }}</dd>
+        </div>
+        {% if order %}
+            <div class="bank-details__row">
+                <dt>{% trans "Amount" %}</dt>
+                <dd>₦{{ order.total|intcomma }}</dd>
+            </div>
+            <div class="bank-details__row">
+                <dt>{% trans "Reference" %}</dt>
+                <dd>{{ order.order_number }}</dd>
+            </div>
+        {% endif %}
+    </dl>
+
+    {% if payment_info.instructions %}
+        <p class="mt-4 text-muted" style="font-size: var(--text-sm);">{{ payment_info.instructions|linebreaksbr }}</p>
+    {% endif %}
+{% else %}
+    <p class="alert alert--warning">{% trans "Bank details are currently unavailable. Please reach us on WhatsApp." %}</p>
+{% endif %}

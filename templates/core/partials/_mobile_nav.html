@@ -1,0 +1,53 @@
+{% load static i18n brand_tags %}
+<div class="drawer__header">
+    <span class="drawer__title">{{ site_settings.site_name|brand_first }}{% if site_settings.site_name|brand_rest %} <em class="brand-accent">{{ site_settings.site_name|brand_rest }}</em>{% endif %}</span>
+    <button type="button" class="icon-btn" @click="mobileMenuOpen = false" aria-label="{% trans 'Close menu' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+</div>
+
+<nav class="drawer__body mobile-nav" aria-label="{% trans 'Mobile navigation' %}">
+    <ul class="mobile-nav__list">
+        <li><a href="{% url 'core:home' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Home" %}</a></li>
+        <li><a href="{% url 'products:list' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Shop All" %}</a></li>
+        {% if nav_categories %}
+            <li class="mobile-nav__group">{% trans "Collections" %}</li>
+            {% for category in nav_categories %}
+                <li><a href="{{ category.get_absolute_url }}" class="mobile-nav__link mobile-nav__link--sub" @click="mobileMenuOpen = false">{{ category.name }}</a></li>
+            {% endfor %}
+        {% endif %}
+        <li><a href="{% url 'products:list' %}?sort=newest" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "New Arrivals" %}</a></li>
+        <li><a href="{% url 'core:about' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Our Story" %}</a></li>
+        <li><a href="{% url 'core:contact' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Contact" %}</a></li>
+    </ul>
+
+    <ul class="mobile-nav__list mobile-nav__list--secondary">
+        {% if user.is_authenticated %}
+            <li><a href="{% url 'accounts:profile' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "My Account" %}</a></li>
+            <li><a href="{% url 'orders:history' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Order History" %}</a></li>
+            <li><a href="{% url 'wishlist:detail' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">
+                {% trans "Wishlist" %}{% if wishlist_count %} ({{ wishlist_count }}){% endif %}
+            </a></li>
+            <li>
+                <form method="post" action="{% url 'accounts:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Logout" %}</button>
+                </form>
+            </li>
+        {% else %}
+            <li><a href="{% url 'accounts:login' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Login" %}</a></li>
+            <li><a href="{% url 'accounts:register' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Create Account" %}</a></li>
+        {% endif %}
+        <li><a href="{% url 'orders:guest_lookup' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Track Order" %}</a></li>
+    </ul>
+
+    {% if site_settings.whatsapp_number %}
+        <a href="https://wa.me/{{ site_settings.whatsapp_number }}?text={% trans 'Hello Fluér de Luné!' %}"
+           target="_blank" rel="noopener noreferrer"
+           class="btn btn--whatsapp btn--block mt-6"
+           @click="mobileMenuOpen = false">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm4.6 12.1c-.3-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.3-.7.8-.8 1-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.4-3c-.3-.4 0-.5.1-.7l.4-.5c.1-.2.2-.3.3-.5v-.5C10.3 9 9.8 7.8 9.6 7.3c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1.1 2.7c.1.2 1.8 2.8 4.5 3.9.6.3 1.1.4 1.5.6.6.2 1.2.2 1.6.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3z"/></svg>
+            {% trans "Chat with us" %}
+        </a>
+    {% endif %}
+</nav>

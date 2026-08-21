@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}{% trans "Checkout — Payment Method" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="checkout-layout">
+            <!-- Steps -->
+            <ol class="steps" aria-label="{% trans 'Checkout progress' %}">
+                <li class="step is-done">
+                    <span class="step__num">✓</span>
+                    <span class="step__label">{% trans "Shipping" %}</span>
+                </li>
+                <li class="step is-active">
+                    <span class="step__num">2</span>
+                    <span class="step__label">{% trans "Payment Method" %}</span>
+                </li>
+                <li class="step">
+                    <span class="step__num">3</span>
+                    <span class="step__label">{% trans "Payment" %}</span>
+                </li>
+            </ol>
+
+            <div class="checkout-grid">
+                <!-- Payment method selection -->
+                <section class="card-panel" aria-label="{% trans 'Choose payment method' %}">
+                    <h1 class="card-panel__title">{% trans "How would you like to pay?" %}</h1>
+
+                    <form method="post" action="{% url 'checkout:step2' %}" x-data="{ method: null }">
+                        {% csrf_token %}
+
+                        <div class="payment-options">
+                            <label class="payment-option" :class="{ 'is-selected': method === 'gateway' }">
+                                <input type="radio" name="payment_method" value="gateway" x-model="method" required>
+                                <span>
+                                    <span class="payment-option__title">{% trans "Pay Now (Card / Transfer / USSD)" %}</span>
+                                    <span class="payment-option__desc">{% trans "Secure checkout via Paystack or Flutterwave. Card, bank transfer, USSD & more." %}</span>
+                                </span>
+                                <span class="payment-option__icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                                </span>
+                            </label>
+
+                            <label class="payment-option" :class="{ 'is-selected': method === 'manual' }">
+                                <input type="radio" name="payment_method" value="manual" x-model="method" required>
+                                <span>
+                                    <span class="payment-option__title">{% trans "Bank Transfer / WhatsApp Order" %}</span>
+                                    <span class="payment-option__desc">{% trans "Transfer to our account, then confirm via WhatsApp. We verify and dispatch within hours." %}</span>
+                                </span>
+                                <span class="payment-option__icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 21h18M4 8h16M12 8v13M3 8l9-5 9 5"/></svg>
+                                </span>
+                            </label>
+                        </div>
+
+                        {% if payment_info %}
+                            <details class="mt-6" style="font-size: var(--text-sm); color: var(--color-beige-600);">
+                                <summary style="cursor: pointer; font-weight: var(--font-medium); color: var(--color-beige-800);">
+                                    {% trans "Preview bank details" %}
+                                </summary>
+                                <div class="bank-details mt-4">
+                                    <div class="bank-details__row">
+                                        <dt>{% trans "Bank" %}</dt>
+                                        <dd>{{ payment_info.bank_name }}</dd>
+                                    </div>
+                                    <div class="bank-details__row">
+                                        <dt>{% trans "Account Name" %}</dt>
+                                        <dd>{{ payment_info.account_name }}</dd>
+                                    </div>
+                                    <div class="bank-details__row">
+                                        <dt>{% trans "Account Number" %}</dt>
+                                        <dd>{{ payment_info.account_number }}</dd>
+                                    </div>
+                                </div>
+                            </details>
+                        {% endif %}
+
+                        <button type="submit" class="btn btn--gold btn--lg btn--block mt-8">
+                            {% trans "Continue to Payment" %} →
+                        </button>
+                        <a href="{% url 'checkout:step1' %}" class="link-btn mt-4" style="width: 100%; justify-content: center;">← {% trans "Back to shipping" %}</a>
+                    </form>
+                </section>
+
+                <!-- Summary -->
+                <aside class="summary-card" aria-label="{% trans 'Order summary' %}">
+                    <h2 style="font-size: var(--text-lg); margin-bottom: var(--space-4);">{% trans "Order Summary" %}</h2>
+
+                    {% for item in cart.items.all %}
+                        <div class="summary-row">
+                            <span>{{ item.product.name }} <span class="text-muted">× {{ item.quantity }}</span></span>
+                            <span>₦{{ item.total_price|intcomma }}</span>
+                        </div>
+                    {% endfor %}
+
+                    <div class="summary-row">
+                        <span>{% trans "Subtotal" %}</span>
+                        <span>₦{{ subtotal|intcomma }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>{% trans "Shipping" %}</span>
+                        <span>{% if shipping_cost == 0 %}{% trans "Free" %}{% else %}₦{{ shipping_cost|intcomma }}{% endif %}</span>
+                    </div>
+                    <div class="summary-row summary-row--total">
+                        <span>{% trans "Total" %}</span>
+                        <span>₦{{ total|intcomma }}</span>
+                    </div>
+
+                    <hr class="divider">
+
+                    <p class="address-review">
+                        <strong>{% trans "Deliver to:" %}</strong><br>
+                        {{ shipping.first_name }} {{ shipping.last_name }}<br>
+                        {{ shipping.address_line_1 }}{% if shipping.address_line_2 %}, {{ shipping.address_line_2 }}{% endif %}<br>
+                        {{ shipping.city }}, {{ shipping.state }}<br>
+                        {{ shipping.phone }}
+                    </p>
+                </aside>
+            </div>
+        </div>
+    </div>
+{% endblock %}

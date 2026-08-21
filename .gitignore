@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+*.log
+
+# Secrets & local env
+.env
+.env.*
+!.dotenv_example.txt
+
+# Testing / coverage
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Editors & tools
+.vscode/
+.idea/
+.qodo/
+.vibefree/
+*.swp
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini

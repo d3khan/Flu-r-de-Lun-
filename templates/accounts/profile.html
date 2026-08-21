@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}{% trans "My Account" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <header class="page-header">
+            <h1>{% trans "My Account" %}</h1>
+            <p>{% trans "Welcome back, " %}{{ user.get_short_name|default:user.email }}</p>
+        </header>
+
+        <div class="account-layout">
+            <!-- Sidebar -->
+            <aside>
+                <nav class="account-nav" aria-label="{% trans 'Account navigation' %}">
+                    <a href="{% url 'accounts:profile' %}" class="account-nav__link is-active">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+                        {% trans "Dashboard" %}
+                    </a>
+                    <a href="{% url 'orders:history' %}" class="account-nav__link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 7h12l1 13H5L6 7Zm3 0V5a3 3 0 0 1 6 0v2"/></svg>
+                        {% trans "Order History" %}
+                    </a>
+                    <a href="{% url 'wishlist:detail' %}" class="account-nav__link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 1 1 12 6.1a5 5 0 1 1 7.5 6.5Z"/></svg>
+                        {% trans "Wishlist" %}
+                    </a>
+                    <a href="{% url 'accounts:address_list' %}" class="account-nav__link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                        {% trans "Addresses" %}
+                    </a>
+                    <a href="{% url 'accounts:profile_edit' %}" class="account-nav__link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/></svg>
+                        {% trans "Edit Profile" %}
+                    </a>
+                    <a href="{% url 'accounts:password_change' %}" class="account-nav__link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                        {% trans "Password" %}
+                    </a>
+                    <form method="post" action="{% url 'accounts:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="account-nav__link">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/></svg>
+                            {% trans "Logout" %}
+                        </button>
+                    </form>
+                </nav>
+            </aside>
+
+            <!-- Dashboard -->
+            <div>
+                <section class="summary-card mb-6" aria-label="{% trans 'Profile details' %}">
+                    <h2 style="font-size: var(--text-lg); margin-bottom: var(--space-4);">{% trans "Profile Details" %}</h2>
+                    <dl class="bank-details" style="background: var(--color-beige-50);">
+                        <div class="bank-details__row"><dt>{% trans "Name" %}</dt><dd>{{ user.get_full_name|default:"—" }}</dd></div>
+                        <div class="bank-details__row"><dt>{% trans "Email" %}</dt><dd>{{ user.email }}</dd></div>
+                        <div class="bank-details__row"><dt>{% trans "Phone" %}</dt><dd>{{ user.phone|default:"—" }}</dd></div>
+                        <div class="bank-details__row"><dt>{% trans "Member since" %}</dt><dd>{{ user.created_at|date:"M Y" }}</dd></div>
+                    </dl>
+                </section>
+
+                <section aria-label="{% trans 'Recent orders' %}">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+                        <h2 style="font-size: var(--text-lg);">{% trans "Recent Orders" %}</h2>
+                        <a href="{% url 'orders:history' %}" class="link-btn">{% trans "View all" %} →</a>
+                    </div>
+
+                    {% if recent_orders %}
+                        <div class="orders-list">
+                            {% for order in recent_orders %}
+                                <a href="{% url 'orders:detail' order.id %}" class="order-card">
+                                    <span>
+                                        <span class="order-card__number">{{ order.order_number }}</span>
+                                        <span class="order-card__date"> · {{ order.created_at|date:"d M Y" }}</span>
+                                    </span>
+                                    <span class="order-card__meta">
+                                        <span>{{ order.items.count }} {% blocktrans count counter=order.items.count %}item{% plural %}items{% endblocktrans %}</span>
+                                        <span class="status status--{{ order.status }}">{{ order.get_status_display }}</span>
+                                        <strong>₦{{ order.total|intcomma }}</strong>
+                                    </span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state" style="padding-block: var(--space-10);">
+                            <p class="empty-state__title">{% trans "No orders yet" %}</p>
+                            <p class="empty-state__text">{% trans "When you place your first order, it will appear here." %}</p>
+                            <a href="{% url 'products:list' %}" class="btn btn--primary btn--sm">{% trans "Start Shopping" %}</a>
+                        </div>
+                    {% endif %}
+                </section>
+            </div>
+        </div>
+    </div>
+{% endblock %}

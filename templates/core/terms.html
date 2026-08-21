@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Terms of Service" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <header class="page-header container">
+        <h1>{% trans "Terms of Service" %}</h1>
+        <p>{% trans "Last updated: January 2025" %}</p>
+    </header>
+
+    <div class="container">
+        <article class="legal-content prose" style="padding-bottom: var(--space-16);">
+            <h2>{% trans "1. Acceptance of Terms" %}</h2>
+            <p>{% trans "By accessing Fluér de Luné and placing an order, you agree to these terms of service." %}</p>
+
+            <h2>{% trans "2. Products & Pricing" %}</h2>
+            <p>{% trans "All prices are listed in Nigerian Naira (₦) and are subject to change without notice. We reserve the right to limit quantities and cancel orders in cases of pricing errors or stock unavailability." %}</p>
+
+            <h2>{% trans "3. Orders & Payment" %}</h2>
+            <p>{% trans "Orders are confirmed once payment is verified via Paystack, Flutterwave, or bank transfer. Stock is reserved at order creation; unpaid manual-transfer orders may be released after 48 hours." %}</p>
+
+            <h2>{% trans "4. Shipping" %}</h2>
+            <p>{% trans "Delivery timelines are estimates and not guarantees. Risk of loss passes to you upon delivery to the courier." %}</p>
+
+            <h2>{% trans "5. Returns" %}</h2>
+            <p>{% trans "Please review our Returns & Exchanges policy before purchasing. Items must be returned unworn with original packaging within 7 days of delivery." %}</p>
+
+            <h2>{% trans "6. Intellectual Property" %}</h2>
+            <p>{% trans "All content on this site — including imagery, text, and design — belongs to Fluér de Luné and may not be reproduced without permission." %}</p>
+        </article>
+    </div>
+{% endblock %}

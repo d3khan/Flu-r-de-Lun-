@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}{{ product.name }} — {{ site_settings.site_name }}{% endblock %}
+{% block meta_description %}{{ product.description|truncatechars:155 }}{% endblock %}
+{% block og_title %}{{ product.name }}{% endblock %}
+{% block og_description %}{{ product.description|truncatechars:155 }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <nav class="breadcrumbs" aria-label="{% trans 'Breadcrumb' %}">
+            <ol>
+                <li><a href="{% url 'core:home' %}">{% trans "Home" %}</a></li>
+                <li><a href="{% url 'products:list' %}">{% trans "Shop" %}</a></li>
+                {% if product.category %}
+                    <li><a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a></li>
+                {% endif %}
+                <li><span aria-current="page">{{ product.name }}</span></li>
+            </ol>
+        </nav>
+
+        <div class="product-detail"
+             x-data="{
+                 active: 0,
+                 zoom: false,
+                 images: [
+                     {% for img in product.images.all %}
+                         { src: '{{ img.large.url }}', thumb: '{{ img.thumbnail.url }}', alt: '{{ img.alt_text|escapejs }}' }{% if not forloop.last %},{% endif %}
+                     {% endfor %}
+                 ]
+             }">
+
+            <!-- Gallery -->
+            <section class="pd-gallery" aria-label="{% trans 'Product images' %}">
+                {% with image=product.primary_image %}
+                    <div class="pd-main-image" @click="images.length && (zoom = true)">
+                        {% if image %}
+                            <img :src="images[active]?.src || '{{ image.large.url }}'"
+                                 src="{{ image.large.url }}"
+                                 alt="{{ image.alt_text|default:product.name }}"
+                                 id="pd-main-img" width="1200" height="1200">
+                        {% else %}
+                            <span class="product-card__placeholder" style="height: 100%;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="7.5" cy="12" r="4.5"/><circle cx="16.5" cy="12" r="4.5"/><path d="M12 10.6c-.9-1.1-3.1-1.1-4 .8M12 10.6c.9-1.1 3.1-1.1 4 .8"/></svg>
+                            </span>
+                        {% endif %}
+                    </div>
+                {% endwith %}
+
+                {% if product.images.all|length > 1 %}
+                    <div class="pd-thumbs" role="tablist" aria-label="{% trans 'Image thumbnails' %}">
+                        {% for img in product.images.all %}
+                            <button type="button"
+                                    class="pd-thumb"
+                                    :class="{ 'is-active': active === {{ forloop.counter0 }} }"
+                                    @click="active = {{ forloop.counter0 }}"
+                                    role="tab"
+                                    aria-label="{% trans 'View image' %} {{ forloop.counter }}">
+                                <img src="{{ img.thumbnail.url }}" alt="{{ img.alt_text|default:product.name }}" loading="lazy">
+                            </button>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </section>
+
+            <!-- Info -->
+            <section class="pd-info" aria-label="{% trans 'Product information' %}">
+                {% if product.category %}
+                    <p class="pd-info__category">{{ product.category.name }}</p>
+                {% endif %}
+                <h1 class="pd-info__title">{{ product.name }}</h1>
+
+                <div class="pd-price">
+                    {% if product.is_on_sale %}
+                        <span class="price-compare">₦{{ product.compare_at_price|intcomma }}</span>
+                        <span class="pd-price__current price-sale">₦{{ product.price|intcomma }}</span>
+                        <span class="badge badge--sale">-{{ product.discount_percentage }}%</span>
+                    {% else %}
+                        <span class="pd-price__current">₦{{ product.price|intcomma }}</span>
+                    {% endif %}
+                </div>
+
+                <p class="stock-badge pd-stock {% if not product.in_stock %}stock-badge--out{% elif product.stock_status == 'low_stock' %}stock-badge--low{% else %}stock-badge--in{% endif %}">
+                    {{ product.stock_status_display }}
+                    {% if product.stock_status == 'low_stock' %}({{ product.stock_quantity }} {% trans "left" %}){% endif %}
+                </p>
+
+                <div class="pd-description">{{ product.description }}</div>
+
+                <!-- Actions -->
+                <div class="pd-actions">
+                    {% if product.in_stock %}
+                        <div class="qty-stepper" x-data="{ qty: 1 }">
+                            <button type="button" class="qty-stepper__btn" @click="qty = Math.max(1, qty - 1)" :disabled="qty <= 1" aria-label="{% trans 'Decrease quantity' %}">−</button>
+                            <input type="number" class="qty-stepper__input" id="pd-qty" name="quantity" x-model.number="qty" min="1" max="{{ product.stock_quantity }}" aria-label="{% trans 'Quantity' %}">
+                            <button type="button" class="qty-stepper__btn" @click="qty = Math.min({{ product.stock_quantity }}, qty + 1)" :disabled="qty >= {{ product.stock_quantity }}" aria-label="{% trans 'Increase quantity' %}">+</button>
+                        </div>
+
+                        <button type="button"
+                                class="btn btn--primary btn--lg"
+                                hx-post="{% url 'cart:add' product.id %}"
+                                hx-include="#pd-qty"
+                                hx-target="#cart-drawer"
+                                hx-swap="innerHTML">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M15.6 8.4V6.6a3.6 3.6 0 1 0-7.2 0v1.8m-3.06-1.44-.816 9.796A2 2 0 0 0 6.52 19H17.48a2 2 0 0 0 1.996-2.184l-.816-9.796A2 2 0 0 0 16.668 5.3H7.332a2 2 0 0 0-1.992 1.66z"/></svg>
+                            {% trans "Add to Cart" %}
+                        </button>
+                    {% else %}
+                        <button type="button" class="btn btn--secondary btn--lg" disabled>{% trans "Out of Stock" %}</button>
+                    {% endif %}
+
+                    {% if user.is_authenticated %}
+                        <button type="button"
+                                class="btn btn--secondary btn--lg pd-wishlist-btn"
+                                x-data="{ saved: {{ in_wishlist|yesno:'true,false' }}, busy: false }"
+                                :style="saved ? 'color: var(--color-error); border-color: var(--color-error);' : ''"
+                                @click="
+                                    if (busy) return;
+                                    busy = true;
+                                    fetch('{% url 'wishlist:toggle' product.id %}', { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}', 'X-Requested-With': 'XMLHttpRequest'} })
+                                        .then(r => r.json())
+                                        .then(d => {
+                                            saved = d.in_wishlist;
+                                            document.body.dispatchEvent(new CustomEvent('wishlist-count', { detail: { count: d.count }, bubbles: true }));
+                                            window.Alpine.$data(document.body).addToast(d.message, 'success');
+                                        })
+                                        .finally(() => busy = false);
+                                "
+                                aria-label="{% trans 'Toggle wishlist' %}">
+                            <svg style="width: 20px; fill: none;" :fill="saved ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 1 1 12 6.1a5 5 0 1 1 7.5 6.5Z"/></svg>
+                            <span x-text="saved ? '{% trans "Saved" %}' : '{% trans "Save" %}'"></span>
+                        </button>
+                    {% endif %}
+                </div>
+
+                <!-- WhatsApp inquiry -->
+                {% if site_settings.whatsapp_number %}
+                    <div class="pd-share">
+                        <a href="https://wa.me/{{ site_settings.whatsapp_number }}?text={% filter urlencode %}{% trans "Hello Fluér de Luné! I'd love more details about" %}: {{ product.name }} (₦{{ product.price|intcomma }}){% endfilter %}"
+                           target="_blank" rel="noopener noreferrer"
+                           class="btn btn--whatsapp">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm4.6 12.1c-.2.6-1.2 1.1-1.7 1.2-.4.1-1 .1-1.6-.1-.4-.2-.9-.3-1.5-.6-2.7-1.1-4.4-3.7-4.5-3.9-.1-.2-1.1-1.4-1.1-2.7s.7-1.9.9-2.2c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.7.8 1.9v.5c0 .2-.1.3-.3.5l-.4.5c-.1.2-.4.3-.1.7a6.7 6.7 0 0 0 3.4 3c.2.1.4.1.5-.1l.8-1c.2-.2.4-.3.6-.1.2.1 1.4.7 1.7.8s.4.2.5.3c0 .1 0 .6-.2 1.2z"/></svg>
+                            {% trans "Ask About This Piece" %}
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Meta -->
+                <ul class="pd-meta mt-6">
+                    <li><strong>SKU:</strong> {{ product.sku }}</li>
+                    {% if product.category %}<li><strong>{% trans "Category" %}:</strong> {{ product.category.name }}</li>{% endif %}
+                    <li><strong>{% trans "Shipping" %}:</strong> ₦1,500 — {% trans "free over ₦50,000" %}</li>
+                </ul>
+            </section>
+        </div>
+
+        <!-- Related products -->
+        {% if related_products %}
+            <section class="section section--tight" aria-label="{% trans 'You may also like' %}" style="padding-top: 0;">
+                <header class="section-header">
+                    <h2 class="section-title">{% trans "You May Also Like" %}</h2>
+                </header>
+                <div class="products-grid">
+                    {% for related in related_products %}
+                        {% include 'products/partials/_product_card.html' with product=related %}
+                    {% endfor %}
+                </div>
+            </section>
+        {% endif %}
+    </div>
+
+    <!-- Zoom lightbox -->
+    <div class="zoom-lightbox" x-show="zoom" x-cloak @click="zoom = false" @keydown.escape.window="zoom = false">
+        <img :src="images[active]?.src" alt="">
+    </div>
+{% endblock %}

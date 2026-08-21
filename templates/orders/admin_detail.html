@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}{{ order.order_number }} — {% trans "Admin" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <nav class="breadcrumbs" aria-label="{% trans 'Breadcrumb' %}">
+            <ol>
+                <li><a href="{% url 'orders:admin_list' %}">{% trans "Orders" %}</a></li>
+                <li><span aria-current="page">{{ order.order_number }}</span></li>
+            </ol>
+        </nav>
+
+        <header class="page-header">
+            <h1>{{ order.order_number }}</h1>
+            <p>{{ order.created_at|date:"d M Y, H:i" }} ·
+                <span class="status status--{{ order.status }}">{{ order.get_status_display }}</span>
+                {% if order.payment_verified %}<span class="status status--confirmed">{% trans "Paid ✓" %}</span>{% endif %}
+            </p>
+        </header>
+
+        <div class="checkout-grid">
+            <!-- Items & customer -->
+            <section class="card-panel">
+                <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "Items" %}</h2>
+
+                <div class="table-wrap" style="border: 0;">
+                    <table class="table">
+                        <thead>
+                            <tr><th>{% trans "Product" %}</th><th>SKU</th><th>{% trans "Qty" %}</th><th>{% trans "Price" %}</th><th>{% trans "Total" %}</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                                <tr>
+                                    <td>{{ item.product_name }}</td>
+                                    <td><small>{{ item.product_sku }}</small></td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>₦{{ item.price|intcomma }}</td>
+                                    <td>₦{{ item.total_price|intcomma }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-6">
+                    <div class="summary-row"><span>{% trans "Subtotal" %}</span><span>₦{{ order.subtotal|intcomma }}</span></div>
+                    <div class="summary-row"><span>{% trans "Shipping" %}</span><span>₦{{ order.shipping_cost|intcomma }}</span></div>
+                    <div class="summary-row summary-row--total"><span>{% trans "Total" %}</span><span>₦{{ order.total|intcomma }}</span></div>
+                </div>
+
+                <hr class="divider">
+
+                <div class="form-row">
+                    <div>
+                        <h3 style="font-size: var(--text-base); margin-bottom: var(--space-2);">{% trans "Customer" %}</h3>
+                        <p class="address-review">{{ order.full_name }}<br>{{ order.email }}<br>{{ order.phone }}</p>
+                        {% if order.user %}<p class="address-review mt-2"><strong>{% trans "Account:" %}</strong> {{ order.user.email }}</p>{% else %}<p class="address-review mt-2"><em>{% trans "Guest order" %}</em></p>{% endif %}
+                    </div>
+                    <div>
+                        <h3 style="font-size: var(--text-base); margin-bottom: var(--space-2);">{% trans "Shipping Address" %}</h3>
+                        <p class="address-review">{{ order.shipping_full_address|linebreaksbr }}</p>
+                    </div>
+                </div>
+
+                {% if order.notes %}
+                    <hr class="divider">
+                    <h3 style="font-size: var(--text-base); margin-bottom: var(--space-2);">{% trans "Notes" %}</h3>
+                    <p class="address-review">{{ order.notes|linebreaksbr }}</p>
+                {% endif %}
+            </section>
+
+            <!-- Status management -->
+            <aside>
+                <form method="post" class="card-panel mb-6">
+                    <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "Update Status" %}</h2>
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="status" class="form-label">{% trans "Status" %}</label>
+                        <select id="status" name="status" class="form-select">
+                            {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="note" class="form-label">{% trans "Note (optional)" %}</label>
+                        <textarea id="note" name="note" class="form-textarea" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn--primary btn--block">{% trans "Save Status" %}</button>
+                </form>
+
+                {% if order.status_history.all %}
+                    <div class="card-panel">
+                        <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "History" %}</h2>
+                        <ol class="timeline" style="padding-left: var(--space-5);">
+                            {% for entry in order.status_history.all %}
+                                <li class="timeline__item">
+                                    <span class="timeline__status">{{ entry.get_status_display }}</span>
+                                    {% if entry.note %}<p class="timeline__note">{{ entry.note }}</p>{% endif %}
+                                    <time class="timeline__date">
+                                        {{ entry.created_at|date:"d M Y, H:i" }}
+                                        {% if entry.created_by %} · {{ entry.created_by.email }}{% endif %}
+                                    </time>
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                {% endif %}
+            </aside>
+        </div>
+
+        <div style="height: var(--space-16);"></div>
+    </div>
+{% endblock %}

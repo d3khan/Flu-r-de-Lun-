@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Returns & Exchanges" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <header class="page-header container">
+        <h1>{% trans "Returns & Exchanges" %}</h1>
+        <p>{% trans "We want you to love your frames. Here's how returns work." %}</p>
+    </header>
+
+    <div class="container">
+        <article class="legal-content prose" style="padding-bottom: var(--space-16);">
+            <h2>{% trans "7-Day Return Window" %}</h2>
+            <p>{% trans "You may return unworn items in their original packaging within 7 days of delivery for a refund or exchange." %}</p>
+
+            <h2>{% trans "How to Start a Return" %}</h2>
+            <ul>
+                <li>{% trans "Contact us with your order number and reason for return" %}</li>
+                <li>{% trans "Pack the item securely in its original case and box" %}</li>
+                <li>{% trans "Ship to the address our team provides" %}</li>
+            </ul>
+
+            <h2>{% trans "Refunds" %}</h2>
+            <p>{% trans "Once received and inspected, refunds are processed within 3–5 business days to your original payment method or bank account." %}</p>
+
+            <h2>{% trans "Non-Returnable Items" %}</h2>
+            <p>{% trans "For hygiene reasons, prescription lenses made to your specification cannot be returned unless faulty." %}</p>
+
+            <h2>{% trans "Faulty or Damaged Items" %}</h2>
+            <p>{% trans "If your frame arrives damaged, contact us within 48 hours with photos and we'll make it right — replacement or full refund." %}</p>
+        </article>
+    </div>
+{% endblock %}

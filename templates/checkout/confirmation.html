@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}{% trans "Order Confirmed" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="confirmation-hero">
+            <span class="confirmation-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+            </span>
+
+            {% if order.payment_method == 'gateway' and order.payment_verified %}
+                <h1>{% trans "Payment successful — thank you!" %}</h1>
+            {% elif order.payment_method == 'manual' %}
+                <h1>{% trans "Order received!" %}</h1>
+            {% else %}
+                <h1>{% trans "Thank you for your order!" %}</h1>
+            {% endif %}
+
+            <p class="lead mt-4">
+                {% blocktrans with number=order.order_number email=order.email %}
+                    Your order <strong>{{ number }}</strong> is confirmed. A receipt has been sent to {{ email }}.
+                {% endblocktrans %}
+            </p>
+
+            <!-- Order snapshot -->
+            <div class="card-panel mt-8 text-left">
+                <div class="summary-row summary-row--total" style="margin-top: 0; border-top: 0;">
+                    <span>{{ order.order_number }}</span>
+                    <span>₦{{ order.total|intcomma }}</span>
+                </div>
+
+                {% for item in order.items.all %}
+                    <div class="summary-row">
+                        <span>{{ item.product_name }} <span class="text-muted">× {{ item.quantity }}</span></span>
+                        <span>₦{{ item.total_price|intcomma }}</span>
+                    </div>
+                {% endfor %}
+
+                <div class="summary-row">
+                    <span>{% trans "Shipping to" %}</span>
+                    <span>{{ order.shipping_city }}, {{ order.shipping_state }}</span>
+                </div>
+                <div class="summary-row">
+                    <span>{% trans "Status" %}</span>
+                    <span><span class="status status--{{ order.status }}">{{ order.get_status_display }}</span></span>
+                </div>
+            </div>
+
+            <p class="mt-4 text-muted" style="font-size: var(--text-sm);">
+                {% if order.payment_method == 'manual' %}
+                    {% trans "Haven't completed your transfer yet? Send payment proof on WhatsApp to speed up dispatch." %}
+                {% else %}
+                    {% trans "We'll notify you when your frames are on their way." %}
+                {% endif %}
+            </p>
+
+            <div style="display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap;" class="mt-8">
+                <a href="{% url 'products:list' %}" class="btn btn--gold btn--lg">{% trans "Continue Shopping" %}</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'orders:detail' order.id %}" class="btn btn--secondary btn--lg">{% trans "Track This Order" %}</a>
+                {% else %}
+                    <a href="{% url 'orders:guest_detail' order.order_number %}" class="btn btn--secondary btn--lg">{% trans "Track This Order" %}</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

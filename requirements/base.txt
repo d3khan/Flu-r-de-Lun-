@@ -1,0 +1,24 @@
+Django>=5.1,<7.0
+Pillow>=10.0
+django-crispy-forms>=2.0
+crispy-bootstrap5>=2024.0
+django-imagekit>=5.0
+django-countries>=7.6
+python-dotenv>=1.0
+gunicorn>=21.0
+whitenoise>=6.6
+
+# Payment gateways
+paystack>=1.0
+flutterwave-python>=1.0
+
+# HTMX & Alpine.js integration
+django-htmx>=1.17
+
+# Testing
+pytest>=7.4
+pytest-django>=4.5
+pytest-cov>=4.1
+factory-boy>=3.3
+faker>=24.0
+coverage>=7.3

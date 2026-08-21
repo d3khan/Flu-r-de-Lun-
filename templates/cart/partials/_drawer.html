@@ -1,0 +1,33 @@
+{% load static i18n humanize %}
+{# Cart drawer content — also returned standalone by HTMX add-to-cart #}
+<div class="drawer__header">
+    <span class="drawer__title">{% trans "Your Cart" %} <span class="text-muted">({{ cart.total_items }})</span></span>
+    <button type="button" class="icon-btn" @click="cartDrawerOpen = false" aria-label="{% trans 'Close cart' %}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+</div>
+
+<div id="cart-drawer-body" class="drawer__body">
+    {% if cart.items.all %}
+        {% include 'cart/partials/_items_list.html' with swap_target='#cart-drawer-body' compact=True %}
+    {% else %}
+        <div class="empty-state">
+            <span class="empty-state__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M15.6 8.4V6.6a3.6 3.6 0 1 0-7.2 0v1.8m-3.06-1.44-.816 9.796A2 2 0 0 0 6.52 19H17.48a2 2 0 0 0 1.996-2.184l-.816-9.796A2 2 0 0 0 16.668 5.3H7.332a2 2 0 0 0-1.992 1.66z"/></svg>
+            </span>
+            <p class="empty-state__title">{% trans "Your cart is empty" %}</p>
+            <p class="empty-state__text">{% trans "Discover our collection of handcrafted luxury eyewear." %}</p>
+            <a href="{% url 'products:list' %}" class="btn btn--primary" @click="cartDrawerOpen = false">{% trans "Start Shopping" %}</a>
+        </div>
+    {% endif %}
+</div>
+
+{% if cart.items.all %}
+    <div class="drawer__footer">
+        {% include 'cart/partials/_summary.html' %}
+        <div class="mt-4" style="display: grid; gap: var(--space-2);">
+            <a href="{% url 'checkout:step1' %}" class="btn btn--gold btn--block" @click="cartDrawerOpen = false">{% trans "Checkout" %}</a>
+            <a href="{% url 'cart:detail' %}" class="btn btn--secondary btn--block" @click="cartDrawerOpen = false">{% trans "View Cart" %}</a>
+        </div>
+    </div>
+{% endif %}

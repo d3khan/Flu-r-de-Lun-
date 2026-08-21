@@ -1,0 +1,32 @@
+# Django
+DJANGO_SECRET_KEY=your-secret-key-here
+DJANGO_DEBUG=True
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+SITE_URL=http://localhost:8000
+
+# Database (for production)
+# DATABASE_URL=postgres://user:pass@localhost:5432/fleurdelune
+
+# Email
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+
+# Paystack
+PAYSTACK_SECRET_KEY=sk_test_xxxxx
+PAYSTACK_PUBLIC_KEY=pk_test_xxxxx
+
+# Flutterwave
+FLUTTERWAVE_SECRET_KEY=FLWSECK_TEST-xxxxx
+FLUTTERWAVE_PUBLIC_KEY=FLWPUBK_TEST-xxxxx
+FLUTTERWAVE_ENCRYPTION_KEY=your-32-char-encryption-key
+
+# Payment Gateway Choice: paystack or flutterwave
+PAYMENT_GATEWAY=paystack
+
+# Redis (for production)
+# REDIS_URL=redis://localhost:6379/0
+
+# App Version
+APP_VERSION=1.0.0

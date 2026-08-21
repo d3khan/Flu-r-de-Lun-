@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Delete Address" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="auth-wrapper">
+            <div class="auth-card text-center">
+                <h1 class="auth-card__title">{% trans "Delete this address?" %}</h1>
+
+                <div class="bank-details mt-6" style="text-align: left;">
+                    <p>
+                        <strong>{{ address.label }}</strong><br>
+                        {{ address.first_name }} {{ address.last_name }}<br>
+                        {{ address.address_line_1 }}{% if address.address_line_2 %}, {{ address.address_line_2 }}{% endif %}<br>
+                        {{ address.city }}, {{ address.state }} {{ address.postal_code }}<br>
+                        {{ address.phone }}
+                    </p>
+                </div>
+
+                <p class="text-muted mt-4" style="font-size: var(--text-sm);">{% trans "This action cannot be undone." %}</p>
+
+                <form method="post" class="mt-6">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn--danger btn--lg btn--block">{% trans "Yes, Delete Address" %}</button>
+                </form>
+                <a href="{% url 'accounts:address_list' %}" class="link-btn mt-4" style="width: 100%; justify-content: center;">← {% trans "Keep it" %}</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

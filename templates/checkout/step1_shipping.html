@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}{% trans "Checkout — Shipping" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="checkout-layout">
+            <!-- Steps -->
+            <ol class="steps" aria-label="{% trans 'Checkout progress' %}">
+                <li class="step is-active">
+                    <span class="step__num">1</span>
+                    <span class="step__label">{% trans "Shipping" %}</span>
+                </li>
+                <li class="step">
+                    <span class="step__num">2</span>
+                    <span class="step__label">{% trans "Payment Method" %}</span>
+                </li>
+                <li class="step">
+                    <span class="step__num">3</span>
+                    <span class="step__label">{% trans "Payment" %}</span>
+                </li>
+            </ol>
+
+            <div class="checkout-grid">
+                <!-- Shipping form -->
+                <section class="card-panel" aria-label="{% trans 'Shipping details' %}">
+                    <h1 class="card-panel__title">{% trans "Where should we deliver?" %}</h1>
+
+                    <form method="post" action="{% url 'checkout:step1' %}" novalidate>
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="first_name" class="form-label">{% trans "First Name" %} <span class="required">*</span></label>
+                                <input type="text" id="first_name" name="first_name" class="form-control"
+                                       value="{{ initial.first_name|default:request.GET.first_name }}" required autocomplete="given-name">
+                            </div>
+                            <div class="form-group">
+                                <label for="last_name" class="form-label">{% trans "Last Name" %} <span class="required">*</span></label>
+                                <input type="text" id="last_name" name="last_name" class="form-control"
+                                       value="{{ initial.last_name }}" required autocomplete="family-name">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email" class="form-label">{% trans "Email" %} <span class="required">*</span></label>
+                                <input type="email" id="email" name="email" class="form-control"
+                                       value="{{ initial.email }}" required autocomplete="email">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone" class="form-label">{% trans "Phone (WhatsApp)" %} <span class="required">*</span></label>
+                                <input type="tel" id="phone" name="phone" class="form-control"
+                                       placeholder="+234 8XX XXX XXXX"
+                                       value="{{ initial.phone }}" required autocomplete="tel">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address_line_1" class="form-label">{% trans "Address Line 1" %} <span class="required">*</span></label>
+                            <input type="text" id="address_line_1" name="address_line_1" class="form-control"
+                                   placeholder="{% trans 'Street address' %}"
+                                   value="{{ initial.address_line_1 }}" required autocomplete="address-line1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address_line_2" class="form-label">{% trans "Address Line 2" %}</label>
+                            <input type="text" id="address_line_2" name="address_line_2" class="form-control"
+                                   placeholder="{% trans 'Apartment, suite, landmark…' %}"
+                                   value="{{ initial.address_line_2 }}" autocomplete="address-line2">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="city" class="form-label">{% trans "City" %} <span class="required">*</span></label>
+                                <input type="text" id="city" name="city" class="form-control"
+                                       value="{{ initial.city }}" required autocomplete="address-level2">
+                            </div>
+                            <div class="form-group">
+                                <label for="state" class="form-label">{% trans "State" %} <span class="required">*</span></label>
+                                <input type="text" id="state" name="state" class="form-control"
+                                       value="{{ initial.state }}" required autocomplete="address-level1">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="postal_code" class="form-label">{% trans "Postal Code" %}</label>
+                            <input type="text" id="postal_code" name="postal_code" class="form-control"
+                                   value="{{ initial.postal_code }}" autocomplete="postal-code">
+                        </div>
+
+                        <button type="submit" class="btn btn--gold btn--lg btn--block mt-4">
+                            {% trans "Continue to Payment Method" %} →
+                        </button>
+                    </form>
+                </section>
+
+                <!-- Summary -->
+                <aside class="summary-card" aria-label="{% trans 'Order summary' %}">
+                    <h2 style="font-size: var(--text-lg); margin-bottom: var(--space-4);">{% trans "Order Summary" %}</h2>
+
+                    {% for item in cart.items.all %}
+                        <div class="summary-row">
+                            <span>{{ item.product.name }} <span class="text-muted">× {{ item.quantity }}</span></span>
+                            <span>₦{{ item.total_price|intcomma }}</span>
+                        </div>
+                    {% endfor %}
+
+                    <div class="summary-row">
+                        <span>{% trans "Subtotal" %}</span>
+                        <span>₦{{ subtotal|intcomma }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>{% trans "Shipping" %}</span>
+                        <span>{% if shipping_cost == 0 %}{% trans "Free" %}{% else %}₦{{ shipping_cost|intcomma }}{% endif %}</span>
+                    </div>
+                    <div class="summary-row summary-row--total">
+                        <span>{% trans "Total" %}</span>
+                        <span>₦{{ total|intcomma }}</span>
+                    </div>
+                    <p class="summary-note"><a href="{% url 'cart:detail' %}" class="link-btn">{% trans "Edit cart" %}</a></p>
+                </aside>
+            </div>
+        </div>
+    </div>
+{% endblock %}

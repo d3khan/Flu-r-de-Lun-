@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}{% trans "Checkout — Confirm Order" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="checkout-layout">
+            <!-- Steps -->
+            <ol class="steps" aria-label="{% trans 'Checkout progress' %}">
+                <li class="step is-done">
+                    <span class="step__num">✓</span>
+                    <span class="step__label">{% trans "Shipping" %}</span>
+                </li>
+                <li class="step is-done">
+                    <span class="step__num">✓</span>
+                    <span class="step__label">{% trans "Payment Method" %}</span>
+                </li>
+                <li class="step is-active">
+                    <span class="step__num">3</span>
+                    <span class="step__label">{% trans "Payment" %}</span>
+                </li>
+            </ol>
+
+            <div class="checkout-grid">
+                <!-- Review -->
+                <section class="card-panel" aria-label="{% trans 'Review your order' %}">
+                    <h1 class="card-panel__title">{% trans "Review & Confirm" %}</h1>
+
+                    <form method="post" action="{% url 'checkout:step3' %}">
+                        {% csrf_token %}
+
+                        <!-- Items -->
+                        {% for item in cart.items.all %}
+                            <div class="cart-page-item" style="grid-template-columns: 72px 1fr; padding-block: var(--space-3);">
+                                <div class="cart-item__media" style="width: 72px; height: 84px;">
+                                    {% with image=item.product.primary_image %}
+                                        {% if image %}
+                                            <img src="{{ image.thumbnail.url }}" alt="{{ item.product.name }}" loading="lazy">
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                                <div class="cart-item__info">
+                                    <span class="cart-item__name">{{ item.product.name }}</span>
+                                    <span class="cart-item__unit-price">{% trans "Qty" %} {{ item.quantity }} × ₦{{ item.product.price|intcomma }}</span>
+                                </div>
+                                <span class="cart-item__total">₦{{ item.total_price|intcomma }}</span>
+                            </div>
+                        {% endfor %}
+
+                        <hr class="divider">
+
+                        <p class="address-review mb-6">
+                            <strong>{% trans "Ship to:" %}</strong><br>
+                            {{ shipping.first_name }} {{ shipping.last_name }}<br>
+                            {{ shipping.address_line_1 }}{% if shipping.address_line_2 %}, {{ shipping.address_line_2 }}{% endif %}<br>
+                            {{ shipping.city }}, {{ shipping.state }}<br>
+                            {{ shipping.email }} · {{ shipping.phone }}
+                        </p>
+
+                        <p class="address-review">
+                            <strong>{% trans "Payment:" %}</strong>
+                            {% if payment_method == 'gateway' %}
+                                {% trans "Card / Bank / USSD via secure gateway" %}
+                            {% else %}
+                                {% trans "Bank transfer — details shown after confirming" %}
+                            {% endif %}
+                        </p>
+
+                        <button type="submit" class="btn btn--gold btn--lg btn--block mt-8">
+                            {% if payment_method == 'gateway' %}
+                                {% trans "Place Order & Pay ₦" %}{{ total|intcomma }}
+                            {% else %}
+                                {% trans "Place Order" %}
+                            {% endif %}
+                        </button>
+                        <a href="{% url 'checkout:step2' %}" class="link-btn mt-4" style="width: 100%; justify-content: center;">← {% trans "Change payment method" %}</a>
+                    </form>
+                </section>
+
+                <!-- Summary -->
+                <aside class="summary-card" aria-label="{% trans 'Order summary' %}">
+                    <h2 style="font-size: var(--text-lg); margin-bottom: var(--space-4);">{% trans "Order Summary" %}</h2>
+                    <div class="summary-row">
+                        <span>{% trans "Subtotal" %}</span>
+                        <span>₦{{ subtotal|intcomma }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>{% trans "Shipping" %}</span>
+                        <span>{% if shipping_cost == 0 %}{% trans "Free" %}{% else %}₦{{ shipping_cost|intcomma }}{% endif %}</span>
+                    </div>
+                    <div class="summary-row summary-row--total">
+                        <span>{% trans "Total" %}</span>
+                        <span>₦{{ total|intcomma }}</span>
+                    </div>
+                    <p class="summary-note">{% trans "Stock is reserved for you once the order is placed." %}</p>
+                </aside>
+            </div>
+        </div>
+    </div>
+{% endblock %}

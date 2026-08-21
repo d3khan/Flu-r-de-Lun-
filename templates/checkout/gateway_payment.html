@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}{% trans "Secure Payment" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="gateway-screen" x-data="gatewayPayment('{{ order.id }}')">
+            <div class="gateway-screen__spinner"></div>
+            <h1>{% trans "Redirecting to secure payment…" %}</h1>
+            <p class="lead mt-4 mb-8">
+                {% trans "Order" %} <strong>{{ order.order_number }}</strong> · ₦{{ order.total|intcomma }}<br>
+                <span class="text-muted">{% trans "Please wait, do not close this page." %}</span>
+            </p>
+
+            <p x-show="error" x-cloak class="alert alert--error" style="text-align: left;">
+                <span x-text="error"></span>
+            </p>
+
+            <p class="mt-6">
+                <a href="{% url 'checkout:step3' %}" class="link-btn">← {% trans "Back to checkout" %}</a>
+                &nbsp;·&nbsp;
+                <a href="{% url 'core:contact' %}" class="link-btn">{% trans "Need help?" %}</a>
+            </p>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('gatewayPayment', (orderId) => ({
+                error: '',
+                init() {
+                    fetch(`/payments/initiate/${orderId}/`, {
+                        method: 'GET',
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    })
+                        .then((r) => r.json())
+                        .then((data) => {
+                            if (data.success && data.redirect_url) {
+                                window.location.href = data.redirect_url;
+                            } else {
+                                this.error = data.error || '{% trans "Unable to start payment. Please try again." %}';
+                            }
+                        })
+                        .catch(() => {
+                            this.error = '{% trans "Network error. Please check your connection and try again." %}';
+                        });
+                },
+            }));
+        });
+    </script>
+{% endblock %}

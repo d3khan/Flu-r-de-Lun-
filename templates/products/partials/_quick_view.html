@@ -1,0 +1,67 @@
+{% load static i18n humanize %}
+{# Quick view modal — loaded via HTMX into #quick-view-root #}
+<div class="modal" @keydown.escape.window="$el.remove()">
+    <div class="modal__backdrop" @click="$el.closest('.modal').remove()"></div>
+
+    <div class="modal__panel quick-view" role="dialog" aria-modal="true" aria-label="{{ product.name }}">
+        <button type="button" class="modal__close" @click="$el.closest('.modal').remove()" aria-label="{% trans 'Close' %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px;" aria-hidden="true"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+
+        <div class="quick-view__media">
+            {% with image=product.primary_image %}
+                {% if image %}
+                    <img src="{{ image.medium.url }}" alt="{{ image.alt_text|default:product.name }}">
+                {% else %}
+                    <span class="product-card__placeholder" style="height: 100%;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="7.5" cy="12" r="4.5"/><circle cx="16.5" cy="12" r="4.5"/><path d="M12 10.6c-.9-1.1-3.1-1.1-4 .8M12 10.6c.9-1.1 3.1-1.1 4 .8"/></svg>
+                    </span>
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="quick-view__body">
+            {% if product.category %}
+                <p class="pd-info__category">{{ product.category.name }}</p>
+            {% endif %}
+            <h2 style="font-size: var(--text-xl);">{{ product.name }}</h2>
+
+            <div class="pd-price">
+                {% if product.is_on_sale %}
+                    <span class="price-compare">₦{{ product.compare_at_price|intcomma }}</span>
+                    <span class="pd-price__current price-sale">₦{{ product.price|intcomma }}</span>
+                {% else %}
+                    <span class="pd-price__current">₦{{ product.price|intcomma }}</span>
+                {% endif %}
+            </div>
+
+            <p class="stock-badge {% if not product.in_stock %}stock-badge--out{% elif product.stock_status == 'low_stock' %}stock-badge--low{% else %}stock-badge--in{% endif %}">
+                {{ product.stock_status_display }}
+            </p>
+
+            <p class="text-muted" style="font-size: var(--text-sm);">{{ product.description|truncatewords:30 }}</p>
+
+            <div class="pd-actions" style="margin-bottom: 0;">
+                {% if product.in_stock %}
+                    <div class="qty-stepper" x-data="{ qty: 1 }">
+                        <button type="button" class="qty-stepper__btn" @click="qty = Math.max(1, qty - 1)" :disabled="qty <= 1" aria-label="{% trans 'Decrease quantity' %}">−</button>
+                        <input type="number" class="qty-stepper__input" id="qv-qty" name="quantity" x-model.number="qty" min="1" max="{{ product.stock_quantity }}" aria-label="{% trans 'Quantity' %}">
+                        <button type="button" class="qty-stepper__btn" @click="qty = Math.min({{ product.stock_quantity }}, qty + 1)" :disabled="qty >= {{ product.stock_quantity }}" aria-label="{% trans 'Increase quantity' %}">+</button>
+                    </div>
+                    <button type="button"
+                            class="btn btn--primary"
+                            hx-post="{% url 'cart:add' product.id %}"
+                            hx-include="#qv-qty"
+                            hx-target="#cart-drawer"
+                            hx-swap="innerHTML"
+                            @click="$el.closest('.modal').remove()">
+                        {% trans "Add to Cart" %}
+                    </button>
+                {% else %}
+                    <button type="button" class="btn btn--secondary" disabled>{% trans "Out of Stock" %}</button>
+                {% endif %}
+                <a href="{{ product.get_absolute_url }}" class="btn btn--ghost" @click="$el.closest('.modal').remove()">{% trans "Full Details" %} →</a>
+            </div>
+        </div>
+    </div>
+</div>

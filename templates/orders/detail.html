@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}{{ order.order_number }} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <nav class="breadcrumbs" aria-label="{% trans 'Breadcrumb' %}">
+            <ol>
+                {% if guest or not user.is_authenticated %}
+                    <li><a href="{% url 'core:home' %}">{% trans "Home" %}</a></li>
+                    <li><span aria-current="page">{% trans "Order" %} {{ order.order_number }}</span></li>
+                {% else %}
+                    <li><a href="{% url 'orders:history' %}">{% trans "Orders" %}</a></li>
+                    <li><span aria-current="page">{{ order.order_number }}</span></li>
+                {% endif %}
+            </ol>
+        </nav>
+
+        <header class="page-header">
+            <h1>{{ order.order_number }}</h1>
+            <p>{% trans "Placed" %} {{ order.created_at|date:"d M Y, H:i" }} ·
+                <span class="status status--{{ order.status }}">{{ order.get_status_display }}</span>
+                {% if order.payment_verified %}<span class="status status--confirmed">{% trans "Paid" %}</span>{% endif %}
+            </p>
+        </header>
+
+        <div class="checkout-grid" style="max-width: 1080px; margin-inline: auto; padding-bottom: var(--space-16);">
+            <!-- Items & details -->
+            <section class="card-panel" aria-label="{% trans 'Order items' %}">
+                <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "Items" %}</h2>
+
+                {% for item in order.items.all %}
+                    <div class="cart-page-item" style="grid-template-columns: 72px 1fr; padding-block: var(--space-3); border-color: var(--color-beige-200);">
+                        <div class="cart-item__media" style="width: 72px; height: 84px;">
+                            {% if item.product and item.product.primary_image %}
+                                <img src="{{ item.product.primary_image.thumbnail.url }}" alt="{{ item.product_name }}" loading="lazy">
+                            {% endif %}
+                        </div>
+                        <div class="cart-item__info">
+                            {% if item.product %}
+                                <a href="{{ item.product.get_absolute_url }}" class="cart-item__name">{{ item.product_name }}</a>
+                            {% else %}
+                                <span class="cart-item__name">{{ item.product_name }}</span>
+                            {% endif %}
+                            <span class="cart-item__unit-price">{{ item.quantity }} × ₦{{ item.price|intcomma }}</span>
+                        </div>
+                        <span class="cart-item__total">₦{{ item.total_price|intcomma }}</span>
+                    </div>
+                {% endfor %}
+
+                <div class="mt-6">
+                    <div class="summary-row"><span>{% trans "Subtotal" %}</span><span>₦{{ order.subtotal|intcomma }}</span></div>
+                    <div class="summary-row">
+                        <span>{% trans "Shipping" %}</span>
+                        <span>{% if order.shipping_cost == 0 %}{% trans "Free" %}{% else %}₦{{ order.shipping_cost|intcomma }}{% endif %}</span>
+                    </div>
+                    <div class="summary-row summary-row--total"><span>{% trans "Total" %}</span><span>₦{{ order.total|intcomma }}</span></div>
+                </div>
+
+                <hr class="divider">
+
+                <div class="form-row">
+                    <div>
+                        <h3 style="font-size: var(--text-base); margin-bottom: var(--space-2);">{% trans "Delivery Address" %}</h3>
+                        <p class="address-review">{{ order.shipping_full_address|linebreaksbr }}</p>
+                    </div>
+                    <div>
+                        <h3 style="font-size: var(--text-base); margin-bottom: var(--space-2);">{% trans "Contact" %}</h3>
+                        <p class="address-review">{{ order.full_name }}<br>{{ order.email }}<br>{{ order.phone }}</p>
+                        <p class="address-review mt-4">
+                            <strong>{% trans "Payment:" %}</strong> {{ order.get_payment_method_display }}
+                            {% if order.payment_reference %}<br><small>{{ order.payment_reference }}</small>{% endif %}
+                        </p>
+                        {% if order.tracking_number %}
+                            <p class="address-review mt-2">
+                                <strong>{% trans "Tracking:" %}</strong>
+                                {% if order.tracking_url %}
+                                    <a href="{{ order.tracking_url }}" target="_blank" rel="noopener noreferrer">{{ order.tracking_number }}</a>
+                                {% else %}
+                                    {{ order.tracking_number }}
+                                {% endif %}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if order.can_cancel and not guest %}
+                    <hr class="divider">
+                    <form method="post" action="{% url 'orders:cancel' order.id %}"
+                          onsubmit="return confirm('{% trans "Are you sure you want to cancel this order?" %}')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn--danger btn--sm">{% trans "Cancel Order" %}</button>
+                    </form>
+                {% endif %}
+
+                {% if not guest and user.is_authenticated and order.status == 'delivered' %}
+                    <hr class="divider">
+                    <a href="{% url 'orders:reorder' order.id %}" class="btn btn--secondary btn--sm">{% trans "Reorder Items" %}</a>
+                {% endif %}
+            </section>
+
+            <!-- Timeline -->
+            <aside class="card-panel" aria-label="{% trans 'Order status' %}" x-data="{{ order.status }}">
+                <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "Status Timeline" %}</h2>
+
+                {% with history=order.status_history.all reversed %}
+                    {% if history %}
+                        <ol class="timeline" style="padding-left: var(--space-5);">
+                            {% for entry in history %}
+                                <li class="timeline__item">
+                                    <span class="timeline__status">{{ entry.get_status_display }}</span>
+                                    {% if entry.note %}<p class="timeline__note">{{ entry.note }}</p>{% endif %}
+                                    <time class="timeline__date">{{ entry.created_at|date:"d M Y, H:i" }}</time>
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    {% else %}
+                        <p class="text-muted" style="font-size: var(--text-sm);">
+                            {% if order.status == 'pending' %}
+                                {% trans "We're reviewing your order. You'll receive updates here and via email." %}
+                            {% else %}
+                                {% trans "No updates yet." %}
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                {% endwith %}
+
+                {% if order.payment_method == 'manual' and not order.payment_verified %}
+                    <hr class="divider">
+                    <p class="text-muted mb-4" style="font-size: var(--text-sm);">{% trans "Awaiting bank transfer confirmation." %}</p>
+                    <a href="{% url 'checkout:manual_payment' order.id %}" class="btn btn--whatsapp btn--sm btn--block">
+                        {% trans "View Payment Details" %}
+                    </a>
+                {% endif %}
+            </aside>
+        </div>
+    </div>
+{% endblock %}

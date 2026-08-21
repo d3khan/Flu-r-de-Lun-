@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Page Not Found" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="empty-state" style="padding-block: var(--space-24);">
+            <span class="empty-state__icon" style="font-family: var(--font-serif); font-size: var(--text-2xl); color: var(--color-gold-dark); background: var(--color-beige-100);">404</span>
+            <h1 class="empty-state__title">{% trans "This page has wandered off" %}</h1>
+            <p class="empty-state__text">{% trans "The page you're looking for doesn't exist or may have moved. Let's get you back to something beautiful." %}</p>
+            <div style="display: flex; gap: var(--space-3); flex-wrap: wrap; justify-content: center;">
+                <a href="{% url 'core:home' %}" class="btn btn--primary">{% trans "Back to Home" %}</a>
+                <a href="{% url 'products:list' %}" class="btn btn--secondary">{% trans "Browse Eyewear" %}</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

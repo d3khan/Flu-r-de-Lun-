@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f5f0eb"/>
+      <stop offset="1" stop-color="#e8e0d6"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <circle cx="400" cy="430" r="170" fill="none" stroke="#d4c8b8" stroke-width="22"/>
+  <circle cx="400" cy="430" r="120" fill="none" stroke="#c9a962" stroke-width="4" opacity="0.7"/>
+  <text x="400" y="700" text-anchor="middle" font-family="Georgia, serif" font-size="42" fill="#a3917d" font-style="italic">Fluér de Luné</text>
+</svg>

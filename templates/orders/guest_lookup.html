@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Track Your Order" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <h1 class="auth-card__title">{% trans "Track Your Order" %}</h1>
+                <p class="auth-card__sub">{% trans "Enter your order number and the email you used at checkout." %}</p>
+
+                <form method="post" action="{% url 'orders:guest_lookup' %}" novalidate>
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="order_number" class="form-label">{% trans "Order Number" %}</label>
+                        <input type="text" id="order_number" name="order_number" class="form-control"
+                               placeholder="FDL-XXXXXXXX" value="{{ order_number }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">{% trans "Email Address" %}</label>
+                        <input type="email" id="email" name="email" class="form-control"
+                               placeholder="{% trans 'your@email.com' %}" required autocomplete="email">
+                    </div>
+                    <button type="submit" class="btn btn--gold btn--lg btn--block mt-4">{% trans "Find My Order" %}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

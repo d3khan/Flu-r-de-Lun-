@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}{% trans "Shopping Cart" %} — {{ site_settings.site_name }}{% endblock %}
+{% block meta_description %}{% trans "Review the items in your shopping cart." %}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <nav class="breadcrumbs" aria-label="{% trans 'Breadcrumb' %}">
+            <ol>
+                <li><a href="{% url 'core:home' %}">{% trans "Home" %}</a></li>
+                <li><span aria-current="page">{% trans "Shopping Cart" %}</span></li>
+            </ol>
+        </nav>
+
+        <header class="page-header">
+            <h1>{% trans "Shopping Cart" %}</h1>
+        </header>
+
+        {% if cart.items.all %}
+            <div class="cart-layout">
+                <!-- Items -->
+                <section aria-label="{% trans 'Cart items' %}">
+                    <div id="cart-page-list">
+                        {% include 'cart/partials/_items_list.html' with swap_target='#cart-page-list' %}
+                    </div>
+
+                    <div class="mt-6" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
+                        <a href="{% url 'products:list' %}" class="btn btn--ghost">← {% trans "Continue Shopping" %}</a>
+                        <button type="button"
+                                class="btn btn--danger btn--sm"
+                                hx-post="{% url 'cart:clear' %}"
+                                hx-target="#cart-page-list"
+                                hx-swap="innerHTML"
+                                hx-confirm="{% trans 'Remove all items from your cart?' %}">
+                            {% trans "Clear Cart" %}
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Summary -->
+                <aside class="summary-card" aria-label="{% trans 'Order summary' %}">
+                    <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "Order Summary" %}</h2>
+                    {% include 'cart/partials/_summary.html' with flat=True %}
+                    <a href="{% url 'checkout:step1' %}" class="btn btn--gold btn--block mt-6">{% trans "Proceed to Checkout" %}</a>
+                </aside>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <span class="empty-state__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M15.6 8.4V6.6a3.6 3.6 0 1 0-7.2 0v1.8m-3.06-1.44-.816 9.796A2 2 0 0 0 6.52 19H17.48a2 2 0 0 0 1.996-2.184l-.816-9.796A2 2 0 0 0 16.668 5.3H7.332a2 2 0 0 0-1.992 1.66z"/></svg>
+                </span>
+                <p class="empty-state__title">{% trans "Your cart is empty" %}</p>
+                <p class="empty-state__text">{% trans "Looks like you haven't added anything yet. Explore our collections to find your perfect pair." %}</p>
+                <a href="{% url 'products:list' %}" class="btn btn--primary">{% trans "Shop Now" %}</a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}{% trans "My Wishlist" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <header class="page-header">
+            <h1>{% trans "My Wishlist" %}</h1>
+            {% if wishlist and wishlist.total_items %}
+                <p>{{ wishlist.total_items }} {% blocktrans count counter=wishlist.total_items %}saved item{% plural %}saved items{% endblocktrans %}</p>
+            {% endif %}
+        </header>
+
+        {% if wishlist and wishlist.items.all %}
+            <div id="wishlist-list" class="wishlist-grid" style="padding-bottom: var(--space-16);">
+                {% for item in wishlist.items.all %}
+                    {% include 'wishlist/partials/_item.html' with swap_target='#wishlist-list' %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state" style="padding-block: var(--space-16) var(--space-24);">
+                <span class="empty-state__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 1 1 12 6.1a5 5 0 1 1 7.5 6.5Z"/></svg>
+                </span>
+                <p class="empty-state__title">{% trans "Your wishlist is empty" %}</p>
+                <p class="empty-state__text">{% trans "Tap the heart on any piece you love and it will be waiting for you here." %}</p>
+                <a href="{% url 'products:list' %}" class="btn btn--primary">{% trans "Discover Eyewear" %}</a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

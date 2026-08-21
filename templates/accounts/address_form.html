@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% if object %}{% trans "Edit Address" %}{% else %}{% trans "Add Address" %}{% endif %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="auth-wrapper" style="max-width: 560px;">
+            <div class="auth-card">
+                <h1 class="auth-card__title">{% if object %}{% trans "Edit Address" %}{% else %}{% trans "Add New Address" %}{% endif %}</h1>
+                <p class="auth-card__sub">{% trans "We'll use this for deliveries." %}</p>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% for field in form.visible_fields %}
+                        <div class="form-group">
+                            {% if field.field.widget.input_type != 'checkbox' %}
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}{% if field.field.required %} <span class="required">*</span>{% endif %}
+                                </label>
+                            {% endif %}
+                            {{ field }}
+                            {% if field.field.widget.input_type == 'checkbox' and field.label %}
+                                <span>{{ field.label }}</span>
+                            {% endif %}
+                            {% if field.help_text %}<small class="form-help">{{ field.help_text }}</small>{% endif %}
+                            {% if field.errors %}
+                                <ul class="form-errors">
+                                    {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <button type="submit" class="btn btn--gold btn--lg btn--block mt-4">
+                        {% if object %}{% trans "Save Changes" %}{% else %}{% trans "Add Address" %}{% endif %}
+                    </button>
+                    <a href="{% url 'accounts:address_list' %}" class="link-btn mt-4" style="width: 100%; justify-content: center;">← {% trans "Back to addresses" %}</a>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

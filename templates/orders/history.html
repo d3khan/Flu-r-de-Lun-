@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}{% trans "Order History" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <header class="page-header">
+            <h1>{% trans "Order History" %}</h1>
+            <p>{% trans "Track and review your orders." %}</p>
+        </header>
+
+        {% if orders %}
+            <div class="orders-list" style="padding-bottom: var(--space-16);">
+                {% for order in orders %}
+                    <a href="{% url 'orders:detail' order.id %}" class="order-card">
+                        <span>
+                            <span class="order-card__number">{{ order.order_number }}</span>
+                            <span class="order-card__date"> · {{ order.created_at|date:"d M Y, H:i" }}</span><br>
+                            <span class="text-muted" style="font-size: var(--text-xs);">
+                                {{ order.items.count }} {% blocktrans count counter=order.items.count %}item{% plural %}items{% endblocktrans %}
+                                · {{ order.get_payment_method_display }}
+                            </span>
+                        </span>
+                        <span class="order-card__meta">
+                            <strong>₦{{ order.total|intcomma }}</strong>
+                            <span class="status status--{{ order.status }}">{{ order.get_status_display }}</span>
+                        </span>
+                    </a>
+                {% endfor %}
+            </div>
+
+            {% if page_obj.has_other_pages %}
+                <nav class="pagination" aria-label="{% trans 'Pagination' %}">
+                    {% if page_obj.has_previous %}
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">← {% trans "Previous" %}</a>
+                    {% else %}
+                        <span class="page-link" disabled>← {% trans "Previous" %}</span>
+                    {% endif %}
+                    <span class="page-link is-active">{{ page_obj.number }} / {{ paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">{% trans "Next" %} →</a>
+                    {% else %}
+                        <span class="page-link" disabled>{% trans "Next" %} →</span>
+                    {% endif %}
+                </nav>
+            {% endif %}
+        {% else %}
+            <div class="empty-state" style="padding-block: var(--space-16) var(--space-24);">
+                <span class="empty-state__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 7h12l1 13H5L6 7Zm3 0V5a3 3 0 0 1 6 0v2"/></svg>
+                </span>
+                <p class="empty-state__title">{% trans "No orders yet" %}</p>
+                <p class="empty-state__text">{% trans "Your order history will appear here after your first purchase." %}</p>
+                <a href="{% url 'products:list' %}" class="btn btn--primary">{% trans "Start Shopping" %}</a>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

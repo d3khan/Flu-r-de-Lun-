@@ -1,0 +1,39 @@
+{
+    "name": "Fluér de Luné — Minimalist Luxury Eyewear",
+    "short_name": "Fluér de Luné",
+    "description": "Minimalist luxury eyewear. Timeless frames in warm tones, delivered across Nigeria.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "background_color": "#faf8f5",
+    "theme_color": "#c9a962",
+    "lang": "en",
+    "categories": ["shopping", "lifestyle"],
+    "icons": [
+        {
+            "src": "/static/images/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/images/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Shop",
+            "url": "/shop/",
+            "icons": [{ "src": "/static/images/icon-192.png", "sizes": "192x192" }]
+        },
+        {
+            "name": "My Cart",
+            "url": "/cart/",
+            "icons": [{ "src": "/static/images/icon-192.png", "sizes": "192x192" }]
+        }
+    ]
+}

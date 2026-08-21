@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static i18n humanize %}
+
+{% block title %}{% trans "Complete Your Bank Transfer" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="checkout-layout" style="max-width: 720px;">
+            <div class="card-panel text-center">
+                <span class="badge badge--new mb-4">{% trans "Order placed" %}</span>
+                <h1 style="font-size: var(--text-2xl);">{% trans "Almost there — complete your transfer" %}</h1>
+                <p class="text-muted mt-4">
+                    {% trans "Order" %} <strong>{{ order.order_number }}</strong> · {% trans "Total" %} <strong>₦{{ order.total|intcomma }}</strong>
+                </p>
+
+                {% if payment_info %}
+                    <!-- Bank details -->
+                    <dl class="bank-details mt-8" style="text-align: left;">
+                        <div class="bank-details__row">
+                            <dt>{% trans "Bank" %}</dt>
+                            <dd>{{ payment_info.bank_name }}</dd>
+                        </div>
+                        <div class="bank-details__row">
+                            <dt>{% trans "Account Name" %}</dt>
+                            <dd>{{ payment_info.account_name }}</dd>
+                        </div>
+                        <div class="bank-details__row">
+                            <dt>{% trans "Account Number" %}</dt>
+                            <dd>
+                                {{ payment_info.account_number }}
+                                <button type="button"
+                                        class="copy-btn"
+                                        data-copy="{{ payment_info.account_number }}"
+                                        @click="$el.textContent = '{% trans "Copied!" %}'; navigator.clipboard.writeText('{{ payment_info.account_number }}'); setTimeout(() => $el.textContent = '{% trans "Copy" %}', 2000)">
+                                    {% trans "Copy" %}
+                                </button>
+                            </dd>
+                        </div>
+                        <div class="bank-details__row">
+                            <dt>{% trans "Amount" %}</dt>
+                            <dd>₦{{ order.total|intcomma }}</dd>
+                        </div>
+                        <div class="bank-details__row">
+                            <dt>{% trans "Narration / Reference" %}</dt>
+                            <dd>{{ order.order_number }}</dd>
+                        </div>
+                    </dl>
+
+                    {% if payment_info.instructions %}
+                        <p class="mt-4 text-muted" style="font-size: var(--text-sm);">{{ payment_info.instructions|linebreaksbr }}</p>
+                    {% endif %}
+
+                    <!-- WhatsApp confirmation -->
+                    <a href="{{ whatsapp_url }}"
+                       target="_blank" rel="noopener noreferrer"
+                       class="btn btn--whatsapp btn--lg btn--block mt-6">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm4.6 12.1c-.2.6-1.2 1.1-1.7 1.2-.4.1-1 .1-1.6-.1-.4-.2-.9-.3-1.5-.6-2.7-1.1-4.4-3.7-4.5-3.9-.1-.2-1.1-1.4-1.1-2.7s.7-1.9.9-2.2c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.7.8 1.9v.5c0 .2-.1.3-.3.5l-.4.5c-.1.2-.4.3-.1.7a6.7 6.7 0 0 0 3.4 3c.2.1.4.1.5-.1l.8-1c.2-.2.4-.3.6-.1.2.1 1.4.7 1.7.8s.4.2.5.3c0 .1 0 .6-.2 1.2z"/></svg>
+                        {% trans "Send Payment Proof on WhatsApp" %}
+                    </a>
+
+                    <p class="summary-note mt-4">
+                        {% trans "After transferring, tap the button above so we can verify your payment quickly." %}
+                    </p>
+                {% else %}
+                    <p class="alert alert--warning mt-8" style="text-align: left;">
+                        {% trans "Bank details are being updated. Please contact us on WhatsApp to complete your payment." %}
+                    </p>
+                    {% if site_settings.whatsapp_number %}
+                        <a href="https://wa.me/{{ site_settings.whatsapp_number }}?text={% filter urlencode %}{% trans "Hello! I just placed order" %} {{ order.order_number }}{% endfilter %}"
+                           target="_blank" rel="noopener noreferrer" class="btn btn--whatsapp btn--block mt-4">
+                            {% trans "Contact us on WhatsApp" %}
+                        </a>
+                    {% endif %}
+                {% endif %}
+
+                <hr class="divider">
+
+                <div style="display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap;">
+                    <a href="{% url 'checkout:confirmation' order.id %}" class="btn btn--primary">{% trans "I've Sent Payment — View Order" %}</a>
+                    <a href="{% url 'products:list' %}" class="btn btn--ghost">{% trans "Continue Shopping" %}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

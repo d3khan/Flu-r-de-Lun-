@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "You're Offline" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="empty-state" style="padding-block: var(--space-24);">
+            <span class="empty-state__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 8.8A15 15 0 0 1 12 5.5c3.9 0 7.4 1.2 10 3.3M5 12.6a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 20h.01"/></svg>
+            </span>
+            <h1 class="empty-state__title">{% trans "You're offline" %}</h1>
+            <p class="empty-state__text">{% trans "It seems you've lost your internet connection. Check your network and try again." %}</p>
+            <button type="button" class="btn btn--primary" onclick="window.location.reload()">{% trans "Try Again" %}</button>
+        </div>
+    </div>
+{% endblock %}

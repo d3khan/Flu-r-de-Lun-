@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Privacy Policy" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <header class="page-header container">
+        <h1>{% trans "Privacy Policy" %}</h1>
+        <p>{% trans "Last updated: January 2025" %}</p>
+    </header>
+
+    <div class="container">
+        <article class="legal-content prose" style="padding-bottom: var(--space-16);">
+            <h2>{% trans "Information We Collect" %}</h2>
+            <p>{% trans "We collect information you provide directly: your name, email address, phone number, shipping address, and payment preferences when you place an order or contact us." %}</p>
+
+            <h2>{% trans "How We Use Your Information" %}</h2>
+            <ul>
+                <li>{% trans "Process and fulfil your orders" %}</li>
+                <li>{% trans "Communicate about your orders and respond to inquiries" %}</li>
+                <li>{% trans "Improve our products and customer experience" %}</li>
+            </ul>
+
+            <h2>{% trans "Payment Information" %}</h2>
+            <p>{% trans "Card payments are processed securely by Paystack or Flutterwave. We never see or store your full card details. For bank transfers, we only use the details you voluntarily share for verification." %}</p>
+
+            <h2>{% trans "Data Sharing" %}</h2>
+            <p>{% trans "We do not sell your personal data. We share information only with payment processors and delivery partners as needed to complete your order." %}</p>
+
+            <h2>{% trans "Your Rights" %}</h2>
+            <p>{% trans "You may request access to, correction of, or deletion of your personal data at any time by contacting us at" %} {{ site_settings.email }}.</p>
+        </article>
+    </div>
+{% endblock %}

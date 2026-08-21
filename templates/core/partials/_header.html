@@ -1,0 +1,111 @@
+{% load static i18n brand_tags %}
+<header class="site-header" role="banner">
+    <div class="container">
+        <div class="header-inner">
+
+            <!-- Logo -->
+            <a href="{% url 'core:home' %}" class="brand" aria-label="{{ site_settings.site_name }} — {% trans 'Home' %}">
+                {% if site_settings.logo %}
+                    <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" class="brand__logo" loading="lazy">
+                {% else %}
+                    <span class="brand__name">{{ site_settings.site_name|brand_first }}{% if site_settings.site_name|brand_rest %} <em class="brand-accent">{{ site_settings.site_name|brand_rest }}</em>{% endif %}</span>
+                {% endif %}
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="main-nav" aria-label="{% trans 'Main navigation' %}">
+                <a href="{% url 'products:list' %}" class="main-nav__link link-underline">{% trans "Shop" %}</a>
+                <a href="{% url 'products:list' %}?sort=newest" class="main-nav__link link-underline">{% trans "New Arrivals" %}</a>
+                <a href="{% url 'core:about' %}" class="main-nav__link link-underline">{% trans "Our Story" %}</a>
+                <a href="{% url 'core:contact' %}" class="main-nav__link link-underline">{% trans "Contact" %}</a>
+            </nav>
+
+            <!-- Actions -->
+            <div class="header-actions">
+                <!-- Search toggle (mobile) -->
+                <button type="button"
+                        class="icon-btn u-hide-desktop"
+                        @click="searchOpen = !searchOpen"
+                        :aria-expanded="searchOpen.toString()"
+                        aria-controls="search-bar"
+                        aria-label="{% trans 'Search' %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                </button>
+
+                <!-- Theme toggle -->
+                <button type="button"
+                        id="theme-toggle"
+                        class="icon-btn"
+                        aria-label="{% trans 'Toggle dark mode' %}">
+                    <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+                    <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+                </button>
+
+                <!-- Wishlist -->
+                <a href="{% url 'wishlist:detail' %}" class="icon-btn" aria-label="{% trans 'Wishlist' %}{% if wishlist_count %} ({{ wishlist_count }}){% endif %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 1 1 12 6.1a5 5 0 1 1 7.5 6.5Z"/>
+                    </svg>
+                    <span x-cloak x-show="wishlistCount > 0" x-text="wishlistCount" class="badge-count">{{ wishlist_count|default:'' }}</span>
+                </a>
+
+                <!-- Cart -->
+                <button type="button"
+                        class="icon-btn"
+                        @click="openCart()"
+                        :aria-expanded="cartDrawerOpen.toString()"
+                        aria-controls="cart-drawer"
+                        aria-label="{% trans 'Shopping Cart' %} ({{ cart.total_items }})">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path d="M15.6 8.4V6.6a3.6 3.6 0 1 0-7.2 0v1.8m-3.06-1.44-.816 9.796A2 2 0 0 0 6.52 19H17.48a2 2 0 0 0 1.996-2.184l-.816-9.796A2 2 0 0 0 16.668 5.3H7.332a2 2 0 0 0-1.992 1.66z"/>
+                    </svg>
+                    <span x-cloak x-show="cartCount > 0" x-text="cartCount" class="badge-count">{{ cart.total_items|default:'' }}</span>
+                </button>
+
+                <!-- Account / Auth (desktop) -->
+                <div class="account-links">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'accounts:profile' %}" class="account-links__login">{% trans "Account" %}</a>
+                        <form method="post" action="{% url 'accounts:logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="account-links__login">{% trans "Logout" %}</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'accounts:login' %}" class="account-links__login">{% trans "Login" %}</a>
+                        <a href="{% url 'accounts:register' %}" class="btn btn--primary btn--sm">{% trans "Sign Up" %}</a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile menu button -->
+                <button type="button"
+                        class="icon-btn u-hide-desktop"
+                        @click="mobileMenuOpen = true"
+                        aria-controls="mobile-nav"
+                        :aria-expanded="mobileMenuOpen.toString()"
+                        aria-label="{% trans 'Open menu' %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search overlay (mobile) -->
+    <div id="search-bar" class="search-bar u-hide-desktop" x-show="searchOpen" x-cloak
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 -translate-y-2"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         @keydown.escape.window="searchOpen = false">
+        <div class="container">
+            <form action="{% url 'products:list' %}" method="get" role="search">
+                <label for="header-search" class="sr-only">{% trans "Search products" %}</label>
+                <svg class="search-bar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="search"
+                       id="header-search"
+                       name="q"
+                       value="{{ request.GET.q|default:'' }}"
+                       placeholder="{% trans 'Search eyewear…' %}"
+                       autocomplete="off">
+            </form>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,205 @@
+/* Fluér de Luné - Design System Variables */
+/* Mobile-first, warm beige minimalist aesthetic */
+
+:root {
+  /* ===== Color Palette - Warm Beige ===== */
+  --color-beige-50: #faf8f5;
+  --color-beige-100: #f5f0eb;
+  --color-beige-200: #e8e0d6;
+  --color-beige-300: #d4c8b8;
+  --color-beige-400: #b8a998;
+  --color-beige-500: #a3917d;
+  --color-beige-600: #8b7a65;
+  --color-beige-700: #736452;
+  --color-beige-800: #5e5143;
+  --color-beige-900: #4d4237;
+
+  /* Accent - Warm Gold */
+  --color-gold: #c9a962;
+  --color-gold-light: #e8d5a8;
+  --color-gold-dark: #b08f4a;
+
+  /* Semantic Colors */
+  --color-white: #ffffff;
+  --color-black: #1a1a1a;
+  --color-success: #2d7d46;
+  --color-success-light: #e8f5ed;
+  --color-warning: #b8860b;
+  --color-warning-light: #fef3cd;
+  --color-error: #c0392b;
+  --color-error-light: #fdeaea;
+  --color-info: #2c7be5;
+  --color-info-light: #e7f1ff;
+
+  /* ===== Typography ===== */
+  /* Serif for brand/headers - Playfair Display */
+  --font-serif: 'Playfair Display', 'Georgia', 'Times New Roman', serif;
+  /* Sans-serif for UI/body - Inter */
+  --font-sans: 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', sans-serif;
+
+  /* Fluid Typography (clamp) */
+  --text-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.8rem);
+  --text-sm: clamp(0.8125rem, 0.75rem + 0.3125vw, 0.9375rem);
+  --text-base: clamp(0.9375rem, 0.875rem + 0.3125vw, 1.0625rem);
+  --text-lg: clamp(1.0625rem, 1rem + 0.3125vw, 1.1875rem);
+  --text-xl: clamp(1.1875rem, 1.1rem + 0.4375vw, 1.375rem);
+  --text-2xl: clamp(1.375rem, 1.25rem + 0.625vw, 1.75rem);
+  --text-3xl: clamp(1.75rem, 1.5rem + 1.25vw, 2.5rem);
+  --text-4xl: clamp(2.25rem, 1.875rem + 1.875vw, 3.5rem);
+  --text-5xl: clamp(3rem, 2.5rem + 2.5vw, 4.5rem);
+
+  /* Font Weights */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Line Heights */
+  --leading-tight: 1.1;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* ===== Spacing Scale ===== */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  /* 4px */
+  --space-2: 0.5rem;
+  /* 8px */
+  --space-3: 0.75rem;
+  /* 12px */
+  --space-4: 1rem;
+  /* 16px */
+  --space-5: 1.25rem;
+  /* 20px */
+  --space-6: 1.5rem;
+  /* 24px */
+  --space-8: 2rem;
+  /* 32px */
+  --space-10: 2.5rem;
+  /* 40px */
+  --space-12: 3rem;
+  /* 48px */
+  --space-16: 4rem;
+  /* 64px */
+  --space-20: 5rem;
+  /* 80px */
+  --space-24: 6rem;
+  /* 96px */
+
+  /* ===== Breakpoints (Mobile First) ===== */
+  --bp-xs: 320px;
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+  --bp-2xl: 1536px;
+
+  /* Container Max Widths */
+  --container-sm: 100%;
+  --container-md: 100%;
+  --container-lg: 100%;
+  --container-xl: 1200px;
+  --container-2xl: 1400px;
+
+  /* ===== Touch Targets ===== */
+  --touch-target-min: 44px;
+  --touch-target-comfortable: 48px;
+  --touch-target-large: 56px;
+
+  /* ===== Border Radius ===== */
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* ===== Shadows ===== */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.03);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.06), 0 10px 10px rgba(0, 0, 0, 0.02);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.08);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.03);
+  --shadow-focus: 0 0 0 3px rgba(201, 169, 98, 0.4);
+
+  /* ===== Transitions ===== */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+  --transition-spring: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ===== Z-Index ===== */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-tooltip: 700;
+  --z-toast: 800;
+
+  /* ===== Layout ===== */
+  --header-height: 64px;
+  --header-height-lg: 72px;
+  --footer-height: auto;
+}
+
+/* ===== Dark Theme ===== */
+/* Activated via <html data-theme="dark"> (device theme or manual toggle).
+   Base six tokens match the original dark palette; the extended ramp keeps
+   secondary text readable on dark surfaces. */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-beige-50: #2a2622;
+  --color-beige-100: #332d28;
+  --color-beige-200: #3d3630;
+  --color-beige-300: #463e35;
+  --color-beige-400: #8b7a65;
+  --color-beige-500: #a3917d;
+  --color-beige-600: #bfae97;
+  --color-beige-700: #d4c8b8;
+  --color-beige-800: #e8e0d6;
+  --color-beige-900: #faf8f5;
+  --color-white: #1a1a1a;
+  --color-black: #faf8f5;
+
+  /* Espresso chrome bars (header & footer bookends) */
+  --color-espresso: #201b16;
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+    --transition-normal: 0ms;
+    --transition-slow: 0ms;
+    --transition-spring: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== High Contrast Mode ===== */
+@media (prefers-contrast: high) {
+  :root {
+    --color-gold: #b8860b;
+    --color-beige-600: #5e5143;
+    --color-beige-700: #4d4237;
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  }
+}

@@ -1,0 +1,32 @@
+{% load static i18n humanize %}
+{# Payment method radio cards. Context: order, payment_info, gateway public keys #}
+<div class="payment-options" x-data="{ method: '{{ order.payment_method|default:"gateway" }}' }">
+    <label class="payment-option" :class="{ 'is-selected': method === 'gateway' }">
+        <input type="radio" name="payment_method" value="gateway" x-model="method">
+        <span>
+            <span class="payment-option__title">{% trans "Pay Now (Card / Transfer / USSD)" %}</span>
+            <span class="payment-option__desc">{% trans "Secure hosted checkout — card, bank transfer, USSD & QR." %}</span>
+        </span>
+        <span class="payment-option__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        </span>
+    </label>
+
+    <label class="payment-option" :class="{ 'is-selected': method === 'manual' }">
+        <input type="radio" name="payment_method" value="manual" x-model="method">
+        <span>
+            <span class="payment-option__title">{% trans "Bank Transfer / WhatsApp Order" %}</span>
+            <span class="payment-option__desc">{% trans "Transfer to our account and confirm via WhatsApp." %}</span>
+        </span>
+        <span class="payment-option__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 21h18M4 8h16M12 8v13M3 8l9-5 9 5"/></svg>
+        </span>
+    </label>
+
+    {# Live manual info preview when 'manual' selected #}
+    <div x-show="method === 'manual'" x-cloak x-transition.opacity class="mt-4">
+        {% if payment_info %}
+            {% include 'payments/partials/_manual_payment_info.html' %}
+        {% endif %}
+    </div>
+</div>

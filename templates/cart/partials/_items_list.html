@@ -1,0 +1,70 @@
+{% load static i18n humanize %}
+{# Cart items list. Params: swap_target (HTMX target), compact (drawer mode) #}
+<div class="cart-items-list{{ compact|yesno:' cart-items-list--flat,' }}" {% if not compact %}style="background: transparent; border: 0; padding: 0;"{% endif %}>
+    {% for item in cart.items.all %}
+        <div class="{% if compact %}cart-item{% else %}cart-page-item{% endif %}">
+            <a href="{{ item.product.get_absolute_url }}" class="cart-item__media" aria-label="{{ item.product.name }}">
+                {% with image=item.product.primary_image %}
+                    {% if image %}
+                        <img src="{{ image.thumbnail.url }}" alt="{{ image.alt_text|default:item.product.name }}" loading="lazy">
+                    {% else %}
+                        <span class="product-card__placeholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="7.5" cy="12" r="4.5"/><circle cx="16.5" cy="12" r="4.5"/><path d="M12 10.6c-.9-1.1-3.1-1.1-4 .8M12 10.6c.9-1.1 3.1-1.1 4 .8"/></svg>
+                        </span>
+                    {% endif %}
+                {% endwith %}
+            </a>
+
+            <div class="cart-item__info">
+                <a href="{{ item.product.get_absolute_url }}" class="cart-item__name">{{ item.product.name }}</a>
+                <span class="cart-item__unit-price">₦{{ item.product.price|intcomma }}</span>
+
+                <div class="cart-item__controls">
+                    <div class="qty-stepper qty-stepper--sm">
+                        <button type="button"
+                                class="qty-stepper__btn"
+                                aria-label="{% trans 'Decrease quantity' %}"
+                                hx-post="{% url 'cart:update' item.id %}"
+                                hx-vals='{"quantity": {{ item.quantity|add:"-1" }}}'
+                                hx-target="{{ swap_target|default:'#cart-drawer-body' }}"
+                                hx-swap="innerHTML">−</button>
+                        <input type="text" inputmode="numeric" class="qty-stepper__input"
+                               value="{{ item.quantity }}" aria-label="{% trans 'Quantity' %}" readonly>
+                        <button type="button"
+                                class="qty-stepper__btn"
+                                aria-label="{% trans 'Increase quantity' %}"
+                                {% if item.quantity >= item.product.stock_quantity %}disabled{% endif %}
+                                hx-post="{% url 'cart:update' item.id %}"
+                                hx-vals='{"quantity": {{ item.quantity|add:"1" }}}'
+                                hx-target="{{ swap_target|default:'#cart-drawer-body' }}"
+                                hx-swap="innerHTML">+</button>
+                    </div>
+
+                    <button type="button"
+                            class="cart-item__remove"
+                            aria-label="{% trans 'Remove' %} {{ item.product.name }}"
+                            hx-post="{% url 'cart:remove' item.id %}"
+                            hx-target="{{ swap_target|default:'#cart-drawer-body' }}"
+                            hx-swap="innerHTML"
+                            hx-confirm="{% trans 'Remove this item from your cart?' %}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="cart-item__side">
+                <span class="cart-item__total">₦{{ item.total_price|intcomma }}</span>
+                {% if not item.product.in_stock %}
+                    <span class="stock-badge stock-badge--out">{% trans "Out of stock" %}</span>
+                {% elif item.quantity > item.product.stock_quantity %}
+                    <span class="stock-badge stock-badge--low">{% trans "Only" %} {{ item.product.stock_quantity }} {% trans "left" %}</span>
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <div class="empty-state">
+            <p class="empty-state__title">{% trans "Your cart is empty" %}</p>
+            <a href="{% url 'products:list' %}" class="btn btn--primary">{% trans "Continue Shopping" %}</a>
+        </div>
+    {% endfor %}
+</div>
