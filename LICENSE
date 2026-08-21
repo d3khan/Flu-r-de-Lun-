@@ -1,0 +1,56 @@
+Proprietary Software License Notice
+====================================
+
+Copyright (c) 2026 Fluér de Luné. All rights reserved.
+
+This software, including its source code, templates, stylesheets, scripts,
+graphics, design assets, and accompanying documentation (collectively, the
+"Software"), is the exclusive property of Fluér de Luné.
+
+1. GRANT OF VIEWING ACCESS
+   Permission is granted to view and inspect the source code of this
+   repository for personal, non-commercial reference purposes only.
+
+2. RESTRICTIONS
+   Without the prior express written permission of Fluér de Luné, you may
+   NOT:
+     - reproduce, copy, or redistribute the Software or any portion of it;
+     - use the Software, or any part of it, for any commercial purpose,
+       including operating your own e-commerce store derived from it;
+     - modify, adapt, translate, or create derivative works based on the
+       Software;
+     - publish, sublicense, sell, rent, or lease the Software;
+     - remove or alter this notice or any copyright, trademark, or other
+       proprietary notices contained in the Software.
+
+3. TRADEMARKS
+   The names "Fluér de Luné", the brand wordmark, logo assets, and related
+   marks are trademarks of Fluér de Luné and may not be used to identify,
+   promote, or market any product or service without written consent.
+
+4. THIRD-PARTY COMPONENTS
+   This project depends on open-source libraries (including but not limited
+   to Django, HTMX, Alpine.js, django-imagekit, django-countries, and
+   WhiteNoise) and freely licensed typefaces (Playfair Display, Inter).
+   These components remain under their own respective licenses; nothing in
+   this notice limits the rights granted to you by those licenses for those
+   specific components.
+
+5. WARRANTY DISCLAIMER
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+   IN NO EVENT SHALL FLUÉR DE LUNÉ BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR ITS
+   USE.
+
+6. LICENSING REQUESTS
+   To obtain a commercial license, permission for reuse, or any other rights
+   not granted above, contact:
+
+        Fluér de Luné
+        hello@fleurdelune.com
+
+Unauthorized use, copying, or distribution of the Software, via any medium,
+is strictly prohibited and may result in civil and criminal liability under
+applicable copyright law.
