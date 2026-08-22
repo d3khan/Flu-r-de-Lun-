@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import (
     UserCreationForm, UserChangeForm, AuthenticationForm,
-    PasswordChangeForm, SetPasswordForm,
+    PasswordChangeForm, SetPasswordForm, PasswordResetForm,
 )
 from django.utils.translation import gettext_lazy as _
 
@@ -89,6 +89,7 @@ class CustomUserCreationForm(UserCreationForm):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email'].lower()
         user.username = self.cleaned_data['email'].lower()
+        user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
         return user
@@ -168,3 +169,7 @@ class CustomPasswordChangeForm(StyledFieldsMixin, PasswordChangeForm):
 
 class CustomSetPasswordForm(StyledFieldsMixin, SetPasswordForm):
     """Password reset confirmation with site styling."""
+
+
+class CustomPasswordResetForm(StyledFieldsMixin, PasswordResetForm):
+    """Password reset form with site styling."""
