@@ -1,8 +1,7 @@
 """
-Payment gateway services for Paystack and Flutterwave.
+Payment gateway services for Paystack.
 Uses Payment Links (hosted checkout) - no card data touches our server.
 """
-import json
 import hmac
 import hashlib
 import requests
@@ -137,96 +136,8 @@ class PaystackService(BasePaymentService):
         return {'success': False, 'message': f'Unhandled event: {event}'}
 
 
-class FlutterwaveService(BasePaymentService):
-    """Flutterwave payment gateway integration."""
-    
-    def __init__(self):
-        super().__init__()
-        self.base_url = 'https://api.flutterwave.com/v3'
-        self.secret_key = settings.FLUTTERWAVE_SECRET_KEY
-        self.public_key = settings.FLUTTERWAVE_PUBLIC_KEY
-        self.encryption_key = settings.FLUTTERWAVE_ENCRYPTION_KEY
-    
-    def create_payment_link(self, order, callback_url, cancel_url):
-        """Create Flutterwave payment link."""
-        data = {
-            'tx_ref': order.order_number,
-            'amount': float(order.total),
-            'currency': 'NGN',
-            'redirect_url': callback_url,
-            'customer': {
-                'email': order.email,
-                'name': order.full_name,
-                'phonenumber': order.phone,
-            },
-            'customizations': {
-                'title': 'Fluér de Luné',
-                'description': f'Order {order.order_number}',
-                'logo': f'{settings.SITE_URL}{settings.STATIC_URL}images/logo.svg',
-            },
-            'meta': {
-                'order_id': order.id,
-                'order_number': order.order_number,
-            },
-            'payment_options': 'card,banktransfer,ussd,mobilemoney,barter',
-        }
-        
-        response = self._make_request('POST', '/payments', data)
-        
-        if response.get('status') == 'success' and response['data'].get('link'):
-            return {
-                'url': response['data']['link'],
-                'reference': response['data']['tx_ref'],
-            }
-        raise PaymentGatewayError(response.get('message', 'Failed to create payment link'))
-    
-    def verify_payment(self, reference):
-        """Verify Flutterwave transaction."""
-        response = self._make_request('GET', f'/transactions/verify_by_reference?tx_ref={reference}')
-        
-        if response.get('status') == 'success' and response['data']:
-            tx = response['data'][0] if isinstance(response['data'], list) else response['data']
-            if tx.get('status') == 'successful':
-                return {
-                    'success': True,
-                    'reference': tx['tx_ref'],
-                    'amount': Decimal(str(tx['amount'])),
-                    'currency': tx['currency'],
-                    'gateway_reference': tx.get('id') or tx.get('flw_ref'),
-                    'paid_at': tx.get('created_at'),
-                    'channel': tx.get('payment_type'),
-                    'customer': tx.get('customer'),
-                    'metadata': tx.get('meta'),
-                    'gateway_response': tx,
-                }
-        return {'success': False, 'message': response.get('message', 'Verification failed')}
-    
-    def verify_webhook(self, payload, signature):
-        """Verify Flutterwave webhook signature."""
-        expected = hmac.new(
-            self.encryption_key.encode('utf-8'),
-            payload,
-            hashlib.sha256
-        ).hexdigest()
-        return hmac.compare_digest(expected, signature)
-    
-    def process_webhook(self, payload):
-        """Process Flutterwave webhook event."""
-        event = payload.get('event')
-        data = payload.get('data', {})
-        
-        if event == 'charge.completed' and data.get('status') == 'successful':
-            reference = data.get('tx_ref')
-            return self.verify_payment(reference)
-        
-        return {'success': False, 'message': f'Unhandled event: {event}'}
-
-
 def get_payment_service():
     """Get the configured payment service."""
-    gateway = getattr(settings, 'PAYMENT_GATEWAY', 'paystack')
-    if gateway == 'flutterwave':
-        return FlutterwaveService()
     return PaystackService()
 
 
