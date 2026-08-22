@@ -17,6 +17,7 @@ from .forms import (
     CustomUserCreationForm, CustomUserChangeForm,
     CustomAuthenticationForm, AddressForm,
     CustomPasswordChangeForm, CustomSetPasswordForm,
+    CustomPasswordResetForm,
 )
 
 
