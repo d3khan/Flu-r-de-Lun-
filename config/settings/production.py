@@ -55,15 +55,17 @@ CLOUDINARY_STORAGE = {
     'SECURE': True,
 }
 
-# Email
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-EMAIL_FROM_ADDRESS = os.environ.get('EMAIL_FROM_ADDRESS', 'd3khan2.0@gmail.com')
-DEFAULT_FROM_EMAIL = f'Fluér de Luné <{os.environ.get("EMAIL_FROM_ADDRESS", "d3khan2.0@gmail.com")}>'
+# Email - Using Resend for reliable transactional email delivery
+EMAIL_BACKEND = 'apps.core.email_backends.resend_backend.ResendEmailBackend'
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
+EMAIL_FROM_ADDRESS = os.environ.get('EMAIL_FROM_ADDRESS')
+DEFAULT_FROM_EMAIL = f'Fluér de Luné <{os.environ.get("EMAIL_FROM_ADDRESS")}>'
+
+# Password reset timeout - 10 minutes minimum
+PASSWORD_RESET_TIMEOUT = 600
+
+# Email timeout to prevent hanging
+EMAIL_TIMEOUT = 30
 
 # Cache with Redis
 CACHES = {
