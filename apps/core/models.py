@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+import os
 
 
 class SiteSettings(models.Model):
@@ -10,7 +11,7 @@ class SiteSettings(models.Model):
     favicon = models.ImageField(_('Favicon'), upload_to='site/', blank=True)
     
     # Contact info
-    email = models.EmailField(_('Contact Email'), default='hello@fleurdelune.com')
+    email = models.EmailField(_('Contact Email'), default=os.environ.get('CONTACT_EMAIL', 'hello@fleurdelune.com'))
     phone = models.CharField(_('Phone'), max_length=20, blank=True)
     address = models.TextField(_('Address'), blank=True)
     
