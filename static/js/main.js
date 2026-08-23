@@ -10,10 +10,10 @@
                 searchOpen: false,
                 toasts: [],
                 toastSeq: 0,
-                cartCount: Number(document.body.dataset.cartCount || 0),
-                wishlistCount: Number(document.body.dataset.wishlistCount || 0),
+                cartCount: 0,
+                wishlistCount: 0,
 
-                init: function () {
+init: function () {
                     var self = this;
 
                     /* Views emit HX-Trigger: cartUpdated after cart mutations */
@@ -44,6 +44,11 @@
                     document.addEventListener('keydown', function (e) {
                         if (e.key === 'Escape') self.closeAll();
                     });
+
+                    /* Periodic count refresh (every 500ms) */
+                    self._countRefreshInterval = setInterval(function () {
+                        self.refreshCounts();
+                    }, 500);
                 },
 
                 openCart: function () {
@@ -54,6 +59,9 @@
                     this.mobileMenuOpen = false;
                     this.cartDrawerOpen = false;
                     this.searchOpen = false;
+                    if (this._countRefreshInterval) {
+                        clearInterval(this._countRefreshInterval);
+                    }
                 },
 
                 addToast: function (message, type) {

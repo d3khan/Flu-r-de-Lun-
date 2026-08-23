@@ -55,9 +55,9 @@ CLOUDINARY_STORAGE = {
     'SECURE': True,
 }
 
-# Email - Using Resend for reliable transactional email delivery
-EMAIL_BACKEND = 'apps.core.email_backends.resend_backend.ResendEmailBackend'
-RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
+# Email - DISABLED (under development)
+# EMAIL_BACKEND = 'apps.core.email_backends.resend_backend.ResendEmailBackend'
+# RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
 EMAIL_FROM_ADDRESS = os.environ.get('EMAIL_FROM_ADDRESS')
 DEFAULT_FROM_EMAIL = f'Fluér de Luné <{os.environ.get("EMAIL_FROM_ADDRESS")}>'
 

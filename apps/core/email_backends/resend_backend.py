@@ -75,7 +75,7 @@ class ResendEmailBackend(BaseEmailBackend):
         
         # Prepare the email data for Resend
         email_data = {
-            "from": message.from_email,
+            "from": email_message.from_email,
             "to": recipients,
             "subject": subject,
         }

@@ -71,6 +71,45 @@ class ProductDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         product = self.object
         
+        # Get sort order from session or default to newest
+        sort = self.request.GET.get('sort') or self.request.session.get('product_list_sort', '-created_at')
+        sort_options = {
+            'name': 'name',
+            '-name': '-name',
+            'price': 'price',
+            '-price': '-price',
+            'stock': 'stock_quantity',
+            '-stock': '-stock_quantity',
+            'created': '-created_at',
+            '-created': 'created_at',
+            'updated': '-updated_at',
+            '-updated': 'updated_at',
+        }
+        order_by = sort_options.get(sort, '-created_at')
+        
+        # Get next/prev products in the same category with the same sort order
+        category_products = Product.objects.filter(
+            category=product.category,
+            is_active=True
+        ).order_by(order_by).values_list('slug', flat=True)
+        
+        slug_list = list(category_products)
+        current_index = slug_list.index(product.slug) if product.slug in slug_list else -1
+        
+        next_product = None
+        prev_product = None
+        
+        if current_index >= 0:
+            if current_index + 1 < len(slug_list):
+                next_slug = slug_list[current_index + 1]
+                next_product = Product.objects.filter(slug=next_slug, is_active=True).select_related('category').prefetch_related('images').first()
+            if current_index - 1 >= 0:
+                prev_slug = slug_list[current_index - 1]
+                prev_product = Product.objects.filter(slug=prev_slug, is_active=True).select_related('category').prefetch_related('images').first()
+        
+        context['next_product'] = next_product
+        context['prev_product'] = prev_product
+        
         # Related products from same category
         context['related_products'] = Product.objects.filter(
             category=product.category,

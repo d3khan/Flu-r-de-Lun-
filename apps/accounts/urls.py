@@ -17,11 +17,12 @@ urlpatterns = [
     path('profile/edit/', views.profile_edit, name='profile_edit'),
     path('password/change/', views.CustomPasswordChangeView.as_view(), name='password_change'),
     
-    # Password reset
-    path('password/reset/', views.CustomPasswordResetView.as_view(), name='password_reset'),
-    path('password/reset/done/', views.CustomPasswordResetDoneView.as_view(), name='password_reset_done'),
-    path('password/reset/<uidb64>/<token>/', views.CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('password/reset/complete/', views.CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    # Password reset - DISABLED (under development)
+    path('password/reset/', views.password_reset_under_development, name='password_reset'),
+    # path('password/reset/', views.CustomPasswordResetView.as_view(), name='password_reset'),
+    # path('password/reset/done/', views.CustomPasswordResetDoneView.as_view(), name='password_reset_done'),
+    # path('password/reset/<uidb64>/<token>/', views.CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    # path('password/reset/complete/', views.CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),
     
     # Addresses
     path('addresses/', views.AddressListView.as_view(), name='address_list'),

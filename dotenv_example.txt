@@ -32,3 +32,7 @@ PAYMENT_GATEWAY=paystack
 
 # App Version
 APP_VERSION=1.0.0
+
+# Inventory Management (Basic Auth)
+INVENTORY_USERNAME=your-inventory-username
+INVENTORY_PASSWORD=your-inventory-password

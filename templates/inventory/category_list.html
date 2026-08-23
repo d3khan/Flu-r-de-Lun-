@@ -1,0 +1,81 @@
+{% extends 'inventory/base.html' %}
+{% load static i18n %}
+
+{% block title %}{% trans "Categories" %} — Inventory{% endblock %}
+
+{% block content %}
+<div class="inventory-categories">
+    <!-- Page Header -->
+    <header class="inventory-page-header">
+        <div class="inventory-page-header__content">
+            <h1 class="inventory-page-header__title">{% trans "Categories" %}</h1>
+            <p class="inventory-page-header__subtitle">{% trans "Manage product categories" %}</p>
+        </div>
+        <div class="inventory-page-header__actions">
+            <a href="{% url 'inventory:category_create' %}" class="btn btn--primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                <span>{% trans "Add Category" %}</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Categories Grid -->
+    <div class="categories-grid inventory-categories-grid">
+        {% for category in categories %}
+        <article class="category-card inventory-category-card">
+            {% if category.image %}
+                <img src="{{ category.image.url }}" alt="{{ category.name }}" class="category-card__image">
+            {% else %}
+                <div class="category-card__placeholder">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                </div>
+            {% endif %}
+            <div class="category-card__content">
+                <h3 class="category-card__name">{{ category.name }}</h3>
+                <p class="category-card__count">
+                    {{ category.product_count }} product{{ category.product_count|pluralize }}
+                </p>
+                <div class="category-card__meta">
+                    <span class="status status--{{ category.is_active|yesno:'confirmed,cancelled' }}">
+                        {{ category.is_active|yesno:_("Active,Inactive") }}
+                    </span>
+                    {% if category.sort_order > 0 %}
+                        <span class="category-card__sort">Sort: {{ category.sort_order }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="category-card__actions">
+                <a href="{% url 'inventory:category_edit' category.pk %}" class="icon-btn" aria-label="{% trans 'Edit category' %}" title="{% trans 'Edit' %}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                </a>
+                <a href="{% url 'inventory:category_delete' category.pk %}" class="icon-btn icon-btn--danger" aria-label="{% trans 'Delete category' %}" title="{% trans 'Delete' %}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                </a>
+            </div>
+        </article>
+        {% empty %}
+        <div class="categories-grid__empty">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            <h3>{% trans "No Categories Yet" %}</h3>
+            <p>{% trans "Create your first category to organize products." %}</p>
+            <a href="{% url 'inventory:category_create' %}" class="btn btn--primary">{% trans "Add Category" %}</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

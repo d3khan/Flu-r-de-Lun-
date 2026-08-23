@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'apps.orders',
     'apps.payments',
     'apps.checkout',
+    'apps.inventory',
 ]
 
 MIDDLEWARE = [

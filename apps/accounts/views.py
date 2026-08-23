@@ -191,3 +191,11 @@ def address_set_default(request, pk):
     if request.htmx:
         return JsonResponse({'success': True})
     return redirect('accounts:address_list')
+
+
+def password_reset_under_development(request):
+    """Temporary page for password reset under development."""
+    from django.conf import settings
+    return render(request, 'accounts/password_reset_under_development.html', {
+        'site_settings': getattr(settings, 'SITE_SETTINGS', None)
+    })

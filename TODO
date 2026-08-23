@@ -1,0 +1,35 @@
+# TODO List - Fluér de Luné E-commerce
+
+## 🔴 Critical - Fix Now
+1. **Wishlist Heart Fill**
+   - Heart SVG should fill red when item is in wishlist (not just stroke color change)
+   - Currently: `.filled` class toggles `fill: currentColor` but heart outline remains
+   - Need: Full red fill when active, empty outline when inactive
+
+2. **Password Reset Email System**
+   - Resend integration needs domain verification (resend.com/domains)
+   - Password reset link expires too quickly (currently 10 min)
+   - Email not sending/receiving properly
+   - Need to configure Resend domain verification or switch email provider
+
+3. **Password Reset Link Expiration**
+   - Link expires too quickly (10 minutes)
+   - Users report "link expired" error
+   - Need to investigate PASSWORD_RESET_TIMEOUT and token generation
+
+## 🟡 High Priority
+4. **Telegram Notifications for Paystack Confirmed Orders**
+   - Trigger only on Paystack webhook payment confirmation
+   - Include product images (Cloudinary URLs), names, quantities, prices, totals
+   - Send to sister's Telegram when she creates account
+   - Deferred until requested
+
+5. **WhatsApp Payment Redirect (Manual Payment)**
+   - On manual payment step, redirect to sister's WhatsApp with pre-filled template message
+   - Message should include: order number, items, total, payment instructions
+   - If WhatsApp API setup is complex/requires verification, just display her WhatsApp number with click-to-chat link instead
+
+## 🟢 Medium Priority
+6. **Site Settings Admin**
+   - Add WhatsApp number field for manual payment contact
+   - Add business hours, response time expectations

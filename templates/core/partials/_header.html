@@ -41,12 +41,11 @@
                     <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
                 </button>
 
-                <!-- Wishlist -->
-                <a href="{% url 'wishlist:detail' %}" class="icon-btn" aria-label="{% trans 'Wishlist' %}{% if wishlist_count %} ({{ wishlist_count }}){% endif %}">
+<!-- Wishlist -->
+                <a href="{% url 'wishlist:detail' %}" class="icon-btn" aria-label="{% trans 'Wishlist' %}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                         <path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 1 1 12 6.1a5 5 0 1 1 7.5 6.5Z"/>
                     </svg>
-                    <span x-cloak x-show="wishlistCount > 0" x-text="wishlistCount" class="badge-count">{{ wishlist_count|default:'' }}</span>
                 </a>
 
                 <!-- Cart -->
@@ -55,11 +54,10 @@
                         @click="openCart()"
                         :aria-expanded="cartDrawerOpen.toString()"
                         aria-controls="cart-drawer"
-                        aria-label="{% trans 'Shopping Cart' %} ({{ cart.total_items }})">
+                        aria-label="{% trans 'Shopping Cart' %}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                         <path d="M15.6 8.4V6.6a3.6 3.6 0 1 0-7.2 0v1.8m-3.06-1.44-.816 9.796A2 2 0 0 0 6.52 19H17.48a2 2 0 0 0 1.996-2.184l-.816-9.796A2 2 0 0 0 16.668 5.3H7.332a2 2 0 0 0-1.992 1.66z"/>
                     </svg>
-                    <span x-cloak x-show="cartCount > 0" x-text="cartCount" class="badge-count">{{ cart.total_items|default:'' }}</span>
                 </button>
 
                 <!-- Account / Auth (desktop) -->

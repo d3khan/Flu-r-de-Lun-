@@ -35,6 +35,9 @@ urlpatterns = [
 
     # Checkout
     path('checkout/', include('apps.checkout.urls', namespace='checkout')),
+
+    # Inventory Management (Basic Auth protected)
+    path('inventory/', include('apps.inventory.urls', namespace='inventory')),
 ]
 
 # Serve media files in development

@@ -63,9 +63,6 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body x-data="app"
-      data-cart-count="{{ cart.total_items }}"
-      data-wishlist-count="{{ wishlist_count|default:'0' }}"
-      data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"
       x-effect="document.body.classList.toggle('scroll-lock', mobileMenuOpen || cartDrawerOpen)"
       hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 

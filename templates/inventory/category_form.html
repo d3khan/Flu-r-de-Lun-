@@ -1,0 +1,208 @@
+{% extends 'inventory/base.html' %}
+{% load static i18n %}
+
+{% block title %}{{ title }} — Inventory{% endblock %}
+
+{% block extra_head %}
+<style>
+    .image-preview {
+        width: 100%;
+        max-width: 300px;
+        aspect-ratio: 4/3;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        background-color: var(--color-beige-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .image-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .image-preview__placeholder {
+        color: var(--color-beige-400);
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="inventory-form-container">
+    <header class="inventory-form-header">
+        <div class="inventory-form-header__content">
+            <h1 class="inventory-form-header__title">{{ title }}</h1>
+        </div>
+        <div class="inventory-form-header__actions">
+            <a href="{% url 'inventory:category_list' %}" class="btn btn--secondary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                <span>{% trans "Back to List" %}</span>
+            </a>
+        </div>
+    </header>
+
+    <form method="POST" enctype="multipart/form-data" class="inventory-form" novalidate>
+        {% csrf_token %}
+
+        <!-- Basic Info Section -->
+        <section class="form-section">
+            <h2 class="form-section__title">{% trans "Basic Information" %}</h2>
+            <div class="form-grid form-grid--2">
+                <div class="form-group">
+                    {{ form.name.label_tag }}
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <ul class="form-errors">{% for error in form.name.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.slug.label_tag }}
+                    {{ form.slug }}
+                    {% if form.slug.help_text %}
+                        <span class="form-help">{{ form.slug.help_text }}</span>
+                    {% endif %}
+                    {% if form.slug.errors %}
+                        <ul class="form-errors">{% for error in form.slug.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="form-group form-group--full">
+                {{ form.description.label_tag }}
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <ul class="form-errors">{% for error in form.description.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Image Section -->
+        <section class="form-section">
+            <h2 class="form-section__title">{% trans "Category Image" %}</h2>
+            <div class="form-group">
+                {{ form.image.label_tag }}
+                <div class="image-upload-wrapper">
+                    <div class="image-preview" id="categoryImagePreview">
+                        {% if category and category.image %}
+                            <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                        {% else %}
+                            <div class="image-preview__placeholder">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                    <polyline points="9 22 9 12 15 12 15 22"/>
+                                </svg>
+                                <span class="u-hide-mobile">{% trans "No image selected" %}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    {{ form.image }}
+                </div>
+                {% if form.image.help_text %}
+                    <span class="form-help">{{ form.image.help_text }}</span>
+                {% endif %}
+                {% if form.image.errors %}
+                    <ul class="form-errors">{% for error in form.image.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section class="form-section">
+            <h2 class="form-section__title">{% trans "Settings" %}</h2>
+            <div class="form-grid form-grid--2">
+                <div class="form-group">
+                    {{ form.is_active.label_tag }}
+                    <label class="form-check form-check--switch">
+                        {{ form.is_active }}
+                        <span class="form-check__switch"></span>
+                        <span class="form-check__label">{{ form.is_active.label }}</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    {{ form.sort_order.label_tag }}
+                    {{ form.sort_order }}
+                    {% if form.sort_order.help_text %}
+                        <span class="form-help">{{ form.sort_order.help_text }}</span>
+                    {% endif %}
+                    {% if form.sort_order.errors %}
+                        <ul class="form-errors">{% for error in form.sort_order.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <!-- Submit Actions -->
+        <footer class="inventory-form-footer">
+            <a href="{% url 'inventory:category_list' %}" class="btn btn--secondary">
+                {% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn--primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                {{ submit_text }}
+            </button>
+        </footer>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Category image preview
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageInput = document.querySelector('input[name="image"]');
+        const preview = document.getElementById('categoryImagePreview');
+
+        if (imageInput && preview) {
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.innerHTML = `
+                        <div class="image-preview__placeholder">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                                <polyline points="9 22 9 12 15 12 15 22"/>
+                            </svg>
+                            <span class="u-hide-mobile">{% trans "No image selected" %}</span>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // Auto-generate slug from name
+        const nameInput = document.querySelector('input[name="name"]');
+        const slugInput = document.querySelector('input[name="slug"]');
+
+        if (nameInput && slugInput) {
+            nameInput.addEventListener('blur', function() {
+                if (!slugInput.value || slugInput.dataset.autoGenerated === 'true') {
+                    const slug = nameInput.value
+                        .toLowerCase()
+                        .trim()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/(^-|-$)/g, '');
+                    slugInput.value = slug;
+                    slugInput.dataset.autoGenerated = 'true';
+                }
+            });
+
+            slugInput.addEventListener('input', function() {
+                slugInput.dataset.autoGenerated = 'false';
+            });
+        }
+    });
+</script>
+{% endblock %}

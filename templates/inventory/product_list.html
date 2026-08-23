@@ -1,0 +1,268 @@
+{% extends 'inventory/base.html' %}
+{% load static i18n humanize %}
+
+{% block title %}{% trans "Products" %} — Inventory{% endblock %}
+
+{% block content %}
+<div class="inventory-products">
+    <!-- Page Header -->
+    <header class="inventory-page-header">
+        <div class="inventory-page-header__content">
+            <h1 class="inventory-page-header__title">{% trans "Products" %}</h1>
+            <p class="inventory-page-header__subtitle">{% trans "Manage your product catalog" %}</p>
+        </div>
+        <div class="inventory-page-header__actions">
+            <a href="{% url 'inventory:product_create' %}" class="btn btn--primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                <span>{% trans "Add Product" %}</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Filters -->
+    <form class="inventory-filters" method="GET" action=""
+          hx-get="{% url 'inventory:product_list' %}"
+          hx-target=".inventory-products"
+          hx-swap="innerHTML"
+          hx-push-url="true"
+          hx-indicator=".htmx-indicator">
+        <div class="inventory-filters__row">
+            <div class="inventory-filters__search">
+                <label for="search" class="visually-hidden">{% trans "Search products" %}</label>
+                <div class="search-input-wrapper">
+                    <svg class="search-input__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    <input type="search" name="q" id="search" class="form-control search-input" placeholder="{% trans 'Search products...' %}" value="{{ search_query }}"
+                           hx-trigger="input changed delay:300ms, search"
+                           hx-get="{% url 'inventory:product_list' %}"
+                           hx-target=".inventory-products"
+                           hx-swap="innerHTML"
+                           hx-push-url="true">
+                    {% if search_query %}
+                        <a href="{% url 'inventory:product_list' %}" class="search-input__clear" aria-label="{% trans 'Clear search' %}">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="inventory-filters__selects">
+                <select name="category" class="form-select toolbar-select" id="filter-category"
+                        hx-trigger="change"
+                        hx-get="{% url 'inventory:product_list' %}"
+                        hx-target=".inventory-products"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="[name='q'], [name='stock_status'], [name='is_active'], [name='sort']">
+                    <option value="">{% trans "All Categories" %}</option>
+                    {% for category in categories %}
+                        <option value="{{ category.pk }}" {% if category.pk|stringformat:"s" == current_category %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <select name="stock_status" class="form-select toolbar-select" id="filter-stock"
+                        hx-trigger="change"
+                        hx-get="{% url 'inventory:product_list' %}"
+                        hx-target=".inventory-products"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="[name='q'], [name='category'], [name='is_active'], [name='sort']">
+                    <option value="">{% trans "All Stock Status" %}</option>
+                    <option value="in_stock" {% if current_stock_status == 'in_stock' %}selected{% endif %}>{% trans "In Stock" %}</option>
+                    <option value="low_stock" {% if current_stock_status == 'low_stock' %}selected{% endif %}>{% trans "Low Stock" %}</option>
+                    <option value="out_of_stock" {% if current_stock_status == 'out_of_stock' %}selected{% endif %}>{% trans "Out of Stock" %}</option>
+                </select>
+
+                <select name="is_active" class="form-select toolbar-select" id="filter-status"
+                        hx-trigger="change"
+                        hx-get="{% url 'inventory:product_list' %}"
+                        hx-target=".inventory-products"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="[name='q'], [name='category'], [name='stock_status'], [name='sort']">
+                    <option value="">{% trans "All Status" %}</option>
+                    <option value="true" {% if current_is_active == 'true' %}selected{% endif %}>{% trans "Active" %}</option>
+                    <option value="false" {% if current_is_active == 'false' %}selected{% endif %}>{% trans "Inactive" %}</option>
+                </select>
+
+                <select name="sort" class="form-select toolbar-select" id="filter-sort"
+                        hx-trigger="change"
+                        hx-get="{% url 'inventory:product_list' %}"
+                        hx-target=".inventory-products"
+                        hx-swap="innerHTML"
+                        hx-push-url="true"
+                        hx-include="[name='q'], [name='category'], [name='stock_status'], [name='is_active']">
+                    <option value="-created_at" {% if current_sort == '-created_at' %}selected{% endif %}>{% trans "Newest First" %}</option>
+                    <option value="created_at" {% if current_sort == 'created_at' %}selected{% endif %}>{% trans "Oldest First" %}</option>
+                    <option value="name" {% if current_sort == 'name' %}selected{% endif %}>{% trans "Name (A-Z)" %}</option>
+                    <option value="-name" {% if current_sort == '-name' %}selected{% endif %}>{% trans "Name (Z-A)" %}</option>
+                    <option value="price" {% if current_sort == 'price' %}selected{% endif %}>{% trans "Price (Low-High)" %}</option>
+                    <option value="-price" {% if current_sort == '-price' %}selected{% endif %}>{% trans "Price (High-Low)" %}</option>
+                    <option value="stock_quantity" {% if current_sort == 'stock_quantity' %}selected{% endif %}>{% trans "Stock (Low-High)" %}</option>
+                    <option value="-stock_quantity" {% if current_sort == '-stock_quantity' %}selected{% endif %}>{% trans "Stock (High-Low)" %}</option>
+                    <option value="-updated_at" {% if current_sort == '-updated_at' %}selected{% endif %}>{% trans "Recently Updated" %}</option>
+                </select>
+            </div>
+        </div>
+    </form>
+
+    <!-- Results Count -->
+    <div class="inventory-results-bar">
+        <span class="inventory-results__count">
+            {% blocktranslate count page_obj.paginator.count as total %}{{ total }} product{% plural %}{{ total }} products{% endblocktranslate %}
+            {% if page_obj.paginator.count != page_obj.object_list|length %}
+                ({% blocktranslate with count=page_obj.object_list|length %}showing {{ count }}{% endblocktranslate %})
+            {% endif %}
+        </span>
+    </div>
+
+    <!-- Products Table -->
+    <div class="inventory-table-wrapper">
+        <table class="inventory-table">
+            <thead>
+                <tr>
+                    <th>{% trans "Product" %}</th>
+                    <th>{% trans "SKU" %}</th>
+                    <th>{% trans "Category" %}</th>
+                    <th>{% trans "Price" %}</th>
+                    <th>{% trans "Stock" %}</th>
+                    <th>{% trans "Threshold" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in page_obj %}
+                <tr>
+                    <td>
+                        <div class="product-cell">
+                            {% if product.primary_image %}
+                                <img src="{{ product.primary_image.thumbnail.url }}" alt="" class="product-cell__image">
+                            {% else %}
+                                <div class="product-cell__placeholder">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                        <circle cx="9" cy="9" r="2"/>
+                                        <path d="M21 15l-5-5L5 21"/>
+                                    </svg>
+                                </div>
+                            {% endif %}
+                            <div class="product-cell__info">
+                                <span class="product-cell__name">{{ product.name }}</span>
+                                <span class="product-cell__category">{{ product.category.name|default:"—" }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td><code class="sku">{{ product.sku }}</code></td>
+                    <td>{{ product.category.name|default:"—" }}</td>
+                    <td>₦{{ product.price|floatformat:2|intcomma }}</td>
+                    <td>
+                        <span class="stock-badge stock-badge--{{ product.stock_status }}">
+                            {{ product.stock_quantity }}
+                        </span>
+                    </td>
+                    <td>{{ product.low_stock_threshold }}</td>
+                    <td>
+                        <span class="status status--{{ product.is_active|yesno:'confirmed,cancelled' }}">
+                            {{ product.is_active|yesno:_("Active,Inactive") }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="{% url 'inventory:product_edit' product.pk %}" class="icon-btn" aria-label="{% trans 'Edit product' %}" title="{% trans 'Edit' %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                            </a>
+                            <a href="{% url 'inventory:product_stock_update' product.pk %}" class="icon-btn" aria-label="{% trans 'Update stock' %}" title="{% trans 'Stock' %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                                </svg>
+                            </a>
+                            <a href="{% url 'inventory:product_delete' product.pk %}" class="icon-btn icon-btn--danger" aria-label="{% trans 'Delete product' %}" title="{% trans 'Delete' %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="inventory-table__empty">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                            <path d="M20 6 12 2 4 6v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6Z"/>
+                        </svg>
+                        <p>{% trans "No products found." %}</p>
+                        {% if search_query or current_category or current_stock_status or current_is_active %}
+                            <a href="{% url 'inventory:product_list' %}" class="btn btn--secondary">{% trans "Clear filters" %}</a>
+                        {% else %}
+                            <a href="{% url 'inventory:product_create' %}" class="btn btn--primary">{% trans "Add Product" %}</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="pagination" aria-label="{% trans 'Pagination' %}">
+        {% if page_obj.has_previous %}
+            <a href="?{% if request.GET %}{{ request.GET.urlencode }}{% endif %}{% if request.GET %}&{% endif %}page={{ page_obj.previous_page_number }}" class="page-link" rel="prev">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                <span class="u-hide-mobile">{% trans "Previous" %}</span>
+            </a>
+        {% else %}
+            <span class="page-link" disabled aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+            </span>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="page-link is-active" aria-current="page">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <a href="?{% if request.GET %}{{ request.GET.urlencode }}{% endif %}{% if request.GET %}&{% endif %}page={{ num }}" class="page-link">{{ num }}</a>
+            {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                <span class="page-link" aria-hidden="true">…</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a href="?{% if request.GET %}{{ request.GET.urlencode }}{% endif %}{% if request.GET %}&{% endif %}page={{ page_obj.next_page_number }}" class="page-link" rel="next">
+                <span class="u-hide-mobile">{% trans "Next" %}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </a>
+        {% else %}
+            <span class="page-link" disabled aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </span>
+        {% endif %}
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

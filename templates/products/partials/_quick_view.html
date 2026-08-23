@@ -1,10 +1,10 @@
 {% load static i18n humanize %}
 {# Quick view modal — loaded via HTMX into #quick-view-root #}
-<div class="modal" @keydown.escape.window="$el.remove()">
-    <div class="modal__backdrop" @click="$el.closest('.modal').remove()"></div>
+<div class="modal" x-data="{ closeModal() { this.$el.remove(); } }" @keydown.escape.window="closeModal()">
+    <div class="modal__backdrop" @click="closeModal()"></div>
 
     <div class="modal__panel quick-view" role="dialog" aria-modal="true" aria-label="{{ product.name }}">
-        <button type="button" class="modal__close" @click="$el.closest('.modal').remove()" aria-label="{% trans 'Close' %}">
+        <button type="button" class="modal__close" @click="closeModal()" aria-label="{% trans 'Close' %}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 20px;" aria-hidden="true"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
 
@@ -43,24 +43,24 @@
 
             <div class="pd-actions" style="margin-bottom: 0;">
                 {% if product.in_stock %}
-                    <div class="qty-stepper" x-data="{ qty: 1 }">
-                        <button type="button" class="qty-stepper__btn" @click="qty = Math.max(1, qty - 1)" :disabled="qty <= 1" aria-label="{% trans 'Decrease quantity' %}">−</button>
-                        <input type="number" class="qty-stepper__input" id="qv-qty" name="quantity" x-model.number="qty" min="1" max="{{ product.stock_quantity }}" aria-label="{% trans 'Quantity' %}">
-                        <button type="button" class="qty-stepper__btn" @click="qty = Math.min({{ product.stock_quantity }}, qty + 1)" :disabled="qty >= {{ product.stock_quantity }}" aria-label="{% trans 'Increase quantity' %}">+</button>
-                    </div>
-                    <button type="button"
-                            class="btn btn--primary"
-                            hx-post="{% url 'cart:add' product.id %}"
-                            hx-include="#qv-qty"
-                            hx-target="#cart-drawer"
-                            hx-swap="innerHTML"
-                            @click="$el.closest('.modal').remove()">
-                        {% trans "Add to Cart" %}
-                    </button>
+                    <form hx-post="{% url 'cart:add' product.id %}"
+                          hx-target="#cart-drawer"
+                          hx-swap="innerHTML"
+                          hx-on::after-request="event.detail.elt.closest('.modal').remove()"
+                          x-data="{ qty: 1 }">
+                        <div class="qty-stepper">
+                            <button type="button" class="qty-stepper__btn" @click="qty = Math.max(1, qty - 1)" :disabled="qty <= 1" aria-label="{% trans 'Decrease quantity' %}">−</button>
+                            <input type="number" class="qty-stepper__input" name="quantity" x-model.number="qty" min="1" max="{{ product.stock_quantity }}" aria-label="{% trans 'Quantity' %}" value="1">
+                            <button type="button" class="qty-stepper__btn" @click="qty = Math.min({{ product.stock_quantity }}, qty + 1)" :disabled="qty >= {{ product.stock_quantity }}" aria-label="{% trans 'Increase quantity' %}">+</button>
+                        </div>
+                        <button type="submit" class="btn btn--primary">
+                            {% trans "Add to Cart" %}
+                        </button>
+                    </form>
+                    <a href="{{ product.get_absolute_url }}" class="btn btn--ghost" @click="closeModal()">{% trans "Full Details" %} →</a>
                 {% else %}
                     <button type="button" class="btn btn--secondary" disabled>{% trans "Out of Stock" %}</button>
                 {% endif %}
-                <a href="{{ product.get_absolute_url }}" class="btn btn--ghost" @click="$el.closest('.modal').remove()">{% trans "Full Details" %} →</a>
             </div>
         </div>
     </div>

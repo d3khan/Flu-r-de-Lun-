@@ -151,6 +151,30 @@
                     {% if product.category %}<li><strong>{% trans "Category" %}:</strong> {{ product.category.name }}</li>{% endif %}
                     <li><strong>{% trans "Shipping" %}:</strong> ₦1,500 — {% trans "free over ₦50,000" %}</li>
                 </ul>
+
+                <!-- Next/Prev Product Navigation -->
+                {% if next_product or prev_product %}
+                <nav class="product-nav" aria-label="{% trans 'Product navigation' %}">
+                    {% if prev_product %}
+                        <a href="{{ prev_product.get_absolute_url }}?sort={{ request.GET.sort }}" class="product-nav__link product-nav__link--prev">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+                            <span>
+                                <small>{% trans "Previous" %}</small>
+                                {{ prev_product.name|truncatechars:30 }}
+                            </span>
+                        </a>
+                    {% endif %}
+                    {% if next_product %}
+                        <a href="{{ next_product.get_absolute_url }}?sort={{ request.GET.sort }}" class="product-nav__link product-nav__link--next">
+                            <span>
+                                <small>{% trans "Next" %}</small>
+                                {{ next_product.name|truncatechars:30 }}
+                            </span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+                        </a>
+                    {% endif %}
+                </nav>
+                {% endif %}
             </section>
         </div>
 

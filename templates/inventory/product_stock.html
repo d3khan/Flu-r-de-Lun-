@@ -1,0 +1,94 @@
+{% extends 'inventory/base.html' %}
+{% load static i18n %}
+
+{% block title %}{% trans "Update Stock" %}: {{ product.name }} — Inventory{% endblock %}
+
+{% block content %}
+<div class="inventory-stock-container">
+    <header class="inventory-stock-header">
+        <div>
+            <h1 class="inventory-stock-title">{% trans "Update Stock" %}</h1>
+            <p class="inventory-stock-subtitle">{{ product.name }}</p>
+        </div>
+        <a href="{% url 'inventory:product_list' %}" class="btn btn--secondary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            <span>{% trans "Back" %}</span>
+        </a>
+    </header>
+
+    <div class="inventory-stock-card">
+        {% if product.primary_image %}
+            <img src="{{ product.primary_image.medium.url }}" alt="{{ product.name }}" class="inventory-stock-card__image">
+        {% else %}
+            <div class="inventory-stock-card__placeholder">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="9" cy="9" r="2"/>
+                    <path d="M21 15l-5-5L5 21"/>
+                </svg>
+            </div>
+        {% endif %}
+
+        <div class="inventory-stock-card__info">
+            <h2 class="inventory-stock-card__name">{{ product.name }}</h2>
+            <p class="inventory-stock-card__sku"><code>{{ product.sku }}</code></p>
+
+            <div class="inventory-stock-current">
+                <div class="inventory-stock-current__item">
+                    <span class="inventory-stock-current__label">{% trans "Current Stock" %}</span>
+                    <span class="inventory-stock-current__value stock-badge stock-badge--{{ product.stock_status }}">{{ product.stock_quantity }}</span>
+                </div>
+                <div class="inventory-stock-current__item">
+                    <span class="inventory-stock-current__label">{% trans "Low Stock Threshold" %}</span>
+                    <span class="inventory-stock-current__value">{{ product.low_stock_threshold }}</span>
+                </div>
+                <div class="inventory-stock-current__item">
+                    <span class="inventory-stock-current__label">{% trans "Status" %}</span>
+                    <span class="inventory-stock-current__value">{{ product.stock_status_display }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" class="inventory-stock-form" {% if is_htmx %}hx-post="." hx-target="this" hx-swap="outerHTML"{% endif %}>
+        {% csrf_token %}
+
+        <div class="form-grid form-grid--2">
+            <div class="form-group">
+                {{ form.stock_quantity.label_tag }}
+                <div class="qty-stepper-wrapper">
+                    {{ form.stock_quantity }}
+                </div>
+                {% if form.stock_quantity.errors %}
+                    <ul class="form-errors">{% for error in form.stock_quantity.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.low_stock_threshold.label_tag }}
+                {{ form.low_stock_threshold }}
+                {% if form.low_stock_threshold.help_text %}
+                    <span class="form-help">{{ form.low_stock_threshold.help_text }}</span>
+                {% endif %}
+                {% if form.low_stock_threshold.errors %}
+                    <ul class="form-errors">{% for error in form.low_stock_threshold.errors %}<li>{{ error }}</li>{% endfor %}</ul>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="inventory-stock-form__actions">
+            <a href="{% url 'inventory:product_list' %}" class="btn btn--secondary">
+                {% trans "Cancel" %}
+            </a>
+            <button type="submit" class="btn btn--primary btn--lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>{% trans "Update Stock" %}</span>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
