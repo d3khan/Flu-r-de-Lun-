@@ -18,6 +18,45 @@ from apps.core.utils.imgbb import get_imgbb_service
 from .forms import ProductForm, ProductStockForm, CategoryForm, ProductImageForm
 
 
+# --- ImgBB helpers ---------------------------------------------------------
+
+def _create_product_image(product, uploaded_file, is_primary, sort_order, alt_text):
+    """Upload one image to ImgBB and store it (with metadata) for a product.
+
+    Returns the service result dict so callers can warn on failure.
+    """
+    result = get_imgbb_service().upload(uploaded_file)
+    if not result['success']:
+        return result
+    ProductImage.objects.create(
+        product=product,
+        image=uploaded_file,
+        is_primary=is_primary,
+        sort_order=sort_order,
+        alt_text=alt_text,
+        imgbb_delete_url=result.get('delete_url', ''),
+        imgbb_id=result.get('id', ''),
+        imgbb_display_url=result.get('display_url', ''),
+        imgbb_thumb_url=result.get('thumb_url', ''),
+        imgbb_medium_url=result.get('medium_url', ''),
+    )
+    return result
+
+
+def _remove_product_image(image_row):
+    """Delete a ProductImage row together with its remote ImgBB copy."""
+    if image_row.imgbb_delete_url:
+        get_imgbb_service().delete(image_row.imgbb_delete_url)
+    image_row.delete()
+
+
+def _warn_imgbb_failure(request, label, result):
+    messages.warning(request, _('Failed to upload %(label)s to ImgBB: %(error)s') % {
+        'label': label,
+        'error': result.get('error', 'Unknown error'),
+    })
+
+
 def inventory_login_required(view_func):
     """
     Decorator for session-based auth for inventory views.
@@ -208,48 +247,28 @@ def product_create(request):
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             product = form.save()
-            
-            imgbb_service = get_imgbb_service()
-            
-            # Handle primary image
+
+            # Primary image -> uploaded to ImgBB and stored as primary
             primary_image = request.FILES.get('primary_image')
             if primary_image:
-                result = imgbb_service.upload(primary_image)
-                if result['success']:
-                    ProductImage.objects.create(
-                        product=product,
-                        image=primary_image,
-                        is_primary=True,
-                        sort_order=0,
-                        alt_text=product.name,
-                        imgbb_delete_url=result.get('delete_url', ''),
-                        imgbb_id=result.get('id', ''),
-                        imgbb_display_url=result.get('display_url', ''),
-                        imgbb_thumb_url=result.get('thumb_url', ''),
-                        imgbb_medium_url=result.get('medium_url', ''),
-                    )
-                else:
-                    messages.warning(request, _('Failed to upload primary image to ImgBB: %(error)s') % {'error': result.get('error', 'Unknown error')})
-            
-            # Handle additional images
-            additional_images = request.FILES.getlist('additional_images')
-            for idx, image in enumerate(additional_images):
-                result = imgbb_service.upload(image)
-                if result['success']:
-                    ProductImage.objects.create(
-                        product=product,
-                        image=image,
-                        is_primary=False,
-                        sort_order=idx + 1,
-                        alt_text=f'{product.name} - Image {idx + 2}',
-                        imgbb_delete_url=result.get('delete_url', ''),
-                        imgbb_id=result.get('id', ''),
-                        imgbb_display_url=result.get('display_url', ''),
-                        imgbb_thumb_url=result.get('thumb_url', ''),
-                        imgbb_medium_url=result.get('medium_url', ''),
-                    )
-                else:
-                    messages.warning(request, _('Failed to upload image to ImgBB: %(error)s') % {'error': result.get('error', 'Unknown error')})
+                result = _create_product_image(product, primary_image, True, 0, product.name)
+                if not result['success']:
+                    _warn_imgbb_failure(request, _('primary image'), result)
+
+            # Additional images -> each uploaded to ImgBB
+            additional_files = form.cleaned_data.get('additional_images') or []
+            base_sort = product.images.count()
+            for idx, image in enumerate(additional_files):
+                sort_order = base_sort + idx
+                result = _create_product_image(
+                    product,
+                    image,
+                    False,
+                    sort_order,
+                    f'{product.name} - Image {sort_order + 1}',
+                )
+                if not result['success']:
+                    _warn_imgbb_failure(request, _('image'), result)
 
             messages.success(request, _('Product "%(name)s" created successfully.') % {'name': product.name})
             return redirect('inventory:product_list')
@@ -273,63 +292,39 @@ def product_edit(request, pk):
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             product = form.save()
-            
-            imgbb_service = get_imgbb_service()
-            
-            # Handle deletion of additional images marked for removal
-            for image in product.images.all():
-                delete_imgbb_key = f'delete_imgbb_{image.pk}'
-                if delete_imgbb_key in request.POST:
-                    # User checked "Also delete from ImgBB" checkbox
-                    if image.imgbb_delete_url:
-                        imgbb_service.delete(image.imgbb_delete_url)
-                    image.delete()
-            
-            # Handle primary image
+
+            # 1) Explicit removals of existing images (checkboxes in form)
+            for image in list(product.images.all()):
+                if f'delete_imgbb_{image.pk}' in request.POST:
+                    _remove_product_image(image)
+
+            # 2) Primary image:
+            #    - new file provided  -> delete the old one (ImgBB + row),
+            #      then upload the new one
+            #    - no file provided   -> keep the current image and its ImgBB id
             primary_image = request.FILES.get('primary_image')
             if primary_image:
-                # Delete old primary image from ImgBB if exists
-                old_primary = product.images.filter(is_primary=True).first()
-                if old_primary and old_primary.imgbb_delete_url:
-                    imgbb_service.delete(old_primary.imgbb_delete_url)
-                    old_primary.delete()
-                
-                result = imgbb_service.upload(primary_image)
-                if result['success']:
-                    ProductImage.objects.create(
-                        product=product,
-                        image=primary_image,
-                        is_primary=True,
-                        sort_order=0,
-                        alt_text=product.name,
-                        imgbb_delete_url=result.get('delete_url', ''),
-                        imgbb_id=result.get('id', ''),
-                        imgbb_display_url=result.get('display_url', ''),
-                        imgbb_thumb_url=result.get('thumb_url', ''),
-                        imgbb_medium_url=result.get('medium_url', ''),
-                    )
-                else:
-                    messages.warning(request, _('Failed to upload primary image to ImgBB: %(error)s') % {'error': result.get('error', 'Unknown error')})
-            
-            # Handle additional images
-            additional_images = request.FILES.getlist('additional_images')
-            for idx, image in enumerate(additional_images):
-                result = imgbb_service.upload(image)
-                if result['success']:
-                    ProductImage.objects.create(
-                        product=product,
-                        image=image,
-                        is_primary=False,
-                        sort_order=product.images.count() + idx,
-                        alt_text=f'{product.name} - Image {product.images.count() + idx + 1}',
-                        imgbb_delete_url=result.get('delete_url', ''),
-                        imgbb_id=result.get('id', ''),
-                        imgbb_display_url=result.get('display_url', ''),
-                        imgbb_thumb_url=result.get('thumb_url', ''),
-                        imgbb_medium_url=result.get('medium_url', ''),
-                    )
-                else:
-                    messages.warning(request, _('Failed to upload image to ImgBB: %(error)s') % {'error': result.get('error', 'Unknown error')})
+                old_primary = product.primary_image
+                if old_primary:
+                    _remove_product_image(old_primary)
+                result = _create_product_image(product, primary_image, True, 0, product.name)
+                if not result['success']:
+                    _warn_imgbb_failure(request, _('primary image'), result)
+
+            # 3) Additional images: appended; untouched ones keep their ImgBB ids
+            additional_files = form.cleaned_data.get('additional_images') or []
+            base_sort = product.images.count()
+            for idx, image in enumerate(additional_files):
+                sort_order = base_sort + idx
+                result = _create_product_image(
+                    product,
+                    image,
+                    False,
+                    sort_order,
+                    f'{product.name} - Image {sort_order + 1}',
+                )
+                if not result['success']:
+                    _warn_imgbb_failure(request, _('image'), result)
 
             messages.success(request, _('Product "%(name)s" updated successfully.') % {'name': product.name})
             return redirect('inventory:product_list')
@@ -352,6 +347,11 @@ def product_delete(request, pk):
 
     if request.method == 'POST':
         name = product.name
+        # Clean up every remote ImgBB copy grouped under this product first
+        imgbb_service = get_imgbb_service()
+        for image_row in product.images.all():
+            if image_row.imgbb_delete_url:
+                imgbb_service.delete(image_row.imgbb_delete_url)
         product.delete()
         messages.success(request, _('Product "%(name)s" deleted successfully.') % {'name': name})
         return redirect('inventory:product_list')
@@ -417,21 +417,7 @@ def category_create(request):
         form = CategoryForm(request.POST, request.FILES)
         if form.is_valid():
             category = form.save()
-            
-            # Handle category image upload to ImgBB
-            image = request.FILES.get('image')
-            if image:
-                imgbb_service = get_imgbb_service()
-                result = imgbb_service.upload(image)
-                if result['success']:
-                    # Update category with ImgBB metadata
-                    # Note: Category model doesn't have ImgBB fields yet, but we can store the URL
-                    # For now we just save the display_url to the image field
-                    # In the future we could add ImgBB fields to Category model
-                    pass
-                else:
-                    messages.warning(request, _('Failed to upload image to ImgBB: %(error)s') % {'error': result.get('error', 'Unknown error')})
-            
+
             messages.success(request, _('Category "%(name)s" created successfully.') % {'name': category.name})
             return redirect('inventory:category_list')
     else:
@@ -454,18 +440,7 @@ def category_edit(request, pk):
         form = CategoryForm(request.POST, request.FILES, instance=category)
         if form.is_valid():
             category = form.save()
-            
-            # Handle category image upload to ImgBB
-            image = request.FILES.get('image')
-            if image:
-                imgbb_service = get_imgbb_service()
-                result = imgbb_service.upload(image)
-                if result['success']:
-                    # Update category with ImgBB metadata
-                    pass
-                else:
-                    messages.warning(request, _('Failed to upload image to ImgBB: %(error)s') % {'error': result.get('error', 'Unknown error')})
-            
+
             messages.success(request, _('Category "%(name)s" updated successfully.') % {'name': category.name})
             return redirect('inventory:category_list')
     else:

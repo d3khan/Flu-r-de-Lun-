@@ -25,7 +25,7 @@
                  zoom: false,
                  images: [
                      {% for img in product.images.all %}
-                         { src: '{{ img.large.url }}', thumb: '{{ img.thumbnail.url }}', alt: '{{ img.alt_text|escapejs }}' }{% if not forloop.last %},{% endif %}
+                         { src: '{{ img.large_url }}', thumb: '{{ img.thumbnail_url }}', alt: '{{ img.alt_text|escapejs }}' }{% if not forloop.last %},{% endif %}
                      {% endfor %}
                  ]
              }">
@@ -35,8 +35,8 @@
                 {% with image=product.primary_image %}
                     <div class="pd-main-image" @click="images.length && (zoom = true)">
                         {% if image %}
-                            <img :src="images[active]?.src || '{{ image.large.url }}'"
-                                 src="{{ image.large.url }}"
+                            <img :src="images[active]?.src || '{{ image.large_url }}'"
+                                 src="{{ image.large_url }}"
                                  alt="{{ image.alt_text|default:product.name }}"
                                  id="pd-main-img" width="1200" height="1200">
                         {% else %}
@@ -56,7 +56,7 @@
                                     @click="active = {{ forloop.counter0 }}"
                                     role="tab"
                                     aria-label="{% trans 'View image' %} {{ forloop.counter }}">
-                                <img src="{{ img.thumbnail.url }}" alt="{{ img.alt_text|default:product.name }}" loading="lazy">
+                                <img src="{{ img.thumbnail_url }}" alt="{{ img.alt_text|default:product.name }}" loading="lazy">
                             </button>
                         {% endfor %}
                     </div>

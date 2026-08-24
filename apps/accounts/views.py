@@ -195,7 +195,7 @@ def address_set_default(request, pk):
 
 def password_reset_under_development(request):
     """Temporary page for password reset under development."""
-    from django.conf import settings
-    return render(request, 'accounts/password_reset_under_development.html', {
-        'site_settings': getattr(settings, 'SITE_SETTINGS', None)
-    })
+    # site_settings comes from the context processor; passing an explicit
+    # value here (e.g. None) would override it and blank the contact
+    # email in this template and the shared footer.
+    return render(request, 'accounts/password_reset_under_development.html')

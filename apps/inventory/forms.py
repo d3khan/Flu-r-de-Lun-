@@ -20,6 +20,28 @@ class StyledFieldsMixin:
                 field.widget.attrs['class'] = f'{existing} form-control'.strip()
 
 
+class MultipleFileInput(forms.FileInput):
+    """FileInput that allows selecting several files at once."""
+
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    """FileField that validates each of several uploaded files."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput)
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        if isinstance(data, (list, tuple)):
+            result = [single_file_clean(d, initial) for d in data]
+        else:
+            result = [single_file_clean(data, initial)]
+        return result
+
+
 class ProductForm(StyledFieldsMixin, forms.ModelForm):
     """Form for creating/editing products."""
 
@@ -34,11 +56,12 @@ class ProductForm(StyledFieldsMixin, forms.ModelForm):
         help_text=_('Main product image (will be marked as primary)')
     )
 
-    # Additional fields for multiple images (handled in view via request.FILES.getlist)
-    additional_images = forms.FileField(
+    # Extra field for multiple additional images (validated here, uploaded
+    # to ImgBB by the inventory views)
+    additional_images = MultipleFileField(
         label=_('Additional Images'),
         required=False,
-        widget=forms.FileInput(attrs={
+        widget=MultipleFileInput(attrs={
             'class': 'form-control',
             'accept': 'image/*',
         }),
@@ -101,30 +124,11 @@ class ProductForm(StyledFieldsMixin, forms.ModelForm):
                 raise ValidationError(_('Unsupported image format. Use JPEG, PNG, WebP, or GIF.'))
         return image
 
-    def clean_additional_images(self):
-        """Validate additional images."""
-        # Note: This field handles multiple files via widget, but Django only gives us one
-        # We'll handle multiple files in the view
-        return None
-
     def save(self, commit=True):
-        product = super().save(commit=False)
-        if commit:
-            product.save()
-            # Handle primary image upload
-            primary_image = self.cleaned_data.get('primary_image')
-            if primary_image:
-                # Remove existing primary image
-                ProductImage.objects.filter(product=product, is_primary=True).update(is_primary=False)
-                # Create new primary image
-                ProductImage.objects.create(
-                    product=product,
-                    image=primary_image,
-                    is_primary=True,
-                    sort_order=0,
-                    alt_text=product.name
-                )
-        return product
+        # NOTE: image handling (primary/additional, ImgBB upload/replace)
+        # lives entirely in the inventory views so that ImgBB metadata is
+        # stored consistently and old images are cleaned up on replace.
+        return super().save(commit)
 
 
 class ProductStockForm(StyledFieldsMixin, forms.ModelForm):

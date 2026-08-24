@@ -57,12 +57,14 @@
     <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous" defer></script>
 
     <!-- App components (registers Alpine data) must load before Alpine.js -->
+    <script src="{% static 'js/alpine-init.js' %}" defer></script>
     <script src="{% static 'js/main.js' %}" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 
     {% block extra_head %}{% endblock %}
 </head>
 <body x-data="app"
+      data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"
       x-effect="document.body.classList.toggle('scroll-lock', mobileMenuOpen || cartDrawerOpen)"
       hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 

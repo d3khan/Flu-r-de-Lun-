@@ -218,7 +218,7 @@
                     <div class="image-upload-wrapper">
                         <div class="image-preview" id="primaryImagePreview">
                             {% if product and product.primary_image %}
-                                <img src="{{ product.primary_image.medium.url }}" alt="{{ product.name }}">
+                                <img src="{{ product.primary_image.medium_url }}" alt="{{ product.name }}">
                             {% else %}
                                 <div class="image-preview__placeholder">
                                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
@@ -247,7 +247,7 @@
                             {% if product %}
                                 {% for image in product.images.all|slice:"1:" %}
                                     <div class="additional-image-item">
-                                        <img src="{{ image.thumbnail.url }}" alt="{{ image.alt_text }}">
+                                        <img src="{{ image.thumbnail_url }}" alt="{{ image.alt_text }}">
                                         <div class="additional-image-actions">
                                             <button type="button" class="additional-image-item__remove" data-image-id="{{ image.pk }}" aria-label="{% trans 'Remove image' %}">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

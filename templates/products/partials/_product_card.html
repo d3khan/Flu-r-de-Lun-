@@ -36,7 +36,7 @@
         <a href="{{ product.get_absolute_url }}" aria-label="{{ product.name }}">
             {% with image=product.primary_image %}
                 {% if image %}
-                    <img src="{{ image.thumbnail.url }}"
+                    <img src="{{ image.thumbnail_url }}"
                          alt="{{ image.alt_text|default:product.name }}"
                          loading="lazy" width="400" height="400">
                 {% else %}

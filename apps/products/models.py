@@ -158,6 +158,24 @@ class ProductImage(models.Model):
     def __str__(self):
         return f'{self.product.name} - Image {self.sort_order}'
 
+    # --- Image URL helpers -------------------------------------------------
+    # Prefer the ImgBB-hosted copies (survive ephemeral production
+    # filesystems); fall back to the local media copy (useful in dev).
+    @property
+    def thumbnail_url(self):
+        """Small image URL (cards, cart rows, inventory tables)."""
+        return self.imgbb_thumb_url or self.imgbb_medium_url or self.large_url
+
+    @property
+    def medium_url(self):
+        """Medium image URL (quick view, inventory previews)."""
+        return self.imgbb_medium_url or self.large_url
+
+    @property
+    def large_url(self):
+        """Full-size image URL (product detail gallery)."""
+        return self.imgbb_display_url or (self.image.url if self.image else '')
+
     def save(self, *args, **kwargs):
         # Ensure only one primary image per product
         if self.is_primary:

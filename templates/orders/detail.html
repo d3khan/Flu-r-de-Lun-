@@ -34,7 +34,7 @@
                     <div class="cart-page-item" style="grid-template-columns: 72px 1fr; padding-block: var(--space-3); border-color: var(--color-beige-200);">
                         <div class="cart-item__media" style="width: 72px; height: 84px;">
                             {% if item.product and item.product.primary_image %}
-                                <img src="{{ item.product.primary_image.thumbnail.url }}" alt="{{ item.product_name }}" loading="lazy">
+                                <img src="{{ item.product.primary_image.thumbnail_url }}" alt="{{ item.product_name }}" loading="lazy">
                             {% endif %}
                         </div>
                         <div class="cart-item__info">

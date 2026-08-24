@@ -20,7 +20,7 @@
 
     <div class="inventory-stock-card">
         {% if product.primary_image %}
-            <img src="{{ product.primary_image.medium.url }}" alt="{{ product.name }}" class="inventory-stock-card__image">
+            <img src="{{ product.primary_image.medium_url }}" alt="{{ product.name }}" class="inventory-stock-card__image">
         {% else %}
             <div class="inventory-stock-card__placeholder">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">

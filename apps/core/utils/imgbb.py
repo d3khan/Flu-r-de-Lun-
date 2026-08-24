@@ -34,6 +34,12 @@ class ImgBBService:
         try:
             # Read file and encode to base64
             file_content = file.read()
+            # Rewind so later consumers (e.g. saving a local copy) can
+            # read the file content again.
+            try:
+                file.seek(0)
+            except (AttributeError, OSError):
+                pass
             image_base64 = base64.b64encode(file_content).decode('utf-8')
             
             payload = {

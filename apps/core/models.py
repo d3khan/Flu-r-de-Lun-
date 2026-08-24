@@ -3,6 +3,11 @@ from django.utils.translation import gettext_lazy as _
 import os
 
 
+def default_contact_email():
+    """Contact email from environment (.env is the source of truth)."""
+    return os.environ.get('CONTACT_EMAIL', '')
+
+
 class SiteSettings(models.Model):
     """Singleton model for site-wide settings."""
     site_name = models.CharField(_('Site Name'), max_length=100, default='Fluér de Luné')
@@ -11,7 +16,7 @@ class SiteSettings(models.Model):
     favicon = models.ImageField(_('Favicon'), upload_to='site/', blank=True)
     
     # Contact info
-    email = models.EmailField(_('Contact Email'), default=os.environ.get('CONTACT_EMAIL', 'hello@fleurdelune.com'))
+    email = models.EmailField(_('Contact Email'), default=default_contact_email)
     phone = models.CharField(_('Phone'), max_length=20, blank=True)
     address = models.TextField(_('Address'), blank=True)
     
@@ -51,6 +56,13 @@ class SiteSettings(models.Model):
     def get_settings(cls):
         """Get or create the singleton instance."""
         obj, created = cls.objects.get_or_create(pk=1)
+        # The .env CONTACT_EMAIL is the source of truth for the main-site
+        # contact email; keep the stored row in sync so it is shown
+        # consistently on every page (footer, contact page, etc.).
+        env_email = os.environ.get('CONTACT_EMAIL', '').strip()
+        if env_email and obj.email != env_email:
+            obj.email = env_email
+            obj.save(update_fields=['email'])
         return obj
 
 

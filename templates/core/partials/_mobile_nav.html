@@ -22,12 +22,11 @@
     </ul>
 
     <ul class="mobile-nav__list mobile-nav__list--secondary">
+        <li><a href="{% url 'cart:detail' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Shopping Cart" %}</a></li>
+        <li><a href="{% url 'wishlist:detail' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Wishlist" %}</a></li>
         {% if user.is_authenticated %}
             <li><a href="{% url 'accounts:profile' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "My Account" %}</a></li>
             <li><a href="{% url 'orders:history' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Order History" %}</a></li>
-            <li><a href="{% url 'wishlist:detail' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">
-                {% trans "Wishlist" %}{% if wishlist_count %} ({{ wishlist_count }}){% endif %}
-            </a></li>
             <li>
                 <form method="post" action="{% url 'accounts:logout' %}">
                     {% csrf_token %}
