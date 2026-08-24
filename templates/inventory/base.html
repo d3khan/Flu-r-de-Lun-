@@ -64,16 +64,6 @@
                     </a>
                 </div>
 
-                <!-- Mobile menu button -->
-                <button type="button"
-                        class="icon-btn u-hide-desktop inventory-mobile-menu-btn"
-                        @click="mobileMenuOpen = true"
-                        aria-controls="inventory-mobile-nav"
-                        :aria-expanded="mobileMenuOpen.toString()"
-                        aria-label="{% trans 'Open menu' %}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-
                 <nav class="inventory-nav u-hide-mobile" aria-label="Inventory navigation">
                     <a href="{% url 'inventory:dashboard' %}" class="inventory-nav__link {% if request.resolver_match.url_name == 'dashboard' %}is-active{% endif %}">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -132,6 +122,17 @@
                         </button>
                     </form>
                 </div>
+
+                <!-- Mobile menu button: markup placed last so flex
+                     space-between keeps it on the rightmost edge -->
+                <button type="button"
+                        class="icon-btn u-hide-desktop inventory-mobile-menu-btn"
+                        @click="mobileMenuOpen = true"
+                        aria-controls="inventory-mobile-nav"
+                        :aria-expanded="mobileMenuOpen.toString()"
+                        aria-label="{% trans 'Open menu' %}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
             </div>
         </div>
     </header>

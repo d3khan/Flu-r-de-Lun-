@@ -1644,16 +1644,14 @@
     display: none !important;
   }
 
-  .inventory-header__actions .btn span.u-hide-mobile {
-    display: none;
+  /* Header keeps brand + hamburger only; View Site / Django Admin /
+     Logout are available in the mobile drawer instead. */
+  .inventory-header__actions {
+    display: none !important;
   }
 
-  .inventory-header__actions .btn {
-    padding: var(--space-2);
-  }
-
-  .inventory-header__actions .btn svg {
-    margin: 0;
+  .inventory-mobile-menu-btn {
+    margin-left: auto;
   }
 }
 
