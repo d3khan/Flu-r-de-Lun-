@@ -268,3 +268,6 @@ __marimo__/
 
 # Personal git reference notes (never commit)
 git_commands.md
+
+# Local agent skills
+.agents/

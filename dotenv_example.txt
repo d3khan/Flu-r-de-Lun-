@@ -48,3 +48,6 @@ DJANGO_SUPERUSER_PASSWORD=change-me
 # Optional: set USE_REDIS=true on Render to store cache/sessions in Redis.
 # Leave unset to use in-memory cache + database sessions (recommended, free).
 # USE_REDIS=true
+# Optional superuser display name
+DJANGO_SUPERUSER_FIRST_NAME=Your
+DJANGO_SUPERUSER_LAST_NAME=Name
