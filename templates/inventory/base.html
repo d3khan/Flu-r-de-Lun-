@@ -215,9 +215,32 @@
                 </a>
             </nav>
             <div class="mobile-nav__list--secondary">
+                <a href="{% url 'core:home' %}"
+                   class="mobile-nav__link"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   @click="mobileMenuOpen = false">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        <polyline points="15 3 21 3 21 9"/>
+                        <line x1="10" y1="14" x2="21" y2="3"/>
+                    </svg>
+                    <span>{% trans "View Site" %}</span>
+                </a>
+                <a href="/admin/"
+                   class="mobile-nav__link"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   @click="mobileMenuOpen = false">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <rect x="2" y="3" width="20" height="14" rx="2"/>
+                        <path d="M8 17h8M12 11v6"/>
+                    </svg>
+                    <span>{% trans "Django Admin" %}</span>
+                </a>
                 <a href="{% url 'inventory:logout' %}"
                    class="mobile-nav__link"
-                   @click.prevent="mobileMenuOpen = false">
+                   @click="mobileMenuOpen = false">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                         <polyline points="16 17 21 12 16 7"/>
