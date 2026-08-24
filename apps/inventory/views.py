@@ -22,15 +22,19 @@ from .forms import ProductForm, ProductStockForm, CategoryForm, ProductImageForm
 # --- ImgBB helpers ---------------------------------------------------------
 
 def _imgbb_field_map(result):
-    """Map an ImgBBService.upload() result to this project's field names."""
-    return dict(
-        imgbb_delete_url=result.get('delete_url', ''),
-        imgbb_id=result.get('id', ''),
-        imgbb_url=result.get('url', ''),
-        imgbb_display_url=result.get('display_url', ''),
-        imgbb_thumb_url=result.get('thumb_url', ''),
-        imgbb_medium_url=result.get('medium_url', ''),
-    )
+    """Map an ImgBBService.upload() result to this project's field names.
+
+    Values are coerced to '' (never None) because the ImgBB URL columns are
+    NOT NULL at the database level.
+    """
+    return {key: value or '' for key, value in dict(
+        imgbb_delete_url=result.get('delete_url'),
+        imgbb_id=result.get('id'),
+        imgbb_url=result.get('url'),
+        imgbb_display_url=result.get('display_url'),
+        imgbb_thumb_url=result.get('thumb_url'),
+        imgbb_medium_url=result.get('medium_url'),
+    ).items()}
 
 
 def _create_product_image(product, uploaded_file, is_primary, sort_order, alt_text):

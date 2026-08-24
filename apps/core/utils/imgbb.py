@@ -92,14 +92,17 @@ class ImgBBService:
                 data = result.get('data') or {}
                 thumb = data.get('thumb') or {}
                 medium = data.get('medium') or {}
+                # ImgBB omits thumb/medium for formats it does not resize
+                # (e.g. GIFs) and can return nulls - coerce everything to ''
+                # so NOT NULL database columns are never fed None.
                 return {
                     'success': True,
-                    'url': data.get('url'),
-                    'display_url': data.get('display_url'),
-                    'thumb_url': thumb.get('url'),
-                    'medium_url': medium.get('url'),
-                    'delete_url': data.get('delete_url'),
-                    'id': data.get('id'),
+                    'url': data.get('url') or '',
+                    'display_url': data.get('display_url') or '',
+                    'thumb_url': thumb.get('url') or '',
+                    'medium_url': medium.get('url') or '',
+                    'delete_url': data.get('delete_url') or '',
+                    'id': data.get('id') or '',
                 }
 
             error = result.get('error')
