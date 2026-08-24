@@ -60,35 +60,29 @@ PASSWORD_RESET_TIMEOUT = 600
 # Email timeout to prevent hanging
 EMAIL_TIMEOUT = 30
 
-# Cache with Redis
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/1'),
+# Cache: LocMemCache by default (safe for the free plan). Set USE_REDIS=true
+# in the environment to opt in to the shared Redis instance instead.
+USE_REDIS = os.environ.get('USE_REDIS', '').lower() in ('true', '1', 'yes')
+REDIS_LOCATION = os.environ.get('REDIS_URL')
+
+if USE_REDIS and REDIS_LOCATION:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': REDIS_LOCATION,
+        }
     }
-}
-
-# Session cache
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
-
-# Celery
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://127.0.0.1:6379/0')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://127.0.0.1:6379/0')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = TIME_ZONE
-
-# Channels
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379/2')],
-        },
-    },
-}
+    # Cache-backed sessions are only safe when every worker shares one Redis.
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+    SESSION_CACHE_ALIAS = 'default'
+else:
+    # Per-worker local memory cache; sessions live in the (Postgres) database
+    # so they survive worker restarts without any extra infrastructure.
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
 
 # Logging
 LOGGING = {

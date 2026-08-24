@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class Category(models.Model):
-    """Product category."""
+    """Product category. Images are hosted on ImgBB; the DB only keeps URLs."""
     name = models.CharField(_('Name'), max_length=100)
     slug = models.SlugField(_('Slug'), unique=True)
     description = models.TextField(_('Description'), blank=True)
@@ -14,6 +14,15 @@ class Category(models.Model):
     sort_order = models.PositiveIntegerField(_('Sort Order'), default=0)
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
+
+    # ImgBB metadata (the remote copy is the single source of truth in prod;
+    # the optional local file field above is legacy/development fallback).
+    imgbb_delete_url = models.URLField(_('ImgBB Delete URL'), blank=True)
+    imgbb_id = models.CharField(_('ImgBB Image ID'), max_length=50, blank=True)
+    imgbb_url = models.URLField(_('ImgBB Original URL'), blank=True)
+    imgbb_display_url = models.URLField(_('ImgBB Display URL'), blank=True)
+    imgbb_thumb_url = models.URLField(_('ImgBB Thumbnail URL'), blank=True)
+    imgbb_medium_url = models.URLField(_('ImgBB Medium URL'), blank=True)
 
     class Meta:
         verbose_name = _('Category')
@@ -28,8 +37,32 @@ class Category(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = self._generate_unique_slug(slugify(self.name))
         super().save(*args, **kwargs)
+
+    def _generate_unique_slug(self, base):
+        slug = base or 'category'
+        qs = Category.objects.exclude(pk=self.pk) if self.pk else Category.objects.all()
+        candidate = slug
+        suffix = 2
+        while qs.filter(slug=candidate).exists():
+            candidate = f'{slug}-{suffix}'
+            suffix += 1
+        return candidate
+
+    # --- Image URL helpers (ImgBB first, legacy local file as fallback) ---
+    @property
+    def image_url(self):
+        """Full-size image URL for category cards/banners."""
+        return self.imgbb_url or self.imgbb_display_url or (self.image.url if self.image else '')
+
+    @property
+    def thumbnail_url(self):
+        return self.imgbb_thumb_url or self.imgbb_medium_url or self.image_url
+
+    @property
+    def medium_url(self):
+        return self.imgbb_medium_url or self.image_url
 
 
 class Product(models.Model):
@@ -83,11 +116,34 @@ class Product(models.Model):
         return reverse('products:detail', kwargs={'slug': self.slug})
 
     def save(self, *args, **kwargs):
+        # Generate only when blank so user-supplied values are respected;
+        # generated values are made unique so saving never crashes with an
+        # IntegrityError when another product shares the same name.
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = self._generate_unique_slug(slugify(self.name))
         if not self.sku:
-            self.sku = f'FDL-{self.id or "NEW"}-{slugify(self.name)[:10].upper()}'
+            self.sku = self._generate_unique_sku()
         super().save(*args, **kwargs)
+
+    def _generate_unique_slug(self, base):
+        slug = base or 'product'
+        qs = Product.objects.exclude(pk=self.pk) if self.pk else Product.objects.all()
+        candidate = slug
+        suffix = 2
+        while qs.filter(slug=candidate).exists():
+            candidate = f'{slug}-{suffix}'
+            suffix += 1
+        return candidate
+
+    def _generate_unique_sku(self):
+        base = f'FDL-{self.id or "NEW"}-{slugify(self.name)[:10].upper()}'
+        qs = Product.objects.exclude(pk=self.pk) if self.pk else Product.objects.all()
+        candidate = base
+        suffix = 2
+        while qs.filter(sku=candidate).exists():
+            candidate = f'{base}-{suffix}'
+            suffix += 1
+        return candidate
 
     @property
     def in_stock(self):
@@ -130,22 +186,24 @@ class Product(models.Model):
 
 
 class ProductImage(models.Model):
-    """Product images stored on ImgBB."""
+    """Product images stored on ImgBB (DB keeps only the remote URLs)."""
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
         related_name='images',
         verbose_name=_('Product')
     )
-    image = models.ImageField(_('Image'), upload_to='products/')
+    # Legacy/local fallback only — production never writes to disk.
+    image = models.ImageField(_('Image'), upload_to='products/', blank=True)
     alt_text = models.CharField(_('Alt Text'), max_length=200, blank=True)
     is_primary = models.BooleanField(_('Primary'), default=False)
     sort_order = models.PositiveIntegerField(_('Sort Order'), default=0)
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
-    
+
     # ImgBB metadata
     imgbb_delete_url = models.URLField(_('ImgBB Delete URL'), blank=True)
     imgbb_id = models.CharField(_('ImgBB Image ID'), max_length=50, blank=True)
+    imgbb_url = models.URLField(_('ImgBB Original URL'), blank=True)
     imgbb_display_url = models.URLField(_('ImgBB Display URL'), blank=True)
     imgbb_thumb_url = models.URLField(_('ImgBB Thumbnail URL'), blank=True)
     imgbb_medium_url = models.URLField(_('ImgBB Medium URL'), blank=True)
@@ -173,8 +231,8 @@ class ProductImage(models.Model):
 
     @property
     def large_url(self):
-        """Full-size image URL (product detail gallery)."""
-        return self.imgbb_display_url or (self.image.url if self.image else '')
+        """Full-size image URL (product detail gallery / zoom)."""
+        return self.imgbb_url or self.imgbb_display_url or (self.image.url if self.image else '')
 
     def save(self, *args, **kwargs):
         # Ensure only one primary image per product

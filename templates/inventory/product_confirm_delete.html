@@ -70,11 +70,24 @@
             <line x1="12" y1="9" x2="12" y2="13"/>
             <line x1="12" y1="17" x2="12.01" y2="17"/>
         </svg>
-        <p>{% trans "This will permanently delete the product, all its images, and any associated data. This cannot be undone." %}</p>
+        <p>{% trans "This will permanently delete the product and any associated data. This cannot be undone." %}</p>
     </div>
 
     <form method="POST" class="inventory-delete-form">
         {% csrf_token %}
+
+        <!-- ImgBB cleanup switch (on by default) -->
+        <div class="form-section inventory-delete-images-option">
+            <label class="form-check form-check--switch">
+                <input type="checkbox" name="delete_images" checked>
+                <span class="form-check__switch"></span>
+                <span class="form-check__label">{% trans "Also permanently delete all images from ImgBB" %} ({{ product.images.count }})</span>
+            </label>
+            <p class="form-help">
+                {% trans "On: removes every image of this product from ImgBB. Off: leaves them hosted but forgets them here — re-uploading the same picture later creates a fresh copy with no conflicts." %}
+            </p>
+        </div>
+
         <div class="inventory-delete-actions">
             <a href="{% url 'inventory:product_list' %}" class="btn btn--secondary btn--lg">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">

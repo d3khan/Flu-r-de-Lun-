@@ -1,104 +1,127 @@
 """
 ImgBB service for image upload and deletion.
+
+API v1 reference (https://api.imgbb.com/):
+- POST multipart/form-data with `image` as a binary file is the recommended
+  way to upload local files.
+- The response exposes: id, url (original), display_url, thumb.url,
+  medium.url and delete_url.
+
+Nothing is ever stored on the local filesystem — callers persist only the
+URLs returned here.
 """
-import base64
+import logging
+
 import requests
 from django.conf import settings
-from django.core.files.uploadedfile import UploadedFile
+
+logger = logging.getLogger(__name__)
 
 
 class ImgBBService:
-    """Service for uploading and deleting images via ImgBB API."""
-    
+    """Service for uploading and deleting images via the ImgBB API."""
+
     UPLOAD_URL = "https://api.imgbb.com/1/upload"
-    
+    TIMEOUT = 60  # generous: free-tier egress can be slow
+
     def __init__(self, api_key=None):
         self.api_key = api_key or getattr(settings, 'IMGBB_API_KEY', None)
-    
-    def upload(self, file: UploadedFile) -> dict:
+
+    def upload(self, file, name=None) -> dict:
         """
-        Upload an image file to ImgBB.
-        
+        Upload an image file to ImgBB via multipart/form-data.
+
         Args:
-            file: Django UploadedFile object
-            
+            file: A Django UploadedFile (or any file-like object).
+            name: Optional friendly filename/title sent to ImgBB; falls back
+                  to the uploaded file's own name.
+
         Returns:
-            dict with keys: success, display_url, delete_url, error (if failed)
+            dict with keys:
+                success (bool)
+                url         - original full-size image URL
+                display_url - resized display copy
+                thumb_url   - small thumbnail
+                medium_url  - medium resize
+                delete_url  - URL that removes the image from ImgBB
+                id          - ImgBB image id
+                error       - failure reason (when success is False)
         """
         if not self.api_key:
-            return {
-                'success': False,
-                'error': 'IMGBB_API_KEY not configured'
-            }
-        
+            logger.error("ImgBB upload skipped: IMGBB_API_KEY is not configured.")
+            return {'success': False, 'error': 'IMGBB_API_KEY not configured'}
+
         try:
-            # Read file and encode to base64
-            file_content = file.read()
-            # Rewind so later consumers (e.g. saving a local copy) can
-            # read the file content again.
+            # Read the whole payload once so it can be sent as binary
+            # multipart data (recommended over base64/urlencoded bodies).
+            content = file.read()
             try:
                 file.seek(0)
-            except (AttributeError, OSError):
+            except (AttributeError, OSError, ValueError):
                 pass
-            image_base64 = base64.b64encode(file_content).decode('utf-8')
-            
-            payload = {
-                'key': self.api_key,
-                'image': image_base64,
-            }
-            
-            response = requests.post(self.UPLOAD_URL, data=payload, timeout=30)
+
+            filename = name or getattr(file, 'name', None) or 'upload.jpg'
+            content_type = getattr(file, 'content_type', '') or 'application/octet-stream'
+
+            response = requests.post(
+                self.UPLOAD_URL,
+                params={'key': self.api_key},
+                files={'image': (filename, content, content_type)},
+                timeout=self.TIMEOUT,
+            )
+            if response.status_code != 200:
+                logger.warning(
+                    "ImgBB upload failed with HTTP %s for %r: %s",
+                    response.status_code, filename, response.text[:300],
+                )
             response.raise_for_status()
-            
+
             result = response.json()
-            
+
             if result.get('success'):
-                data = result['data']
+                data = result.get('data') or {}
+                thumb = data.get('thumb') or {}
+                medium = data.get('medium') or {}
                 return {
                     'success': True,
+                    'url': data.get('url'),
                     'display_url': data.get('display_url'),
+                    'thumb_url': thumb.get('url'),
+                    'medium_url': medium.get('url'),
                     'delete_url': data.get('delete_url'),
-                    'thumb_url': data.get('thumb', {}).get('url'),
-                    'medium_url': data.get('medium', {}).get('url'),
                     'id': data.get('id'),
                 }
-            else:
-                return {
-                    'success': False,
-                    'error': result.get('error', {}).get('message', 'Unknown ImgBB error')
-                }
-                
+
+            error = result.get('error')
+            message = error.get('message') if isinstance(error, dict) else (error or 'Unknown ImgBB error')
+            logger.warning("ImgBB rejected upload for %r: %s", filename, message)
+            return {'success': False, 'error': message}
+
         except requests.exceptions.RequestException as e:
-            return {
-                'success': False,
-                'error': f'Network error: {str(e)}'
-            }
+            logger.exception("ImgBB upload network error")
+            return {'success': False, 'error': f'Network error: {e}'}
         except Exception as e:
-            return {
-                'success': False,
-                'error': f'Upload failed: {str(e)}'
-            }
-    
+            logger.exception("ImgBB upload unexpectedly failed")
+            return {'success': False, 'error': f'Upload failed: {e}'}
+
     def delete(self, delete_url: str) -> bool:
         """
-        Delete an image from ImgBB using the delete URL.
-        
-        Args:
-            delete_url: The delete URL returned from upload
-            
-        Returns:
-            bool: True if successful, False otherwise
+        Delete an image from ImgBB using its delete URL.
+
+        Returns True when the remote copy was removed (or nothing to do).
         """
         if not delete_url:
             return False
-            
+
         try:
-            response = requests.get(delete_url, timeout=10)
+            response = requests.get(delete_url, timeout=15)
             response.raise_for_status()
             return True
         except requests.exceptions.RequestException:
+            logger.exception("ImgBB deletion failed for %s", delete_url)
             return False
         except Exception:
+            logger.exception("Unexpected error deleting ImgBB image %s", delete_url)
             return False
 
 

@@ -20,25 +20,33 @@ from .forms import ProductForm, ProductStockForm, CategoryForm, ProductImageForm
 
 # --- ImgBB helpers ---------------------------------------------------------
 
+def _imgbb_field_map(result):
+    """Map an ImgBBService.upload() result to this project's field names."""
+    return dict(
+        imgbb_delete_url=result.get('delete_url', ''),
+        imgbb_id=result.get('id', ''),
+        imgbb_url=result.get('url', ''),
+        imgbb_display_url=result.get('display_url', ''),
+        imgbb_thumb_url=result.get('thumb_url', ''),
+        imgbb_medium_url=result.get('medium_url', ''),
+    )
+
+
 def _create_product_image(product, uploaded_file, is_primary, sort_order, alt_text):
-    """Upload one image to ImgBB and store it (with metadata) for a product.
+    """Upload one image to ImgBB and store only its URLs for a product.
 
     Returns the service result dict so callers can warn on failure.
+    Nothing is written to the local filesystem.
     """
-    result = get_imgbb_service().upload(uploaded_file)
+    result = get_imgbb_service().upload(uploaded_file, name=alt_text)
     if not result['success']:
         return result
     ProductImage.objects.create(
         product=product,
-        image=uploaded_file,
         is_primary=is_primary,
         sort_order=sort_order,
         alt_text=alt_text,
-        imgbb_delete_url=result.get('delete_url', ''),
-        imgbb_id=result.get('id', ''),
-        imgbb_display_url=result.get('display_url', ''),
-        imgbb_thumb_url=result.get('thumb_url', ''),
-        imgbb_medium_url=result.get('medium_url', ''),
+        **_imgbb_field_map(result),
     )
     return result
 
@@ -48,6 +56,24 @@ def _remove_product_image(image_row):
     if image_row.imgbb_delete_url:
         get_imgbb_service().delete(image_row.imgbb_delete_url)
     image_row.delete()
+
+
+def _apply_imgbb_to_category(category, result):
+    """Persist an ImgBB upload result onto a Category instance."""
+    for field, value in _imgbb_field_map(result).items():
+        setattr(category, field, value)
+    category.save(update_fields=list(_imgbb_field_map(result).keys()))
+
+
+def _remove_category_image(category, delete_remote=True):
+    """Delete a category's remote ImgBB copy (optionally just sever ties)."""
+    if delete_remote and category.imgbb_delete_url:
+        get_imgbb_service().delete(category.imgbb_delete_url)
+    for field in _imgbb_field_map({'delete_url': '', 'id': '', 'url': '',
+                                   'display_url': '', 'thumb_url': '', 'medium_url': ''}):
+        setattr(category, field, '')
+    category.save(update_fields=['imgbb_delete_url', 'imgbb_id', 'imgbb_url',
+                                 'imgbb_display_url', 'imgbb_thumb_url', 'imgbb_medium_url'])
 
 
 def _warn_imgbb_failure(request, label, result):
@@ -342,16 +368,32 @@ def product_edit(request, pk):
 
 @inventory_login_required
 def product_delete(request, pk):
-    """Delete a product."""
+    """Delete a product.
+
+    POST params:
+        delete_images: when 'on' (the switch's default state) every remote
+            ImgBB copy grouped under this product is deleted as well. When
+            absent, ties are severed instead: the ImgBB metadata is cleared
+            so the images stay hosted, untracked, and a future re-upload of
+            the same picture creates a fresh, conflict-free entry.
+    """
     product = get_object_or_404(Product, pk=pk)
 
     if request.method == 'POST':
         name = product.name
-        # Clean up every remote ImgBB copy grouped under this product first
+        delete_remote = request.POST.get('delete_images') == 'on'
         imgbb_service = get_imgbb_service()
+
         for image_row in product.images.all():
-            if image_row.imgbb_delete_url:
-                imgbb_service.delete(image_row.imgbb_delete_url)
+            if delete_remote:
+                if image_row.imgbb_delete_url:
+                    imgbb_service.delete(image_row.imgbb_delete_url)
+            else:
+                # Sever ties: forget the remote copies exist.
+                image_row.imgbb_delete_url = ''
+                image_row.imgbb_id = ''
+                image_row.save(update_fields=['imgbb_delete_url', 'imgbb_id'])
+
         product.delete()
         messages.success(request, _('Product "%(name)s" deleted successfully.') % {'name': name})
         return redirect('inventory:product_list')
@@ -418,6 +460,15 @@ def category_create(request):
         if form.is_valid():
             category = form.save()
 
+            # Upload the image to ImgBB (no local copy is kept)
+            image = form.cleaned_data.get('image')
+            if image:
+                result = get_imgbb_service().upload(image, name=category.name)
+                if result['success']:
+                    _apply_imgbb_to_category(category, result)
+                else:
+                    _warn_imgbb_failure(request, _('image'), result)
+
             messages.success(request, _('Category "%(name)s" created successfully.') % {'name': category.name})
             return redirect('inventory:category_list')
     else:
@@ -441,6 +492,19 @@ def category_edit(request, pk):
         if form.is_valid():
             category = form.save()
 
+            # New image provided -> replace: delete the old remote copy,
+            # upload the new one. No file -> keep current ImgBB ids untouched.
+            image = form.cleaned_data.get('image')
+            if image:
+                old_delete_url = category.imgbb_delete_url
+                result = get_imgbb_service().upload(image, name=category.name)
+                if result['success']:
+                    if old_delete_url:
+                        get_imgbb_service().delete(old_delete_url)
+                    _apply_imgbb_to_category(category, result)
+                else:
+                    _warn_imgbb_failure(request, _('image'), result)
+
             messages.success(request, _('Category "%(name)s" updated successfully.') % {'name': category.name})
             return redirect('inventory:category_list')
     else:
@@ -462,6 +526,9 @@ def category_delete(request, pk):
 
     if request.method == 'POST':
         name = category.name
+        # Remove the remote ImgBB copy grouped under this category
+        if category.imgbb_delete_url:
+            get_imgbb_service().delete(category.imgbb_delete_url)
         category.delete()
         messages.success(request, _('Category "%(name)s" deleted successfully.') % {'name': name})
         return redirect('inventory:category_list')

@@ -156,16 +156,26 @@ class ProductStockForm(StyledFieldsMixin, forms.ModelForm):
 
 
 class CategoryForm(StyledFieldsMixin, forms.ModelForm):
-    """Form for managing categories."""
+    """Form for managing categories.
+
+    The image is NOT a model-backed form field: it is validated here and
+    uploaded to ImgBB by the inventory views, so no copy ever touches the
+    server's local filesystem.
+    """
+
+    image = forms.ImageField(
+        label=_('Image'),
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
+    )
 
     class Meta:
         model = Category
-        fields = ['name', 'slug', 'description', 'image', 'is_active', 'sort_order']
+        fields = ['name', 'slug', 'description', 'is_active', 'sort_order']
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': _('Category Name')}),
             'slug': forms.TextInput(attrs={'placeholder': _('auto-generated from name')}),
             'description': forms.Textarea(attrs={'rows': 3, 'placeholder': _('Category description...')}),
-            'image': forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'sort_order': forms.NumberInput(attrs={'min': '0', 'placeholder': _('0')}),
         }

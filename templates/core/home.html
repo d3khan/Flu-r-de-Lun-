@@ -88,8 +88,8 @@
                 <div class="categories-grid">
                     {% for category in categories %}
                         <a href="{{ category.get_absolute_url }}" class="category-card">
-                            {% if category.image %}
-                                <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
+                            {% if category.image_url %}
+                                <img src="{{ category.image_url }}" alt="{{ category.name }}" loading="lazy">
                             {% else %}
                                 <img src="{% static 'images/category-placeholder.svg' %}" alt="{{ category.name }}" loading="lazy">
                             {% endif %}

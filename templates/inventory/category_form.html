@@ -87,8 +87,8 @@
                 {{ form.image.label_tag }}
                 <div class="image-upload-wrapper">
                     <div class="image-preview" id="categoryImagePreview">
-                        {% if category and category.image %}
-                            <img src="{{ category.image.url }}" alt="{{ category.name }}">
+                        {% if category and category.image_url %}
+                            <img src="{{ category.image_url }}" alt="{{ category.name }}">
                         {% else %}
                             <div class="image-preview__placeholder">
                                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">

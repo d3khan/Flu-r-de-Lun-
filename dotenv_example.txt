@@ -39,3 +39,12 @@ IMGBB_API_KEY=your-imgbb-api-key
 # Inventory Management (Basic Auth)
 INVENTORY_USERNAME=your-inventory-username
 INVENTORY_PASSWORD=your-inventory-password
+
+# Django superuser (used by `createsuperuser --noinput` in the deploy build)
+DJANGO_SUPERUSER_USERNAME=your-admin-username
+DJANGO_SUPERUSER_EMAIL=you@example.com
+DJANGO_SUPERUSER_PASSWORD=change-me
+
+# Optional: set USE_REDIS=true on Render to store cache/sessions in Redis.
+# Leave unset to use in-memory cache + database sessions (recommended, free).
+# USE_REDIS=true
