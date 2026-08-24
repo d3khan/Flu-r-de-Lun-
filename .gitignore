@@ -265,3 +265,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Personal git reference notes (never commit)
+git_commands.md
