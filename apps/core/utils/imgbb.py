@@ -23,6 +23,15 @@ class ImgBBService:
 
     UPLOAD_URL = "https://api.imgbb.com/1/upload"
     TIMEOUT = 60  # generous: free-tier egress can be slow
+    # ibb.co sits behind Cloudflare; bare server user-agents frequently get
+    # challenged (HTTP 403) on delete URLs. Send a browser-like UA.
+    REQUEST_HEADERS = {
+        'User-Agent': (
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
+            '(KHTML, like Gecko) Chrome/124.0 Safari/537.36'
+        ),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    }
 
     def __init__(self, api_key=None):
         self.api_key = api_key or getattr(settings, 'IMGBB_API_KEY', None)
@@ -67,6 +76,7 @@ class ImgBBService:
                 self.UPLOAD_URL,
                 params={'key': self.api_key},
                 files={'image': (filename, content, content_type)},
+                headers=self.REQUEST_HEADERS,
                 timeout=self.TIMEOUT,
             )
             if response.status_code != 200:
@@ -108,13 +118,24 @@ class ImgBBService:
         """
         Delete an image from ImgBB using its delete URL.
 
-        Returns True when the remote copy was removed (or nothing to do).
+        Returns True when the request completed with HTTP 200. Failures are
+        logged (with status code and a response snippet) so they are visible
+        in production logs instead of silently leaving orphaned images.
         """
         if not delete_url:
             return False
 
         try:
-            response = requests.get(delete_url, timeout=15)
+            response = requests.get(
+                delete_url, timeout=15, headers=self.REQUEST_HEADERS
+            )
+            if response.status_code != 200:
+                logger.warning(
+                    "ImgBB delete URL %s returned HTTP %s (body: %.300r)",
+                    delete_url, response.status_code, response.text,
+                )
+                return False
+            logger.info("ImgBB delete URL %s -> HTTP 200", delete_url)
             response.raise_for_status()
             return True
         except requests.exceptions.RequestException:

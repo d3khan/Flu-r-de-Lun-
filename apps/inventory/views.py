@@ -11,6 +11,7 @@ from django.db.models import Q, Count
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponseForbidden
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import ngettext
 from django.conf import settings
 
 from apps.products.models import Product, Category, ProductImage
@@ -383,11 +384,13 @@ def product_delete(request, pk):
         name = product.name
         delete_remote = request.POST.get('delete_images') == 'on'
         imgbb_service = get_imgbb_service()
+        failed_purges = 0
 
         for image_row in product.images.all():
             if delete_remote:
                 if image_row.imgbb_delete_url:
-                    imgbb_service.delete(image_row.imgbb_delete_url)
+                    if not imgbb_service.delete(image_row.imgbb_delete_url):
+                        failed_purges += 1
             else:
                 # Sever ties: forget the remote copies exist.
                 image_row.imgbb_delete_url = ''
@@ -396,6 +399,17 @@ def product_delete(request, pk):
 
         product.delete()
         messages.success(request, _('Product "%(name)s" deleted successfully.') % {'name': name})
+        if failed_purges:
+            messages.warning(
+                request,
+                ngettext(
+                    '%(count)s image could not be deleted from ImgBB — check the server logs; '
+                    'you may need to remove it manually via its delete link.',
+                    '%(count)s images could not be deleted from ImgBB — check the server logs; '
+                    'you may need to remove them manually via their delete links.',
+                    failed_purges,
+                ) % {'count': failed_purges},
+            )
         return redirect('inventory:product_list')
 
     context = {
