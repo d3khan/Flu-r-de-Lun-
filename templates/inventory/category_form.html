@@ -98,8 +98,8 @@
                                 <span class="u-hide-mobile">{% trans "No image selected" %}</span>
                             </div>
                         {% endif %}
+                        {{ form.image }}
                     </div>
-                    {{ form.image }}
                 </div>
                 {% if form.image.help_text %}
                     <span class="form-help">{{ form.image.help_text }}</span>

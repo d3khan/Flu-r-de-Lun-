@@ -229,8 +229,8 @@
                                     <span class="u-hide-mobile">{% trans "No image selected" %}</span>
                                 </div>
                             {% endif %}
+                            {{ form.primary_image }}
                         </div>
-                        {{ form.primary_image }}
                     </div>
                     {% if form.primary_image.help_text %}
                         <span class="form-help">{{ form.primary_image.help_text }}</span>
@@ -248,12 +248,20 @@
                                 {% for image in product.images.all|slice:"1:" %}
                                     <div class="additional-image-item">
                                         <img src="{{ image.thumbnail.url }}" alt="{{ image.alt_text }}">
-                                        <button type="button" class="additional-image-item__remove" data-image-id="{{ image.pk }}" aria-label="{% trans 'Remove image' %}">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <line x1="18" y1="6" x2="6" y2="18"/>
-                                                <line x1="6" y1="6" x2="18" y2="18"/>
-                                            </svg>
-                                        </button>
+                                        <div class="additional-image-actions">
+                                            <button type="button" class="additional-image-item__remove" data-image-id="{{ image.pk }}" aria-label="{% trans 'Remove image' %}">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <line x1="18" y1="6" x2="6" y2="18"/>
+                                                    <line x1="6" y1="6" x2="18" y2="18"/>
+                                                </svg>
+                                            </button>
+                                            {% if image.imgbb_delete_url %}
+                                            <label class="form-check form-check--inline imgbb-delete-check">
+                                                <input type="checkbox" name="delete_imgbb_{{ image.pk }}" value="1" class="form-check-input">
+                                                <span class="form-check__label">{% trans "Also delete from ImgBB" %}</span>
+                                            </label>
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 {% endfor %}
                             {% endif %}
@@ -271,8 +279,9 @@
         <section class="form-section">
             <h2 class="form-section__title">{% trans "Visibility & Flags" %}</h2>
             <div class="form-check-grid">
-                <label class="form-check">
+                <label class="form-check form-check--switch">
                     {{ form.is_active }}
+                    <span class="form-check__switch"></span>
                     <span class="form-check__label">{{ form.is_active.label }}</span>
                 </label>
                 <label class="form-check">

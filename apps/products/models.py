@@ -2,8 +2,6 @@ from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
-from imagekit.models import ImageSpecField
-from imagekit.processors import ResizeToFill, ResizeToFit
 
 
 class Category(models.Model):
@@ -132,7 +130,7 @@ class Product(models.Model):
 
 
 class ProductImage(models.Model):
-    """Product images with automatic thumbnail generation."""
+    """Product images stored on ImgBB."""
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
@@ -144,26 +142,13 @@ class ProductImage(models.Model):
     is_primary = models.BooleanField(_('Primary'), default=False)
     sort_order = models.PositiveIntegerField(_('Sort Order'), default=0)
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
-
-    # Generated thumbnails
-    thumbnail = ImageSpecField(
-        source='image',
-        processors=[ResizeToFill(400, 400)],
-        format='WEBP',
-        options={'quality': 85}
-    )
-    medium = ImageSpecField(
-        source='image',
-        processors=[ResizeToFit(800, 800)],
-        format='WEBP',
-        options={'quality': 90}
-    )
-    large = ImageSpecField(
-        source='image',
-        processors=[ResizeToFit(1200, 1200)],
-        format='WEBP',
-        options={'quality': 90}
-    )
+    
+    # ImgBB metadata
+    imgbb_delete_url = models.URLField(_('ImgBB Delete URL'), blank=True)
+    imgbb_id = models.CharField(_('ImgBB Image ID'), max_length=50, blank=True)
+    imgbb_display_url = models.URLField(_('ImgBB Display URL'), blank=True)
+    imgbb_thumb_url = models.URLField(_('ImgBB Thumbnail URL'), blank=True)
+    imgbb_medium_url = models.URLField(_('ImgBB Medium URL'), blank=True)
 
     class Meta:
         verbose_name = _('Product Image')
@@ -178,3 +163,7 @@ class ProductImage(models.Model):
         if self.is_primary:
             ProductImage.objects.filter(product=self.product, is_primary=True).update(is_primary=False)
         super().save(*args, **kwargs)
+    
+    def delete(self, *args, **kwargs):
+        # Note: ImgBB deletion is handled explicitly in views with user consent
+        super().delete(*args, **kwargs)

@@ -158,6 +158,9 @@ FLUTTERWAVE_ENCRYPTION_KEY = os.environ.get('FLUTTERWAVE_ENCRYPTION_KEY', '')
 # Payment gateway choice: 'paystack' or 'flutterwave'
 PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY', 'paystack')
 
+# ImgBB Media Storage
+IMGBB_API_KEY = os.environ.get('IMGBB_API_KEY', '')
+
 # Session settings
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days
 SESSION_SAVE_EVERY_REQUEST = True
