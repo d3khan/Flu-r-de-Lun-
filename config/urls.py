@@ -6,11 +6,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView, RedirectView
-from django.templatetags.static import static as static_url
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('favicon.ico', RedirectView.as_view(url=static_url('images/favicon.svg'), permanent=True)),
+    # Literal path (NOT static_url()): resolving through the manifest-backed
+    # storage at import time crashes every manage.py command in a fresh
+    # build container before collectstatic has produced the manifest.
+    path('favicon.ico', RedirectView.as_view(url='/static/images/favicon.svg', permanent=True)),
 
     # Core pages (home, about, contact)
     path('', include('apps.core.urls', namespace='core')),

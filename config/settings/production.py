@@ -37,6 +37,9 @@ STORAGES = {
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        # Serve unhashed URLs instead of raising when a file is missing
+        # from the manifest (e.g. first boot before collectstatic).
+        "OPTIONS": {"manifest_strict": False},
     },
 }
 
