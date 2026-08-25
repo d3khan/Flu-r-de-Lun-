@@ -7,29 +7,35 @@ from django.http import HttpResponse
 
 from .models import SiteSettings, ContactMessage
 from .forms import ContactForm
+from apps.wishlist.utils import annotate_in_wishlist
 
 
 class HomeView(TemplateView):
     """Home page with hero, featured products, and brand story."""
     template_name = 'core/home.html'
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         from apps.products.models import Product, Category
-        
+
         # Featured products
-        context['featured_products'] = Product.objects.filter(
-            is_active=True, is_featured=True
-        ).select_related('category').prefetch_related('images')[:8]
-        
+        context['featured_products'] = annotate_in_wishlist(
+            Product.objects.filter(is_active=True, is_featured=True)
+            .select_related('category').prefetch_related('images')[:8],
+            self.request.user,
+        )
+
         # New arrivals
-        context['new_arrivals'] = Product.objects.filter(
-            is_active=True
-        ).select_related('category').prefetch_related('images').order_by('-created_at')[:8]
-        
+        context['new_arrivals'] = annotate_in_wishlist(
+            Product.objects.filter(is_active=True)
+            .select_related('category').prefetch_related('images')
+            .order_by('-created_at')[:8],
+            self.request.user,
+        )
+
         # Categories
         context['categories'] = Category.objects.filter(is_active=True)[:6]
-        
+
         return context
 
 

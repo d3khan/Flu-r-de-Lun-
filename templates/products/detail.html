@@ -112,7 +112,7 @@
                     {% if user.is_authenticated %}
                         <button type="button"
                                 class="btn btn--secondary btn--lg pd-wishlist-btn"
-                                x-data="{ saved: {{ in_wishlist|yesno:'true,false' }}, busy: false }"
+                                x-data="{ saved: {{ product.in_wishlist|yesno:'true,false' }}, busy: false }"
                                 :style="saved ? 'color: var(--color-error); border-color: var(--color-error);' : ''"
                                 @click="
                                     if (busy) return;

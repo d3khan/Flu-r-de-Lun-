@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.utils.translation import gettext_lazy as _
 
 from .models import Product, Category
+from apps.wishlist.utils import annotate_in_wishlist
 
 
 class ProductListView(ListView):
@@ -14,9 +15,10 @@ class ProductListView(ListView):
     template_name = 'products/list.html'
     context_object_name = 'products'
     paginate_by = 12
-    
+
     def get_queryset(self):
         queryset = Product.objects.filter(is_active=True).select_related('category').prefetch_related('images')
+        queryset = annotate_in_wishlist(queryset, self.request.user)
         
         # Category filter
         category_slug = self.kwargs.get('slug') or self.request.GET.get('category')
@@ -65,7 +67,8 @@ class ProductDetailView(DetailView):
     slug_url_kwarg = 'slug'
     
     def get_queryset(self):
-        return Product.objects.filter(is_active=True).select_related('category').prefetch_related('images')
+        queryset = Product.objects.filter(is_active=True).select_related('category').prefetch_related('images')
+        return annotate_in_wishlist(queryset, self.request.user)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -111,10 +114,13 @@ class ProductDetailView(DetailView):
         context['prev_product'] = prev_product
         
         # Related products from same category
-        context['related_products'] = Product.objects.filter(
-            category=product.category,
-            is_active=True
-        ).exclude(id=product.id).prefetch_related('images')[:4]
+        context['related_products'] = annotate_in_wishlist(
+            Product.objects.filter(
+                category=product.category,
+                is_active=True
+            ).exclude(id=product.id).prefetch_related('images'),
+            self.request.user,
+        )[:4]
         
         # Check if in user's wishlist
         if self.request.user.is_authenticated:
@@ -132,7 +138,11 @@ class ProductDetailView(DetailView):
 def category_detail(request, slug):
     """Category detail page."""
     category = get_object_or_404(Category, slug=slug, is_active=True)
-    products = Product.objects.filter(category=category, is_active=True).select_related('category').prefetch_related('images')
+    products = annotate_in_wishlist(
+        Product.objects.filter(category=category, is_active=True)
+        .select_related('category').prefetch_related('images'),
+        request.user,
+    )
     
     # Pagination
     paginator = Paginator(products, 12)
