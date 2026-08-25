@@ -43,6 +43,9 @@
         height: 100%;
         object-fit: cover;
     }
+    .additional-image-item.is-removed {
+        display: none;
+    }
     .additional-image-item__remove {
         position: absolute;
         top: 4px;
@@ -246,10 +249,12 @@
                         <div class="additional-images-preview" id="additionalImagesPreview">
                             {% if product %}
                                 {% for image in product.images.all|slice:"1:" %}
-                                    <div class="additional-image-item">
+                                    <div class="additional-image-item" data-image-row="{{ image.pk }}">
                                         <img src="{{ image.thumbnail_url }}" alt="{{ image.alt_text }}">
+                                        {# Removal intent marker: the ✕ button sets this to 1; server deletes row + ImgBB copy #}
+                                        <input type="hidden" name="remove_image_{{ image.pk }}" id="remove_image_{{ image.pk }}" value="">
                                         <div class="additional-image-actions">
-                                            <button type="button" class="additional-image-item__remove" data-image-id="{{ image.pk }}" aria-label="{% trans 'Remove image' %}">
+                                            <button type="button" class="additional-image-item__remove" data-remove-marker="remove_image_{{ image.pk }}" aria-label="{% trans 'Remove image' %}">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                     <line x1="18" y1="6" x2="6" y2="18"/>
                                                     <line x1="6" y1="6" x2="18" y2="18"/>
@@ -368,7 +373,7 @@
                         const reader = new FileReader();
                         reader.onload = function(e) {
                             const item = document.createElement('div');
-                            item.className = 'additional-image-item';
+                            item.className = 'additional-image-item additional-image-item--new';
                             item.innerHTML = `
                                 <img src="${e.target.result}" alt="${file.name}">
                                 <button type="button" class="additional-image-item__remove" aria-label="Remove image">
@@ -385,12 +390,33 @@
                 });
             });
 
-            // Handle remove buttons (delegated)
+            // Handle remove buttons (delegated).
+            // Existing images: mark for server-side removal instead of
+            // deleting the node - the hidden input must survive the submit.
             additionalPreview.addEventListener('click', function(e) {
                 const removeBtn = e.target.closest('.additional-image-item__remove');
-                if (removeBtn) {
-                    removeBtn.closest('.additional-image-item').remove();
+                if (!removeBtn) return;
+
+                const markerName = removeBtn.dataset.removeMarker;
+                if (markerName) {
+                    const item = removeBtn.closest('.additional-image-item');
+                    const marker = document.getElementById(markerName);
+                    if (item) {
+                        if (item.classList.contains('is-removed')) {
+                            // Click again to undo the removal
+                            item.classList.remove('is-removed');
+                            if (marker) marker.value = '';
+                        } else {
+                            item.classList.add('is-removed');
+                            if (marker) marker.value = '1';
+                        }
+                    }
+                    return;
                 }
+
+                // Newly added (not yet uploaded) preview: safe to drop the node
+                const newItem = e.target.closest('.additional-image-item--new');
+                if (newItem) newItem.remove();
             });
         }
 

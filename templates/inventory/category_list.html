@@ -25,32 +25,32 @@
     <!-- Categories Grid -->
     <div class="categories-grid inventory-categories-grid">
         {% for category in categories %}
-        <article class="category-card inventory-category-card">
+        <article class="inventory-category-card">
             {% if category.image_url %}
-                <img src="{{ category.image_url }}" alt="{{ category.name }}" class="category-card__image">
+                <img src="{{ category.image_url }}" alt="{{ category.name }}" class="inventory-category-card__image">
             {% else %}
-                <div class="category-card__placeholder">
+                <div class="inventory-category-card__placeholder">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                         <polyline points="9 22 9 12 15 12 15 22"/>
                     </svg>
                 </div>
             {% endif %}
-            <div class="category-card__content">
-                <h3 class="category-card__name">{{ category.name }}</h3>
-                <p class="category-card__count">
+            <div class="inventory-category-card__content">
+                <h3 class="inventory-category-card__name">{{ category.name }}</h3>
+                <p class="inventory-category-card__count">
                     {{ category.product_count }} product{{ category.product_count|pluralize }}
                 </p>
-                <div class="category-card__meta">
+                <div class="inventory-category-card__meta">
                     <span class="status status--{{ category.is_active|yesno:'confirmed,cancelled' }}">
                         {{ category.is_active|yesno:_("Active,Inactive") }}
                     </span>
                     {% if category.sort_order > 0 %}
-                        <span class="category-card__sort">Sort: {{ category.sort_order }}</span>
+                        <span class="inventory-category-card__sort">Sort: {{ category.sort_order }}</span>
                     {% endif %}
                 </div>
             </div>
-            <div class="category-card__actions">
+            <div class="inventory-category-card__actions">
                 <a href="{% url 'inventory:category_edit' category.pk %}" class="icon-btn" aria-label="{% trans 'Edit category' %}" title="{% trans 'Edit' %}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>

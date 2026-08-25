@@ -11,11 +11,24 @@ Nothing is ever stored on the local filesystem — callers persist only the
 URLs returned here.
 """
 import logging
+import time
 
 import requests
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
+
+# Accepted upload formats (ImgBB-supported AND Pillow-verifiable).
+ALLOWED_IMAGE_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tif', '.tiff')
+ALLOWED_IMAGE_HELP_TEXT = 'Accepted: JPG, JPEG, PNG, GIF, WEBP, BMP or TIFF'
+
+
+def image_extension_allowed(filename: str) -> bool:
+    """True when the filename's extension is one ImgBB supports."""
+    if not filename:
+        return False
+    name = filename.lower()
+    return any(name.endswith(ext) for ext in ALLOWED_IMAGE_EXTENSIONS)
 
 
 class ImgBBService:
@@ -23,6 +36,8 @@ class ImgBBService:
 
     UPLOAD_URL = "https://api.imgbb.com/1/upload"
     TIMEOUT = 60  # generous: free-tier egress can be slow
+    DELETE_MAX_ATTEMPTS = 4
+    DELETE_RETRY_PAUSE = 1.0  # seconds; 3 pauses max => well under the 5s budget
     # ibb.co sits behind Cloudflare; bare server user-agents frequently get
     # challenged (HTTP 403) on delete URLs. Send a browser-like UA.
     REQUEST_HEADERS = {
@@ -147,6 +162,65 @@ class ImgBBService:
         except Exception:
             logger.exception("Unexpected error deleting ImgBB image %s", delete_url)
             return False
+
+
+    def is_alive(self, image_url: str) -> bool:
+        """True when the image URL still resolves to a fetchable resource."""
+        if not image_url:
+            return False
+        try:
+            response = requests.get(
+                image_url, headers=self.REQUEST_HEADERS,
+                timeout=15, stream=True,
+            )
+            alive = response.status_code == 200
+            logger.info("ImgBB liveness probe %s -> HTTP %s (alive=%s)",
+                        image_url, response.status_code, alive)
+            return alive
+        except requests.exceptions.RequestException:
+            # Unreachable / 404 => treat as gone.
+            logger.info("ImgBB liveness probe %s -> unreachable (treated as deleted)",
+                        image_url)
+            return False
+
+    def delete_verified(self, delete_url: str, image_url: str = '') -> bool:
+        """
+        Delete an image and CONFIRM it is really gone.
+
+        Algorithm:
+          1. Hit the delete URL.
+          2. Probe the original image URL - if it still resolves to a valid
+             image, the deletion did not take effect yet: retry, up to
+             DELETE_MAX_ATTEMPTS times.
+          3. Once the probe reports the image is gone, the caller can safely
+             clear every stored reference.
+
+        Returns True once deletion is confirmed; False after exhausting the
+        attempts (references should then be KEPT so a later retry can run).
+        Total pause budget across attempts stays under 5 seconds.
+        """
+        if not delete_url:
+            return False
+
+        for attempt in range(1, self.DELETE_MAX_ATTEMPTS + 1):
+            request_ok = self.delete(delete_url)
+
+            if request_ok and not self.is_alive(image_url):
+                logger.info(
+                    "ImgBB image confirmed deleted on attempt %d/%d (%s)",
+                    attempt, self.DELETE_MAX_ATTEMPTS, delete_url,
+                )
+                return True
+
+            if attempt < self.DELETE_MAX_ATTEMPTS:
+                time.sleep(self.DELETE_RETRY_PAUSE)
+
+        logger.error(
+            "ImgBB image still reachable after %d deletion attempts - "
+            "keeping references for retry. delete_url=%s image_url=%s",
+            self.DELETE_MAX_ATTEMPTS, delete_url, image_url,
+        )
+        return False
 
 
 # Convenience function for easy import

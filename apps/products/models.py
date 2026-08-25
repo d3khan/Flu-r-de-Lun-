@@ -175,14 +175,17 @@ class Product(models.Model):
 
     @property
     def discount_percentage(self):
-        """Calculate discount percentage if on sale."""
+        """Rounded whole-percent discount (for the -N% badge)."""
         if self.compare_at_price and self.compare_at_price > self.price:
-            return int(((self.compare_at_price - self.price) / self.compare_at_price) * 100)
+            return int(round(
+                ((self.compare_at_price - self.price) / self.compare_at_price) * 100
+            ))
         return 0
 
     @property
     def is_on_sale(self):
-        return self.discount_percentage > 0
+        # Direct comparison so even tiny valid discounts (>= 0.01) count.
+        return bool(self.compare_at_price and self.compare_at_price > self.price)
 
 
 class ProductImage(models.Model):

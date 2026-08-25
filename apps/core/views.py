@@ -18,18 +18,26 @@ class HomeView(TemplateView):
         context = super().get_context_data(**kwargs)
         from apps.products.models import Product, Category
 
-        # Featured products
+        # Featured products (flag-driven)
         context['featured_products'] = annotate_in_wishlist(
             Product.objects.filter(is_active=True, is_featured=True)
-            .select_related('category').prefetch_related('images')[:8],
+            .select_related('category').prefetch_related('images')
+            .order_by('-created_at')[:8],
             self.request.user,
         )
 
-        # New arrivals
+        # New arrivals (flag-driven, newest first)
         context['new_arrivals'] = annotate_in_wishlist(
-            Product.objects.filter(is_active=True)
+            Product.objects.filter(is_active=True, is_new_arrival=True)
             .select_related('category').prefetch_related('images')
             .order_by('-created_at')[:8],
+            self.request.user,
+        )
+
+        # Best sellers (flag-driven)
+        context['best_sellers'] = annotate_in_wishlist(
+            Product.objects.filter(is_active=True, is_bestseller=True)
+            .select_related('category').prefetch_related('images')[:8],
             self.request.user,
         )
 

@@ -64,7 +64,7 @@
         <h3 class="product-card__name">
             <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
         </h3>
-        <p class="product-card__price">
+        <p class="product-card__price{% if product.is_on_sale %} product-card__price--sale{% endif %}">
             {% if product.is_on_sale %}
                 <span class="price-compare">₦{{ product.compare_at_price|intcomma }}</span>
                 <span class="price-sale">₦{{ product.price|intcomma }}</span>

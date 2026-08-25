@@ -143,6 +143,23 @@
         </section>
     {% endif %}
 
+    <!-- Best sellers -->
+    {% if best_sellers %}
+        <section class="section">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">{% trans "Best Sellers" %}</h2>
+                    <p class="section-sub">{% trans "The frames our customers keep coming back for." %}</p>
+                </header>
+                <div class="products-grid">
+                    {% for product in best_sellers %}
+                        {% include 'products/partials/_product_card.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
     <!-- Brand strip -->
     <section class="section home-strip">
         <div class="container text-center">

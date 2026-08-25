@@ -1595,6 +1595,18 @@ button.mobile-nav__link {
   stroke: var(--color-error);
 }
 
+/* Detail page save button (Saved state) */
+.pd-wishlist-btn.is-saved {
+  color: var(--color-error);
+  border-color: var(--color-error);
+  background-color: rgba(192, 57, 43, 0.08);
+}
+
+.pd-wishlist-btn svg.filled {
+  fill: var(--color-error);
+  stroke: var(--color-error);
+}
+
 [data-theme="dark"] .product-card__wishlist {
   background-color: rgba(32, 27, 22, 0.92);
   color: var(--color-beige-400);
@@ -1687,7 +1699,17 @@ button.mobile-nav__link {
   align-items: baseline;
   justify-content: center;
   gap: var(--space-2);
-  font-size: var(--text-sm);
+}
+
+/* On sale: main price struck through on top, sale price underneath */
+.product-card__price--sale {
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.product-card__price--sale .price-sale {
+  font-size: var(--text-lg);
 }
 
 /* ==========================================================================
@@ -1934,6 +1956,17 @@ button.mobile-nav__link {
   align-items: baseline;
   gap: var(--space-3);
   margin-bottom: var(--space-3);
+}
+
+/* On sale: struck main price above, sale price below */
+.pd-price--sale {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.pd-price--sale .price-compare {
+  font-size: var(--text-lg);
 }
 
 .pd-price__current {

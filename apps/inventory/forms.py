@@ -7,6 +7,16 @@ from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
 from apps.products.models import Product, Category, ProductImage
+from apps.core.utils.imgbb import (
+    ALLOWED_IMAGE_HELP_TEXT,
+    ALLOWED_IMAGE_EXTENSIONS,
+    image_extension_allowed,
+)
+
+FORMATS_ERROR = (
+    'Unsupported image format. '
+    f'Accepted formats: {ALLOWED_IMAGE_HELP_TEXT} (case-insensitive).'
+)
 
 
 class StyledFieldsMixin:
@@ -53,7 +63,7 @@ class ProductForm(StyledFieldsMixin, forms.ModelForm):
             'class': 'form-control',
             'accept': 'image/*',
         }),
-        help_text=_('Main product image (will be marked as primary)')
+        help_text=_('Main product image (will be marked as primary). Accepted: JPG, JPEG, PNG, GIF, WEBP, BMP, TIFF. Max 10MB.')
     )
 
     # Extra field for multiple additional images (validated here, uploaded
@@ -65,7 +75,7 @@ class ProductForm(StyledFieldsMixin, forms.ModelForm):
             'class': 'form-control',
             'accept': 'image/*',
         }),
-        help_text=_('Upload additional images (select multiple files)')
+        help_text=_('Upload additional images (select multiple files). Accepted: JPG, JPEG, PNG, GIF, WEBP, BMP, TIFF. Max 10MB each.')
     )
 
     class Meta:
@@ -118,11 +128,21 @@ class ProductForm(StyledFieldsMixin, forms.ModelForm):
             # Validate file size (max 10MB)
             if image.size > 10 * 1024 * 1024:
                 raise ValidationError(_('Image file size must be under 10MB.'))
-            # Validate file type
-            allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-            if image.content_type not in allowed_types:
-                raise ValidationError(_('Unsupported image format. Use JPEG, PNG, WebP, or GIF.'))
+            if not image_extension_allowed(image.name):
+                raise ValidationError(_(FORMATS_ERROR))
         return image
+
+    def clean(self):
+        cleaned = super().clean()
+        price = cleaned.get('price')
+        compare_at = cleaned.get('compare_at_price')
+
+        if price is not None and compare_at is not None and compare_at <= price:
+            self.add_error('compare_at_price', ValidationError(_(
+                'The main (compare-at) price must be higher than the sale '
+                'price - by at least 0.01.'
+            )))
+        return cleaned
 
     def save(self, commit=True):
         # NOTE: image handling (primary/additional, ImgBB upload/replace)
@@ -166,6 +186,7 @@ class CategoryForm(StyledFieldsMixin, forms.ModelForm):
     image = forms.ImageField(
         label=_('Image'),
         required=False,
+        help_text=_('Accepted: JPG, JPEG, PNG, GIF, WEBP, BMP, TIFF. Max 5MB.'),
         widget=forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
     )
 
@@ -193,9 +214,8 @@ class CategoryForm(StyledFieldsMixin, forms.ModelForm):
         if image:
             if image.size > 5 * 1024 * 1024:
                 raise ValidationError(_('Image file size must be under 5MB.'))
-            allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-            if image.content_type not in allowed_types:
-                raise ValidationError(_('Unsupported image format. Use JPEG, PNG, WebP, or GIF.'))
+            if not image_extension_allowed(image.name):
+                raise ValidationError(_(FORMATS_ERROR))
         return image
 
 
@@ -205,6 +225,9 @@ class ProductImageForm(StyledFieldsMixin, forms.ModelForm):
     class Meta:
         model = ProductImage
         fields = ['image', 'alt_text', 'is_primary', 'sort_order']
+        help_texts = {
+            'image': _('Accepted: JPG, JPEG, PNG, GIF, WEBP, BMP, TIFF. Max 10MB.'),
+        }
         widgets = {
             'image': forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
             'alt_text': forms.TextInput(attrs={'placeholder': _('Alt text for accessibility')}),
@@ -217,7 +240,6 @@ class ProductImageForm(StyledFieldsMixin, forms.ModelForm):
         if image:
             if image.size > 10 * 1024 * 1024:
                 raise ValidationError(_('Image file size must be under 10MB.'))
-            allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-            if image.content_type not in allowed_types:
-                raise ValidationError(_('Unsupported image format. Use JPEG, PNG, WebP, or GIF.'))
+            if not image_extension_allowed(image.name):
+                raise ValidationError(_(FORMATS_ERROR))
         return image

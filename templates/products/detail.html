@@ -70,7 +70,7 @@
                 {% endif %}
                 <h1 class="pd-info__title">{{ product.name }}</h1>
 
-                <div class="pd-price">
+                <div class="pd-price{% if product.is_on_sale %} pd-price--sale{% endif %}">
                     {% if product.is_on_sale %}
                         <span class="price-compare">₦{{ product.compare_at_price|intcomma }}</span>
                         <span class="pd-price__current price-sale">₦{{ product.price|intcomma }}</span>
@@ -100,8 +100,7 @@
                                 class="btn btn--primary btn--lg"
                                 hx-post="{% url 'cart:add' product.id %}"
                                 hx-include="#pd-qty"
-                                hx-target="#cart-drawer"
-                                hx-swap="innerHTML">
+                                hx-swap="none">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M15.6 8.4V6.6a3.6 3.6 0 1 0-7.2 0v1.8m-3.06-1.44-.816 9.796A2 2 0 0 0 6.52 19H17.48a2 2 0 0 0 1.996-2.184l-.816-9.796A2 2 0 0 0 16.668 5.3H7.332a2 2 0 0 0-1.992 1.66z"/></svg>
                             {% trans "Add to Cart" %}
                         </button>
@@ -111,9 +110,8 @@
 
                     {% if user.is_authenticated %}
                         <button type="button"
-                                class="btn btn--secondary btn--lg pd-wishlist-btn"
+                                class="btn btn--secondary btn--lg pd-wishlist-btn{% if product.in_wishlist %} is-saved{% endif %}"
                                 x-data="{ saved: {{ product.in_wishlist|yesno:'true,false' }}, busy: false }"
-                                :style="saved ? 'color: var(--color-error); border-color: var(--color-error);' : ''"
                                 @click="
                                     if (busy) return;
                                     busy = true;
@@ -121,14 +119,17 @@
                                         .then(r => r.json())
                                         .then(d => {
                                             saved = d.in_wishlist;
+                                            $el.classList.toggle('is-saved', d.in_wishlist);
+                                            const svg = $el.querySelector('svg');
+                                            svg.classList.toggle('filled', d.in_wishlist);
                                             document.body.dispatchEvent(new CustomEvent('wishlist-count', { detail: { count: d.count }, bubbles: true }));
                                             window.Alpine.$data(document.body).addToast(d.message, 'success');
                                         })
                                         .finally(() => busy = false);
                                 "
                                 aria-label="{% trans 'Toggle wishlist' %}">
-                            <svg style="width: 20px; fill: none;" :fill="saved ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 1 1 12 6.1a5 5 0 1 1 7.5 6.5Z"/></svg>
-                            <span x-text="saved ? '{% trans "Saved" %}' : '{% trans "Save" %}'"></span>
+                            <svg class="{% if product.in_wishlist %}filled{% endif %}" style="width: 20px;" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 1 1 12 6.1a5 5 0 1 1 7.5 6.5Z"/></svg>
+                            <span x-text="saved ? '{% trans "Saved" %}' : '{% trans "Save" %}'">{% if product.in_wishlist %}{% trans "Saved" %}{% else %}{% trans "Save" %}{% endif %}</span>
                         </button>
                     {% endif %}
                 </div>

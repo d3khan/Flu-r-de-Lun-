@@ -56,11 +56,34 @@ def _create_product_image(product, uploaded_file, is_primary, sort_order, alt_te
     return result
 
 
+IMGBB_REF_FIELDS = (
+    'imgbb_delete_url', 'imgbb_id', 'imgbb_url',
+    'imgbb_display_url', 'imgbb_thumb_url', 'imgbb_medium_url',
+)
+
+
+def _clear_imgbb_refs(obj):
+    """Wipe every ImgBB reference field on a model instance."""
+    for field in IMGBB_REF_FIELDS:
+        setattr(obj, field, '')
+    obj.save(update_fields=list(IMGBB_REF_FIELDS))
+
+
 def _remove_product_image(image_row):
-    """Delete a ProductImage row together with its remote ImgBB copy."""
-    if image_row.imgbb_delete_url:
-        get_imgbb_service().delete(image_row.imgbb_delete_url)
-    image_row.delete()
+    """Remove a ProductImage together with its remote ImgBB copy.
+
+    The remote deletion is VERIFIED (the original URL must stop resolving).
+    Returns False when ImgBB would not confirm deletion after retries - the
+    row is then KEPT so the removal can be retried later.
+    """
+    service = get_imgbb_service()
+    purged = not image_row.imgbb_delete_url or service.delete_verified(
+        image_row.imgbb_delete_url,
+        image_row.large_url or image_row.imgbb_display_url,
+    )
+    if purged:
+        image_row.delete()
+    return purged
 
 
 def _apply_imgbb_to_category(category, result):
@@ -71,14 +94,23 @@ def _apply_imgbb_to_category(category, result):
 
 
 def _remove_category_image(category, delete_remote=True):
-    """Delete a category's remote ImgBB copy (optionally just sever ties)."""
+    """Remove a category's remote ImgBB copy (verified when deleting).
+
+    Returns False when remote deletion could not be confirmed - references
+    are then kept so the purge can be retried later.
+    """
+    service = get_imgbb_service()
+    purged = True
     if delete_remote and category.imgbb_delete_url:
-        get_imgbb_service().delete(category.imgbb_delete_url)
-    for field in _imgbb_field_map({'delete_url': '', 'id': '', 'url': '',
-                                   'display_url': '', 'thumb_url': '', 'medium_url': ''}):
-        setattr(category, field, '')
-    category.save(update_fields=['imgbb_delete_url', 'imgbb_id', 'imgbb_url',
-                                 'imgbb_display_url', 'imgbb_thumb_url', 'imgbb_medium_url'])
+        purged = service.delete_verified(
+            category.imgbb_delete_url,
+            category.image_url or category.imgbb_display_url,
+        )
+    if purged or not delete_remote:
+        for field in IMGBB_REF_FIELDS:
+            setattr(category, field, '')
+        category.save(update_fields=list(IMGBB_REF_FIELDS))
+    return purged
 
 
 def _warn_imgbb_failure(request, label, result):
@@ -324,10 +356,16 @@ def product_edit(request, pk):
         if form.is_valid():
             product = form.save()
 
-            # 1) Explicit removals of existing images (checkboxes in form)
+            failed_removals = []
+
+            # 1) Explicit removals of existing images. Each image carries a
+            #    hidden marker input (remove_image_<pk>); the ✕ button sets
+            #    its value to "1" instead of deleting the DOM node, so the
+            #    intent actually reaches the server.
             for image in list(product.images.all()):
-                if f'delete_imgbb_{image.pk}' in request.POST:
-                    _remove_product_image(image)
+                if request.POST.get(f'remove_image_{image.pk}') == '1':
+                    if not _remove_product_image(image):
+                        failed_removals.append(image.alt_text or f'#{image.pk}')
 
             # 2) Primary image:
             #    - new file provided  -> delete the old one (ImgBB + row),
@@ -336,8 +374,11 @@ def product_edit(request, pk):
             primary_image = request.FILES.get('primary_image')
             if primary_image:
                 old_primary = product.primary_image
-                if old_primary:
-                    _remove_product_image(old_primary)
+                if old_primary and not _remove_product_image(old_primary):
+                    messages.warning(request, _(
+                        'The previous primary image could not be deleted from '
+                        'ImgBB right now - it will stay hosted there.'
+                    ))
                 result = _create_product_image(product, primary_image, True, 0, product.name)
                 if not result['success']:
                     _warn_imgbb_failure(request, _('primary image'), result)
@@ -358,6 +399,14 @@ def product_edit(request, pk):
                     _warn_imgbb_failure(request, _('image'), result)
 
             messages.success(request, _('Product "%(name)s" updated successfully.') % {'name': product.name})
+            if failed_removals:
+                messages.warning(request, ngettext(
+                    '%(count)s removed image could not be deleted from ImgBB '
+                    'right now - it was kept on the product so you can retry.',
+                    '%(count)s removed images could not be deleted from ImgBB '
+                    'right now - they were kept on the product so you can retry.',
+                    len(failed_removals),
+                ) % {'count': len(failed_removals)})
             return redirect('inventory:product_list')
     else:
         form = ProductForm(instance=product)
@@ -392,9 +441,12 @@ def product_delete(request, pk):
 
         for image_row in product.images.all():
             if delete_remote:
-                if image_row.imgbb_delete_url:
-                    if not imgbb_service.delete(image_row.imgbb_delete_url):
-                        failed_purges += 1
+                # Verified deletion: retries + liveness probe per image.
+                if image_row.imgbb_delete_url and not imgbb_service.delete_verified(
+                    image_row.imgbb_delete_url,
+                    image_row.large_url or image_row.imgbb_display_url,
+                ):
+                    failed_purges += 1
             else:
                 # Sever ties: forget the remote copies exist.
                 image_row.imgbb_delete_url = ''
@@ -544,9 +596,12 @@ def category_delete(request, pk):
 
     if request.method == 'POST':
         name = category.name
-        # Remove the remote ImgBB copy grouped under this category
+        # Remove the remote ImgBB copy grouped under this category (verified)
         if category.imgbb_delete_url:
-            get_imgbb_service().delete(category.imgbb_delete_url)
+            get_imgbb_service().delete_verified(
+                category.imgbb_delete_url,
+                category.image_url or category.imgbb_display_url,
+            )
         category.delete()
         messages.success(request, _('Category "%(name)s" deleted successfully.') % {'name': name})
         return redirect('inventory:category_list')
