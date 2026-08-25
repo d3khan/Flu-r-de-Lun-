@@ -122,6 +122,20 @@
     <!-- Quick View Modal target (filled via HTMX) -->
     <div id="quick-view-root"></div>
 
+    <!-- Confirmation modal (replaces native confirm() for htmx actions marked
+         with data-confirm-modal; wired in main.js via the htmx:confirm event) -->
+    <div id="fdl-confirm" class="modal" role="alertdialog" aria-modal="true" aria-labelledby="fdl-confirm-title" x-cloak>
+        <div class="modal__backdrop" data-fdl-confirm-cancel></div>
+        <div class="modal__panel fdl-confirm__panel">
+            <h2 id="fdl-confirm-title" class="fdl-confirm__title">{% trans "Please confirm" %}</h2>
+            <p id="fdl-confirm-question" class="fdl-confirm__question"></p>
+            <div class="fdl-confirm__actions">
+                <button type="button" class="btn btn--secondary" data-fdl-confirm-cancel>{% trans "Cancel" %}</button>
+                <button type="button" class="btn btn--danger" data-fdl-confirm-accept>{% trans "Yes, continue" %}</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Container (Alpine-driven; also fed by Django messages via JS) -->
     <div class="toast-stack" x-show="toasts.length > 0" aria-live="polite" x-cloak>
         <template x-for="toast in toasts" :key="toast.id">

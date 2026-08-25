@@ -1,10 +1,5 @@
 # TODO List - Fluér de Luné E-commerce
-
-## 🔴 Critical - Fix Now
-1. **Wishlist Heart Fill**
-   - Heart SVG should fill red when item is in wishlist (not just stroke color change)
-   - Currently: `.filled` class toggles `fill: currentColor` but heart outline remains
-   - Need: Full red fill when active, empty outline when inactive
+1. **Fix Payment page**
 
 2. **Password Reset Email System**
    - Resend integration needs domain verification (resend.com/domains)
@@ -17,9 +12,6 @@
    - Users report "link expired" error
    - Need to investigate PASSWORD_RESET_TIMEOUT and token generation
 
-4. **Outline each product in users view**
-
-## 🟡 High Priority
 5. **Telegram Notifications for Paystack Confirmed Orders**
    - Trigger only on Paystack webhook payment confirmation
    - Include product images (Cloudinary URLs), names, quantities, prices, totals
@@ -30,10 +22,3 @@
    - On manual payment step, redirect to sister's WhatsApp with pre-filled template message
    - Message should include: order number, items, total, payment instructions
    - If WhatsApp API setup is complex/requires verification, just display her WhatsApp number with click-to-chat link instead
-
-7. **Block people that are not logged in from viewing cart, wishlist, etc.**
-
-## 🟢 Medium Priority
-8. **Site Settings Admin**
-   - Add WhatsApp number field for manual payment contact
-   - Add business hours, response time expectations
