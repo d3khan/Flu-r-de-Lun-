@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -58,13 +58,19 @@ def cart_add(request, product_id):
     
     cart = get_or_create_cart(request)
     item = cart.add_item(product, quantity)
-    
+
     if request.htmx:
-        # Return updated cart drawer
-        response = render(request, 'cart/partials/_drawer.html', {'cart': cart})
+        # Full drawer (keeps the auto-open behaviour) plus OOB fragments so
+        # the underlying cart page stays in sync when it is open too.
+        drawer = render(request, 'cart/partials/_drawer.html', {'cart': cart})
+        oob = render(request, 'cart/partials/_cart_mutations.html', {'cart': cart})
+        response = HttpResponse(
+            drawer.content.decode('utf-8') + oob.content.decode('utf-8'),
+            content_type='text/html; charset=utf-8',
+        )
         response['HX-Trigger'] = 'cartUpdated'
         return response
-    
+
     messages.success(request, _('Added to cart!'))
     return redirect('cart:detail')
 
@@ -75,9 +81,12 @@ def cart_update(request, item_id):
     """Update cart item quantity."""
     cart = get_or_create_cart(request)
     item = get_object_or_404(CartItem, id=item_id, cart=cart)
-    
-    quantity = int(request.POST.get('quantity', 1))
-    
+
+    try:
+        quantity = int(request.POST.get('quantity', 1))
+    except (TypeError, ValueError):
+        quantity = item.quantity
+
     if quantity > 0:
         if quantity > item.product.stock_quantity:
             quantity = item.product.stock_quantity
@@ -85,12 +94,14 @@ def cart_update(request, item_id):
         item.save()
     else:
         item.delete()
-    
+
     if request.htmx:
-        response = render(request, 'cart/partials/_items_list.html', {'cart': cart})
+        # Broadcast: refreshes page region, drawer body and drawer footer
+        # together so every cart surface stays in sync.
+        response = render(request, 'cart/partials/_cart_mutations.html', {'cart': cart})
         response['HX-Trigger'] = 'cartUpdated'
         return response
-    
+
     return redirect('cart:detail')
 
 
@@ -101,12 +112,12 @@ def cart_remove(request, item_id):
     cart = get_or_create_cart(request)
     item = get_object_or_404(CartItem, id=item_id, cart=cart)
     item.delete()
-    
+
     if request.htmx:
-        response = render(request, 'cart/partials/_items_list.html', {'cart': cart})
+        response = render(request, 'cart/partials/_cart_mutations.html', {'cart': cart})
         response['HX-Trigger'] = 'cartUpdated'
         return response
-    
+
     messages.success(request, _('Item removed from cart.'))
     return redirect('cart:detail')
 
@@ -130,10 +141,10 @@ def cart_clear(request):
     """Clear cart."""
     cart = get_or_create_cart(request)
     cart.clear()
-    
+
     if request.htmx:
-        response = render(request, 'cart/partials/_drawer.html', {'cart': cart})
+        response = render(request, 'cart/partials/_cart_mutations.html', {'cart': cart})
         response['HX-Trigger'] = 'cartUpdated'
         return response
-    
+
     return redirect('cart:detail')

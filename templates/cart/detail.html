@@ -18,42 +18,39 @@
         </header>
 
         {% if cart.items.all %}
-            <div class="cart-layout">
-                <!-- Items -->
-                <section aria-label="{% trans 'Cart items' %}">
-                    <div id="cart-page-list">
-                        {% include 'cart/partials/_items_list.html' with swap_target='#cart-page-list' %}
-                    </div>
+            <div id="cart-page-region">
+                <div class="cart-layout">
+                    <!-- Items -->
+                    <section aria-label="{% trans 'Cart items' %}">
+                        <div id="cart-page-list">
+                            {% include 'cart/partials/_items_list.html' with cart=cart %}
+                        </div>
 
-                    <div class="mt-6" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
-                        <a href="{% url 'products:list' %}" class="btn btn--ghost">← {% trans "Continue Shopping" %}</a>
-                        <button type="button"
-                                class="btn btn--danger btn--sm"
-                                hx-post="{% url 'cart:clear' %}"
-                                hx-target="#cart-page-list"
-                                hx-swap="innerHTML"
-                                hx-confirm="{% trans 'Remove all items from your cart?' %}">
-                            {% trans "Clear Cart" %}
-                        </button>
-                    </div>
-                </section>
+                        <div class="mt-6" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
+                            <a href="{% url 'products:list' %}" class="btn btn--ghost">← {% trans "Continue Shopping" %}</a>
+                            <button type="button"
+                                    class="btn btn--danger btn--sm"
+                                    hx-post="{% url 'cart:clear' %}"
+                                    hx-confirm="{% trans 'Remove all items from your cart?' %}"
+                                    data-confirm-modal
+                                    hx-swap="none">
+                                {% trans "Clear Cart" %}
+                            </button>
+                        </div>
+                    </section>
 
-                <!-- Summary -->
-                <aside class="summary-card" aria-label="{% trans 'Order summary' %}">
-                    <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "Order Summary" %}</h2>
-                    {% include 'cart/partials/_summary.html' with flat=True %}
-                    <a href="{% url 'checkout:step1' %}" class="btn btn--gold btn--block mt-6">{% trans "Proceed to Checkout" %}</a>
-                </aside>
+                    <!-- Summary -->
+                    <aside class="summary-card" aria-label="{% trans 'Order summary' %}">
+                        <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "Order Summary" %}</h2>
+                        <div id="cart-summary-page">
+                            {% include 'cart/partials/_summary.html' with flat=True %}
+                        </div>
+                        <a href="{% url 'checkout:step1' %}" class="btn btn--gold btn--block mt-6">{% trans "Proceed to Checkout" %}</a>
+                    </aside>
+                </div>
             </div>
         {% else %}
-            <div class="empty-state">
-                <span class="empty-state__icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M15.6 8.4V6.6a3.6 3.6 0 1 0-7.2 0v1.8m-3.06-1.44-.816 9.796A2 2 0 0 0 6.52 19H17.48a2 2 0 0 0 1.996-2.184l-.816-9.796A2 2 0 0 0 16.668 5.3H7.332a2 2 0 0 0-1.992 1.66z"/></svg>
-                </span>
-                <p class="empty-state__title">{% trans "Your cart is empty" %}</p>
-                <p class="empty-state__text">{% trans "Looks like you haven't added anything yet. Explore our collections to find your perfect pair." %}</p>
-                <a href="{% url 'products:list' %}" class="btn btn--primary">{% trans "Shop Now" %}</a>
-            </div>
+            {% include 'cart/partials/_empty_cart.html' %}
         {% endif %}
     </div>
 {% endblock %}

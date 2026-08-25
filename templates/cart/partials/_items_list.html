@@ -1,5 +1,8 @@
 {% load static i18n humanize %}
-{# Cart items list. Params: swap_target (HTMX target), compact (drawer mode) #}
+{# Cart items list. Renders for the cart page and the drawer (compact=True).
+   All mutation buttons are fire-and-forget: the server responds with OOB
+   fragments (_cart_mutations.html) that sync EVERY cart surface, so no
+   per-button targets are needed. #}
 <div class="cart-items-list{{ compact|yesno:' cart-items-list--flat,' }}" {% if not compact %}style="background: transparent; border: 0; padding: 0;"{% endif %}>
     {% for item in cart.items.all %}
         <div class="{% if compact %}cart-item{% else %}cart-page-item{% endif %}">
@@ -26,8 +29,7 @@
                                 aria-label="{% trans 'Decrease quantity' %}"
                                 hx-post="{% url 'cart:update' item.id %}"
                                 hx-vals='{"quantity": {{ item.quantity|add:"-1" }}}'
-                                hx-target="{{ swap_target|default:'#cart-drawer-body' }}"
-                                hx-swap="innerHTML">−</button>
+                                hx-swap="none">−</button>
                         <input type="text" inputmode="numeric" class="qty-stepper__input"
                                value="{{ item.quantity }}" aria-label="{% trans 'Quantity' %}" readonly>
                         <button type="button"
@@ -36,17 +38,16 @@
                                 {% if item.quantity >= item.product.stock_quantity %}disabled{% endif %}
                                 hx-post="{% url 'cart:update' item.id %}"
                                 hx-vals='{"quantity": {{ item.quantity|add:"1" }}}'
-                                hx-target="{{ swap_target|default:'#cart-drawer-body' }}"
-                                hx-swap="innerHTML">+</button>
+                                hx-swap="none">+</button>
                     </div>
 
                     <button type="button"
                             class="cart-item__remove"
                             aria-label="{% trans 'Remove' %} {{ item.product.name }}"
                             hx-post="{% url 'cart:remove' item.id %}"
-                            hx-target="{{ swap_target|default:'#cart-drawer-body' }}"
-                            hx-swap="innerHTML"
-                            hx-confirm="{% trans 'Remove this item from your cart?' %}">
+                            hx-confirm="{% trans 'Remove this item from your cart?' %}"
+                            data-confirm-modal
+                            hx-swap="none">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -62,9 +63,6 @@
             </div>
         </div>
     {% empty %}
-        <div class="empty-state">
-            <p class="empty-state__title">{% trans "Your cart is empty" %}</p>
-            <a href="{% url 'products:list' %}" class="btn btn--primary">{% trans "Continue Shopping" %}</a>
-        </div>
+        {% include 'cart/partials/_empty_cart.html' with compact=compact %}
     {% endfor %}
 </div>

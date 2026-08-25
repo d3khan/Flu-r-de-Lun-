@@ -277,6 +277,42 @@ p {
   transition: opacity var(--transition-fast);
 }
 
+/* Confirmation modal (fdl-confirm) */
+#fdl-confirm {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal, 1000);
+}
+
+#fdl-confirm.is-open {
+  display: block;
+}
+
+.fdl-confirm__panel {
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+  margin: min(20vh, 160px) auto 0;
+}
+
+.fdl-confirm__title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-2);
+}
+
+.fdl-confirm__question {
+  color: var(--color-beige-700);
+  margin-bottom: var(--space-5);
+}
+
+.fdl-confirm__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
 .htmx-request .htmx-indicator,
 .htmx-request.htmx-indicator {
   opacity: 1;

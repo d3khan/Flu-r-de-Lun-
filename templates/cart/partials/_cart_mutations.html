@@ -1,0 +1,50 @@
+{% load static i18n humanize %}
+{# Out-of-band fragments returned by EVERY cart mutation (update/remove/clear).
+   hx-swap="none" on the triggering buttons means only these blocks are applied,
+   so all cart surfaces - page, drawer and both summaries - stay in sync from a
+   single response regardless of which surface the user acted on. #}
+
+{# 1) Main cart page: full region (items or empty-state) #}
+<div id="cart-page-region" hx-swap-oob="true">
+    {% if cart.items.all %}
+        <div class="cart-layout">
+            <section aria-label="{% trans 'Cart items' %}">
+                <div id="cart-page-list">
+                    {% include 'cart/partials/_items_list.html' with cart=cart %}
+                </div>
+                <div class="mt-6" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);">
+                    <a href="{% url 'products:list' %}" class="btn btn--ghost">&#8592; {% trans "Continue Shopping" %}</a>
+                    <button type="button"
+                            class="btn btn--danger btn--sm"
+                            hx-post="{% url 'cart:clear' %}"
+                            hx-confirm="{% trans 'Remove all items from your cart?' %}"
+                            data-confirm-modal>
+                        {% trans "Clear Cart" %}
+                    </button>
+                </div>
+            </section>
+
+            <aside class="summary-card" aria-label="{% trans 'Order summary' %}">
+                <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "Order Summary" %}</h2>
+                <div id="cart-summary-page">
+                    {% include 'cart/partials/_summary.html' with flat=True %}
+                </div>
+                <a href="{% url 'checkout:step1' %}" class="btn btn--gold btn--block mt-6">{% trans "Proceed to Checkout" %}</a>
+            </aside>
+        </div>
+    {% else %}
+        {% include 'cart/partials/_empty_cart.html' %}
+    {% endif %}
+</div>
+
+{# 2) Drawer body: compact rows or empty note #}
+<div id="cart-drawer-body" hx-swap-oob="innerHTML">
+    {% if cart.items.all %}
+        {% include 'cart/partials/_items_list.html' with cart=cart compact=True %}
+    {% else %}
+        {% include 'cart/partials/_empty_cart.html' with compact=True %}
+    {% endif %}
+</div>
+
+{# 3) Drawer footer: totals + checkout actions (vanishes when empty) #}
+{% include 'cart/partials/_drawer_footer.html' with cart=cart %}

@@ -1,0 +1,13 @@
+{% load static i18n humanize %}
+{# Drawer footer: totals + actions. Wrapped so cart mutations can OOB-refresh it. #}
+<div id="cart-drawer-footer">
+    {% if cart.items.all %}
+        <div class="drawer__footer">
+            {% include 'cart/partials/_summary.html' with flat=True %}
+            <div class="mt-4" style="display: grid; gap: var(--space-2);">
+                <a href="{% url 'checkout:step1' %}" class="btn btn--gold btn--block" @click="cartDrawerOpen = false">{% trans "Checkout" %}</a>
+                <a href="{% url 'cart:detail' %}" class="btn btn--secondary btn--block" @click="cartDrawerOpen = false">{% trans "View Cart" %}</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
