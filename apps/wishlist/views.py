@@ -101,14 +101,13 @@ def wishlist_move_to_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id, is_active=True)
     wishlist = get_or_create_wishlist(request)
     
-    from apps.cart.models import Cart
     cart = Cart.objects.get_or_create(user=request.user, session_key='')[0]
-    
+
     wishlist.move_to_cart(product, cart)
-    
+
     if request.htmx:
-        response = render(request, 'cart/partials/_drawer.html', {'cart': cart})
-        response['HX-Trigger'] = 'cartUpdated'
+        response = render(request, 'cart/partials/_cart_mutations.html', {'cart': cart})
+        response['HX-Trigger'] = '{"cartUpdated": true, "fdlOpenCart": true}'
         return response
     
     messages.success(request, _('Moved to cart!'))

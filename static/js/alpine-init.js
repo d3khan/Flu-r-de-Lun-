@@ -38,17 +38,10 @@
                         }
                     });
 
-                    /* Open the drawer whenever its full content is swapped in
-                       (add-to-cart / move-to-cart target #cart-drawer). */
-                    document.body.addEventListener('htmx:afterSwap', function (e) {
-                        if (
-                            e.detail.target &&
-                            e.detail.target.id === 'cart-drawer' &&
-                            e.detail.successful &&
-                            !self.cartDrawerOpen
-                        ) {
-                            self.cartDrawerOpen = true;
-                        }
+                    /* Open the drawer when an add-to-cart / move-to-cart
+                       action broadcasts the dedicated trigger. */
+                    document.body.addEventListener('fdlOpenCart', function () {
+                        if (!self.cartDrawerOpen) self.cartDrawerOpen = true;
                     });
 
                     document.addEventListener('keydown', function (e) {

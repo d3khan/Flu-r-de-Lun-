@@ -1,8 +1,10 @@
 {% load static i18n humanize %}
-{# Cart items list. Renders for the cart page and the drawer (compact=True).
-   All mutation buttons are fire-and-forget: the server responds with OOB
-   fragments (_cart_mutations.html) that sync EVERY cart surface, so no
-   per-button targets are needed. #}
+{% comment %}
+Cart items list. Renders for the cart page and the drawer (compact=True).
+All mutation buttons are fire-and-forget: the server responds with OOB
+fragments (_cart_mutations.html) that sync EVERY cart surface, so no
+per-button targets are needed.
+{% endcomment %}
 <div class="cart-items-list{{ compact|yesno:' cart-items-list--flat,' }}" {% if not compact %}style="background: transparent; border: 0; padding: 0;"{% endif %}>
     {% for item in cart.items.all %}
         <div class="{% if compact %}cart-item{% else %}cart-page-item{% endif %}">

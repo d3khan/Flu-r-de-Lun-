@@ -1,8 +1,10 @@
 {% load static i18n humanize %}
-{# Out-of-band fragments returned by EVERY cart mutation (update/remove/clear).
-   hx-swap="none" on the triggering buttons means only these blocks are applied,
-   so all cart surfaces - page, drawer and both summaries - stay in sync from a
-   single response regardless of which surface the user acted on. #}
+{% comment %}
+Out-of-band fragments returned by EVERY cart mutation (update/remove/clear).
+hx-swap="none" on the triggering buttons means only these blocks are applied,
+so all cart surfaces - page, drawer and both summaries - stay in sync from a
+single response regardless of which surface the user acted on.
+{% endcomment %}
 
 {# 1) Main cart page: full region (items or empty-state) #}
 <div id="cart-page-region" hx-swap-oob="true">

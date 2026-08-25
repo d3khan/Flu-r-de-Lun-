@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -60,15 +60,10 @@ def cart_add(request, product_id):
     item = cart.add_item(product, quantity)
 
     if request.htmx:
-        # Full drawer (keeps the auto-open behaviour) plus OOB fragments so
-        # the underlying cart page stays in sync when it is open too.
-        drawer = render(request, 'cart/partials/_drawer.html', {'cart': cart})
-        oob = render(request, 'cart/partials/_cart_mutations.html', {'cart': cart})
-        response = HttpResponse(
-            drawer.content.decode('utf-8') + oob.content.decode('utf-8'),
-            content_type='text/html; charset=utf-8',
-        )
-        response['HX-Trigger'] = 'cartUpdated'
+        # Broadcast-only: OOB fragments refresh page/drawer/summaries, and the
+        # fdlOpenCart trigger makes Alpine slide the drawer open.
+        response = render(request, 'cart/partials/_cart_mutations.html', {'cart': cart})
+        response['HX-Trigger'] = '{"cartUpdated": true, "fdlOpenCart": true}'
         return response
 
     messages.success(request, _('Added to cart!'))
