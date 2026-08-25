@@ -63,7 +63,10 @@ class ProductForm(StyledFieldsMixin, forms.ModelForm):
             'class': 'form-control',
             'accept': 'image/*',
         }),
-        help_text=_('Main product image (will be marked as primary). Accepted: JPG, JPEG, PNG, GIF, WEBP, BMP, TIFF. Max 10MB.')
+        help_text=_(
+            f'Main product image (will be marked as primary). '
+            f'{ALLOWED_IMAGE_HELP_TEXT}. Max 10MB.'
+        )
     )
 
     # Extra field for multiple additional images (validated here, uploaded
@@ -75,7 +78,10 @@ class ProductForm(StyledFieldsMixin, forms.ModelForm):
             'class': 'form-control',
             'accept': 'image/*',
         }),
-        help_text=_('Upload additional images (select multiple files). Accepted: JPG, JPEG, PNG, GIF, WEBP, BMP, TIFF. Max 10MB each.')
+        help_text=_(
+            f'Upload additional images (select multiple files). '
+            f'{ALLOWED_IMAGE_HELP_TEXT}. Max 10MB each.'
+        )
     )
 
     class Meta:
@@ -186,7 +192,7 @@ class CategoryForm(StyledFieldsMixin, forms.ModelForm):
     image = forms.ImageField(
         label=_('Image'),
         required=False,
-        help_text=_('Accepted: JPG, JPEG, PNG, GIF, WEBP, BMP, TIFF. Max 5MB.'),
+        help_text=_(f'{ALLOWED_IMAGE_HELP_TEXT}. Max 5MB.'),
         widget=forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
     )
 
@@ -226,7 +232,7 @@ class ProductImageForm(StyledFieldsMixin, forms.ModelForm):
         model = ProductImage
         fields = ['image', 'alt_text', 'is_primary', 'sort_order']
         help_texts = {
-            'image': _('Accepted: JPG, JPEG, PNG, GIF, WEBP, BMP, TIFF. Max 10MB.'),
+            'image': _(f'{ALLOWED_IMAGE_HELP_TEXT}. Max 10MB.'),
         }
         widgets = {
             'image': forms.ClearableFileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),

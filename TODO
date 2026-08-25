@@ -4,7 +4,7 @@
 2. **Password Reset Email System**
    - Resend integration needs domain verification (resend.com/domains)
    - Password reset link expires too quickly (currently 10 min)
-   - Email not sending/receiving properly
+   - Email not sending/receiving properly (also make sending of emails possible on contact us page)
    - Need to configure Resend domain verification or switch email provider
 
 3. **Password Reset Link Expiration**

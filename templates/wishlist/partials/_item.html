@@ -36,8 +36,7 @@
                 <button type="button"
                         class="btn btn--primary btn--sm"
                         hx-post="{% url 'wishlist:move_to_cart' item.product.id %}"
-                        hx-target="#cart-drawer"
-                        hx-swap="innerHTML">
+                        hx-swap="none">
                     {% trans "Move to Cart" %}
                 </button>
             {% endif %}

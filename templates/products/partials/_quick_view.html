@@ -44,8 +44,7 @@
             <div class="pd-actions" style="margin-bottom: 0;">
                 {% if product.in_stock %}
                     <form hx-post="{% url 'cart:add' product.id %}"
-                          hx-target="#cart-drawer"
-                          hx-swap="innerHTML"
+                          hx-swap="none"
                           hx-on::after-request="event.detail.elt.closest('.modal').remove()"
                           x-data="{ qty: 1 }">
                         <div class="qty-stepper">
