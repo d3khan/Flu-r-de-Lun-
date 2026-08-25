@@ -27,10 +27,16 @@ class SiteSettings(models.Model):
     tiktok_url = models.URLField(_('TikTok'), blank=True)
     
     # WhatsApp for manual orders
-    whatsapp_number = models.CharField(_('WhatsApp Number'), max_length=20, 
+    whatsapp_number = models.CharField(_('WhatsApp Number'), max_length=20,
         help_text=_('Format: 2348012345678 (no + or spaces)'), blank=True)
-    whatsapp_message = models.TextField(_('WhatsApp Message Template'), 
+    whatsapp_message = models.TextField(_('WhatsApp Message Template'),
         default=_('Hi Fluér de Luné, I want to inquire about {product_name}.'), blank=True)
+
+    # Customer support expectations
+    business_hours = models.CharField(_('Business Hours'), max_length=200, blank=True,
+        help_text=_('e.g. Mon-Sat, 9:00am-6:00pm WAT'))
+    response_time = models.CharField(_('Response Time'), max_length=100, blank=True,
+        help_text=_('e.g. We typically reply within 2 hours'))
     
     # SEO
     meta_description = models.TextField(_('Meta Description'), max_length=160, blank=True)
