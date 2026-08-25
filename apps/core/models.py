@@ -62,13 +62,22 @@ class SiteSettings(models.Model):
     def get_settings(cls):
         """Get or create the singleton instance."""
         obj, created = cls.objects.get_or_create(pk=1)
-        # The .env CONTACT_EMAIL is the source of truth for the main-site
-        # contact email; keep the stored row in sync so it is shown
-        # consistently on every page (footer, contact page, etc.).
-        env_email = os.environ.get('CONTACT_EMAIL', '').strip()
-        if env_email and obj.email != env_email:
-            obj.email = env_email
-            obj.save(update_fields=['email'])
+        # Environment variables are the source of truth for key public-facing
+        # values; keep the stored row in sync so pages stay consistent.
+        env_sync = {
+            'email': 'CONTACT_EMAIL',
+            'business_hours': 'BUSINESS_HOURS',
+            'response_time': 'RESPONSE_TIME',
+            'whatsapp_number': 'WHATSAPP_NUMBER',
+        }
+        changed = []
+        for field, var in env_sync.items():
+            value = os.environ.get(var, '').strip()
+            if value and getattr(obj, field) != value:
+                setattr(obj, field, value)
+                changed.append(field)
+        if changed:
+            obj.save(update_fields=changed)
         return obj
 
 

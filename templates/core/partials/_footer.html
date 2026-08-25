@@ -58,12 +58,7 @@
                 <ul class="footer-links">
                     <li><a href="{% url 'core:about' %}" class="footer-link">{% trans "Our Story" %}</a></li>
                     <li><a href="{% url 'core:contact' %}" class="footer-link">{% trans "Contact Us" %}</a></li>
-                    {% if user.is_authenticated %}
-                        <li><a href="{% url 'orders:history' %}" class="footer-link">{% trans "Order History" %}</a></li>
-                        <li><a href="{% url 'accounts:profile' %}" class="footer-link">{% trans "My Account" %}</a></li>
-                    {% else %}
-                        <li><a href="{% url 'orders:guest_lookup' %}" class="footer-link">{% trans "Track Order" %}</a></li>
-                    {% endif %}
+                    <li><a href="{% url 'orders:guest_lookup' %}" class="footer-link">{% trans "Track Order" %}</a></li>
                     <li><a href="{% url 'cart:detail' %}" class="footer-link">{% trans "Shopping Cart" %}</a></li>
                 </ul>
             </nav>
@@ -126,7 +121,6 @@
             <p class="footer-payments">
                 <span class="footer-payments__label">{% trans "Secure payments" %}</span>
                 <span class="payment-chip">Paystack</span>
-                <span class="payment-chip">Flutterwave</span>
                 <span class="payment-chip">{% trans "Bank Transfer" %}</span>
             </p>
         </div>

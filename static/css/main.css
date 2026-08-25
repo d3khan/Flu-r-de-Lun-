@@ -1460,21 +1460,25 @@ button.mobile-nav__link {
   position: relative;
   display: flex;
   flex-direction: column;
+  /* Full-card frame: encloses category, name, price and badges so product
+     details are never confused between neighbouring cards. */
+  border: 1px solid var(--color-beige-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+}
+
+.product-card:hover {
+  border-color: var(--color-gold);
 }
 
 .product-card__media {
   position: relative;
   display: block;
   aspect-ratio: 1 / 1;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   overflow: hidden;
   background-color: var(--color-beige-100);
-  border: 1px solid var(--color-beige-200);
   margin-bottom: var(--space-3);
-}
-
-.product-card:hover .product-card__media {
-  border-color: var(--color-gold);
 }
 
 .product-card__media img {
@@ -1515,8 +1519,9 @@ button.mobile-nav__link {
 
 .product-card__wishlist {
   position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
+  /* Aligned with card padding so it hugs the photo tile corner */
+  top: var(--space-3);
+  right: var(--space-3);
   z-index: 2;
   width: 40px;
   height: 40px;

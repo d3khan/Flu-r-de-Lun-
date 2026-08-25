@@ -51,3 +51,8 @@ DJANGO_SUPERUSER_PASSWORD=change-me
 # Optional superuser display name
 DJANGO_SUPERUSER_FIRST_NAME=Your
 DJANGO_SUPERUSER_LAST_NAME=Name
+
+# Customer support display (optional; env overrides admin edits)
+BUSINESS_HOURS=
+RESPONSE_TIME=
+WHATSAPP_NUMBER=
