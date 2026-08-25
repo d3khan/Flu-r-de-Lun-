@@ -30,6 +30,9 @@ class RegisterView(CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         login(self.request, self.object)
+        # Keep registered users remembered for 30 days even though sessions
+        # otherwise expire when the browser closes (guest data lifecycle).
+        self.request.session.set_expiry(60 * 60 * 24 * 30)
         messages.success(self.request, _('Welcome to Fluér de Luné! Your account has been created.'))
         return response
 
@@ -53,6 +56,9 @@ class CustomLoginView(LoginView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        # 30-day remember-me: overrides the browser-close expiry applied to
+        # anonymous sessions (guest carts/wishlists still die on exit).
+        self.request.session.set_expiry(60 * 60 * 24 * 30)
         messages.success(self.request, _('Welcome back!'))
         return response
 

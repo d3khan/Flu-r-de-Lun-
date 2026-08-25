@@ -115,11 +115,9 @@ def wishlist_move_to_cart(request, product_id):
     return redirect('cart:detail')
 
 
+@login_required
 def wishlist_count(request):
     """Return wishlist count for HTMX badge update."""
-    if request.user.is_authenticated:
-        wishlist = get_or_create_wishlist(request)
-        count = wishlist.total_items
-    else:
-        count = 0
+    wishlist = get_or_create_wishlist(request)
+    count = wishlist.total_items
     return JsonResponse({'count': count})

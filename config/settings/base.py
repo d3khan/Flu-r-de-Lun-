@@ -163,6 +163,11 @@ IMGBB_API_KEY = os.environ.get('IMGBB_API_KEY', '')
 # Session settings
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days
 SESSION_SAVE_EVERY_REQUEST = True
+# Guest sessions (carts) self-destruct when the browser closes.
+# Logged-in users get a 30-day extension applied right after login/registration
+# (see CustomLoginView / RegisterView), so accounts stay remembered while
+# anonymous data truly expires on exit.
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # Cache
 CACHES = {
