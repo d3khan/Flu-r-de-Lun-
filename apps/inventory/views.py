@@ -2,17 +2,20 @@
 Views for inventory management.
 """
 import os
+import logging
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_protect
-from django.db.models import Q, Count
+from django.db.models import Q, Count, F
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponseForbidden
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 from apps.products.models import Product, Category, ProductImage
 from apps.core.utils.imgbb import get_imgbb_service
@@ -43,7 +46,15 @@ def _create_product_image(product, uploaded_file, is_primary, sort_order, alt_te
     Returns the service result dict so callers can warn on failure.
     Nothing is written to the local filesystem.
     """
-    result = get_imgbb_service().upload(uploaded_file, name=alt_text)
+    # Increment counter for unique ImgBB name
+    product.image_upload_counter = F('image_upload_counter') + 1
+    product.save(update_fields=['image_upload_counter'])
+    product.refresh_from_db()
+    
+    # Generate unique name: product name + counter
+    unique_name = f"{alt_text} ({product.image_upload_counter})"
+    
+    result = get_imgbb_service().upload(uploaded_file, name=unique_name)
     if not result['success']:
         return result
     ProductImage.objects.create(
@@ -69,21 +80,41 @@ def _clear_imgbb_refs(obj):
     obj.save(update_fields=list(IMGBB_REF_FIELDS))
 
 
-def _remove_product_image(image_row):
-    """Remove a ProductImage together with its remote ImgBB copy.
+def _remove_product_image(image_row, delete_from_imgbb=True):
+    """Remove a ProductImage and optionally its remote ImgBB copy.
 
-    The remote deletion is VERIFIED (the original URL must stop resolving).
-    Returns False when ImgBB would not confirm deletion after retries - the
-    row is then KEPT so the removal can be retried later.
+    Args:
+        image_row: The ProductImage instance to remove
+        delete_from_imgbb: If True, attempt to delete from ImgBB. If False,
+            only delete the database row (keep ImgBB image).
+
+    Returns:
+        Tuple of (db_deleted, imgbb_deleted) where:
+        - db_deleted: True if database row was deleted
+        - imgbb_deleted: True if ImgBB deletion was confirmed
     """
     service = get_imgbb_service()
-    purged = not image_row.imgbb_delete_url or service.delete_verified(
-        image_row.imgbb_delete_url,
-        image_row.large_url or image_row.imgbb_display_url,
-    )
-    if purged:
-        image_row.delete()
-    return purged
+    imgbb_deleted = False
+
+    if delete_from_imgbb and image_row.imgbb_delete_url:
+        # Try to delete from ImgBB (verified), but don't block DB deletion on failure
+        imgbb_deleted = service.delete_verified(
+            image_row.imgbb_delete_url,
+            image_row.large_url or image_row.imgbb_display_url,
+        )
+        if not imgbb_deleted:
+            logger.warning(
+                "ImgBB deletion not confirmed for image %s (delete_url=%s), "
+                "but removing database row as requested",
+                image_row.pk, image_row.imgbb_delete_url
+            )
+    elif not delete_from_imgbb:
+        # User chose not to delete from ImgBB - just clear the references
+        logger.info("Keeping ImgBB image for ProductImage %s (user choice)", image_row.pk)
+
+    # Always delete the database row when removal is requested
+    image_row.delete()
+    return True, imgbb_deleted
 
 
 def _apply_imgbb_to_category(category, result):
@@ -357,6 +388,7 @@ def product_edit(request, pk):
             product = form.save()
 
             failed_removals = []
+            imgbb_failures = []
 
             # 1) Explicit removals of existing images. Each image carries a
             #    hidden marker input (remove_image_<pk>); the ✕ button sets
@@ -364,8 +396,11 @@ def product_edit(request, pk):
             #    intent actually reaches the server.
             for image in list(product.images.all()):
                 if request.POST.get(f'remove_image_{image.pk}') == '1':
-                    if not _remove_product_image(image):
-                        failed_removals.append(image.alt_text or f'#{image.pk}')
+                    # Check if user wants to also delete from ImgBB
+                    delete_from_imgbb = request.POST.get(f'delete_imgbb_{image.pk}') == '1'
+                    db_deleted, imgbb_deleted = _remove_product_image(image, delete_from_imgbb)
+                    if not imgbb_deleted and delete_from_imgbb:
+                        imgbb_failures.append(image.alt_text or f'#{image.pk}')
 
             # 2) Primary image:
             #    - new file provided  -> delete the old one (ImgBB + row),
@@ -374,11 +409,13 @@ def product_edit(request, pk):
             primary_image = request.FILES.get('primary_image')
             if primary_image:
                 old_primary = product.primary_image
-                if old_primary and not _remove_product_image(old_primary):
-                    messages.warning(request, _(
-                        'The previous primary image could not be deleted from '
-                        'ImgBB right now - it will stay hosted there.'
-                    ))
+                if old_primary:
+                    db_deleted, imgbb_deleted = _remove_product_image(old_primary, True)
+                    if not imgbb_deleted:
+                        messages.warning(request, _(
+                            'The previous primary image could not be deleted from '
+                            'ImgBB right now - it was removed from the product but may still exist on ImgBB.'
+                        ))
                 result = _create_product_image(product, primary_image, True, 0, product.name)
                 if not result['success']:
                     _warn_imgbb_failure(request, _('primary image'), result)
@@ -399,14 +436,14 @@ def product_edit(request, pk):
                     _warn_imgbb_failure(request, _('image'), result)
 
             messages.success(request, _('Product "%(name)s" updated successfully.') % {'name': product.name})
-            if failed_removals:
+            if imgbb_failures:
                 messages.warning(request, ngettext(
-                    '%(count)s removed image could not be deleted from ImgBB '
-                    'right now - it was kept on the product so you can retry.',
-                    '%(count)s removed images could not be deleted from ImgBB '
-                    'right now - they were kept on the product so you can retry.',
-                    len(failed_removals),
-                ) % {'count': len(failed_removals)})
+                    '%(count)s image could not be deleted from ImgBB '
+                    'right now - it was removed from the product but may still exist on ImgBB.',
+                    '%(count)s images could not be deleted from ImgBB '
+                    'right now - they were removed from the product but may still exist on ImgBB.',
+                    len(imgbb_failures),
+                ) % {'count': len(imgbb_failures)})
             return redirect('inventory:product_list')
     else:
         form = ProductForm(instance=product)

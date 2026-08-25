@@ -113,3 +113,61 @@
         else if (mq.addListener) mq.addListener(onChange);
     }
 })();
+
+/* ===== Global Loading Indicator =====
+   Shows a progress bar during HTMX requests and page navigation. */
+(function () {
+    'use strict';
+
+    var loadingEl = null;
+    var requestCount = 0;
+
+    function showLoading() {
+        if (!loadingEl) {
+            loadingEl = document.getElementById('fdl-loading');
+        }
+        if (loadingEl) {
+            requestCount++;
+            loadingEl.classList.add('is-active');
+        }
+    }
+
+    function hideLoading() {
+        if (!loadingEl) {
+            loadingEl = document.getElementById('fdl-loading');
+        }
+        if (loadingEl) {
+            requestCount = Math.max(0, requestCount - 1);
+            if (requestCount === 0) {
+                loadingEl.classList.remove('is-active');
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        loadingEl = document.getElementById('fdl-loading');
+
+        // Show/hide during HTMX requests
+        document.body.addEventListener('htmx:beforeRequest', showLoading);
+        document.body.addEventListener('htmx:afterRequest', hideLoading);
+        document.body.addEventListener('htmx:responseError', hideLoading);
+        document.body.addEventListener('htmx:abort', hideLoading);
+
+        // Also show during full page navigation (beforeunload)
+        window.addEventListener('beforeunload', function () {
+            if (loadingEl) {
+                loadingEl.classList.add('is-active');
+            }
+        });
+
+        // Handle page restore (back/forward cache)
+        window.addEventListener('pageshow', function (e) {
+            if (e.persisted) {
+                if (loadingEl) {
+                    loadingEl.classList.remove('is-active');
+                }
+                requestCount = 0;
+            }
+        });
+    });
+})();

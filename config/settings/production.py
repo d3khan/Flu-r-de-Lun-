@@ -16,8 +16,10 @@ DATABASES = {
         default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
         conn_health_checks=True,
+        options={'options': '-c default_transaction_isolation=read_committed -c statement_timeout=30000'}
     )
 }
+DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
 
 # Security headers
 SECURE_SSL_REDIRECT = True

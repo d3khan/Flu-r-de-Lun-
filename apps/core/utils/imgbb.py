@@ -19,8 +19,9 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 # Accepted upload formats (ImgBB-supported AND Pillow-verifiable).
-ALLOWED_IMAGE_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tif', '.tiff')
-ALLOWED_IMAGE_HELP_TEXT = 'Accepted: JPG, JPEG, PNG, GIF, WEBP, BMP or TIFF'
+# Note: HEIC/AVIF may require additional system libraries (libheif) for Pillow support.
+ALLOWED_IMAGE_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tif', '.tiff', '.heic', '.heif', '.avif')
+ALLOWED_IMAGE_HELP_TEXT = 'Accepted: JPG, JPEG, PNG, GIF, WEBP, BMP, TIFF, HEIC, HEIF or AVIF'
 
 
 def image_extension_allowed(filename: str) -> bool:

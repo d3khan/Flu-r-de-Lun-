@@ -95,6 +95,7 @@ class Product(models.Model):
     is_bestseller = models.BooleanField(_('Best Seller'), default=False)
     sku = models.CharField(_('SKU'), max_length=50, unique=True, blank=True)
     weight = models.DecimalField(_('Weight (kg)'), max_digits=6, decimal_places=3, default=0)
+    image_upload_counter = models.PositiveIntegerField(_('Image Upload Counter'), default=0)
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
 

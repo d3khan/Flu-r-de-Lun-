@@ -67,6 +67,11 @@
       data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"
       x-effect="document.body.classList.toggle('scroll-lock', mobileMenuOpen || cartDrawerOpen)"
       hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    
+    <!-- Global loading indicator -->
+    <div id="fdl-loading" class="fdl-loading" aria-hidden="true">
+        <div class="fdl-loading__bar"></div>
+    </div>
 
     <!-- Skip to main content -->
     <a href="#main-content" class="skip-link">{% trans "Skip to main content" %}</a>

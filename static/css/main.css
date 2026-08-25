@@ -127,6 +127,60 @@ ol[class] {
 }
 
 /* ==========================================================================
+   Global Loading Indicator
+   ========================================================================== */
+
+.fdl-loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: transparent;
+  z-index: var(--z-toast);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-fast), visibility var(--transition-fast);
+}
+
+.fdl-loading.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.fdl-loading__bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--color-gold), var(--color-gold-light));
+  border-radius: 0 0 var(--radius-full) 0;
+  animation: fdl-loading-indeterminate 1.5s ease-in-out infinite;
+  transform-origin: left;
+}
+
+@keyframes fdl-loading-indeterminate {
+  0% {
+    width: 0%;
+    transform: translateX(0);
+  }
+  50% {
+    width: 70%;
+    transform: translateX(0);
+  }
+  100% {
+    width: 0%;
+    transform: translateX(100%);
+  }
+}
+
+/* HTMX integration - show loading during requests */
+.htmx-request .fdl-loading,
+body.htmx-request .fdl-loading {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ==========================================================================
    Typography
    ========================================================================== */
 
@@ -1652,6 +1706,17 @@ button.mobile-nav__link {
 
 [data-theme="dark"] .product-card__quick-view:hover,
 [data-theme="dark"] .product-card__quick-view:focus-visible {
+
+/* Category cards - ensure white text on overlay in both themes */
+.category-card__name,
+.category-card__count {
+  color: var(--color-white);
+}
+
+[data-theme="dark"] .category-card__name,
+[data-theme="dark"] .category-card__count {
+  color: var(--color-white);
+}
   color: var(--color-white);
   background-color: var(--color-gold-dark);
 }

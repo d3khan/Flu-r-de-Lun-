@@ -262,7 +262,7 @@
                                             </button>
                                             {% if image.imgbb_delete_url %}
                                             <label class="form-check form-check--inline imgbb-delete-check">
-                                                <input type="checkbox" name="delete_imgbb_{{ image.pk }}" value="1" class="form-check-input">
+                                                <input type="checkbox" name="delete_imgbb_{{ image.pk }}" value="1" class="form-check-input" checked>
                                                 <span class="form-check__label">{% trans "Also delete from ImgBB" %}</span>
                                             </label>
                                             {% endif %}
