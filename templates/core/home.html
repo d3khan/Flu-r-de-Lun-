@@ -1,7 +1,11 @@
 {% extends "base.html" %}
-{% load static i18n humanize %}
+{% load static i18n humanize brand_tags %}
 
 {% block title %}{{ site_settings.site_name }} — {{ site_settings.site_tagline }}{% endblock %}
+
+{% block extra_head %}
+    <link rel="preload" as="image" href="{% static 'images/hero.jpg' %}" fetchpriority="high">
+{% endblock %}
 
 {% block content %}
     <!-- Hero -->
@@ -89,9 +93,12 @@
                     {% for category in categories %}
                         <a href="{{ category.get_absolute_url }}" class="category-card">
                             {% if category.image_url %}
-                                <img src="{{ category.image_url }}" alt="{{ category.name }}" loading="lazy">
+                                <img src="{% image_proxy_url category.image_url %}" alt="{{ category.name }}" loading="lazy" decoding="async"
+                                     class="is-loading"
+                                     onload="this.classList.remove('is-loading');this.classList.add('is-loaded')"
+                                     onerror="this.onerror=null;this.src='{% static 'images/category-placeholder.svg' %}';this.classList.remove('is-loading');this.classList.add('is-loaded')">
                             {% else %}
-                                <img src="{% static 'images/category-placeholder.svg' %}" alt="{{ category.name }}" loading="lazy">
+                                <img src="{% static 'images/category-placeholder.svg' %}" alt="{{ category.name }}" loading="lazy" decoding="async" class="is-loaded">
                             {% endif %}
                             <span class="category-card__overlay">
                                 <span>

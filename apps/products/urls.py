@@ -12,4 +12,7 @@ urlpatterns = [
     path('partials/card/<int:product_id>/', views.product_card, name='product_card'),
     path('partials/quick-view/<int:product_id>/', views.product_quick_view, name='quick_view'),
     path('api/check-stock/<int:product_id>/', views.check_stock, name='check_stock'),
+    
+    # Image proxy for external images (ImgBB)
+    path('image-proxy/', views.image_proxy, name='image_proxy'),
 ]

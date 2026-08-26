@@ -1,4 +1,4 @@
-{% load static i18n humanize %}
+{% load static i18n humanize brand_tags %}
 <article class="product-card">
     <div class="product-card__media">
         <!-- Badges -->
@@ -36,9 +36,15 @@
         <a href="{{ product.get_absolute_url }}" aria-label="{{ product.name }}">
             {% with image=product.primary_image %}
                 {% if image %}
-                    <img src="{{ image.thumbnail_url }}"
+                    <img src="{% image_proxy_url image.thumbnail_url 400 400 %}"
                          alt="{{ image.alt_text|default:product.name }}"
-                         loading="lazy" width="400" height="400">
+                         loading="lazy" width="400" height="400" decoding="async"
+                         class="is-loading"
+                         onload="this.classList.remove('is-loading');this.classList.add('is-loaded')"
+                         onerror="this.onerror=null;this.style.display='none';this.nextElementSibling.style.display='flex'">
+                    <span class="product-card__placeholder" style="display:none">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="7.5" cy="12" r="4.5"/><circle cx="16.5" cy="12" r="4.5"/><path d="M12 10.6c-.9-1.1-3.1-1.1-4 .8M12 10.6c.9-1.1 3.1-1.1 4 .8"/></svg>
+                    </span>
                 {% else %}
                     <span class="product-card__placeholder">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="7.5" cy="12" r="4.5"/><circle cx="16.5" cy="12" r="4.5"/><path d="M12 10.6c-.9-1.1-3.1-1.1-4 .8M12 10.6c.9-1.1 3.1-1.1 4 .8"/></svg>

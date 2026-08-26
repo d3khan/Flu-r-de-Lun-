@@ -2,11 +2,20 @@ from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.views.generic import ListView, DetailView
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseBadRequest
 from django.utils.translation import gettext_lazy as _
+from django.views.decorators.http import require_GET
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_control
+
+import requests
+import hashlib
+import logging
 
 from .models import Product, Category
 from apps.wishlist.utils import annotate_in_wishlist
+
+logger = logging.getLogger(__name__)
 
 
 class ProductListView(ListView):
@@ -180,3 +189,75 @@ def check_stock(request, product_id):
         'stock_status_display': product.stock_status_display,
         'stock_quantity': product.stock_quantity,
     })
+
+
+@require_GET
+@cache_control(public=True, max_age=31536000, immutable=True)
+def image_proxy(request):
+    """
+    Proxy external images (e.g., ImgBB) through Django to enable browser caching.
+    
+    Usage: /products/image-proxy/?url=<encoded_url>&w=<width>&h=<height>
+    
+    The URL is validated to only allow known external hosts (ImgBB).
+    """
+    external_url = request.GET.get('url')
+    if not external_url:
+        return HttpResponseBadRequest('Missing url parameter')
+    
+    # Validate URL - only allow known safe hosts
+    allowed_hosts = ['ibb.co', 'i.ibb.co', 'imgbb.com']
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(external_url)
+        if parsed.netloc not in allowed_hosts:
+            logger.warning(f"Image proxy blocked non-allowed host: {parsed.netloc}")
+            return HttpResponseBadRequest('Host not allowed')
+    except Exception:
+        return HttpResponseBadRequest('Invalid URL')
+    
+    # Optional size parameters for future image optimization
+    width = request.GET.get('w')
+    height = request.GET.get('h')
+    
+    # Generate cache key from URL
+    cache_key = hashlib.md5(external_url.encode()).hexdigest()
+    
+    # Check if we have a cached version (using session as simple cache)
+    # In production, use Redis or database caching
+    cached = request.session.get(f'img_proxy_{cache_key}')
+    if cached and not request.GET.get('refresh'):
+        # We can't easily serve cached binary from session, so just proxy again
+        pass
+    
+    try:
+        # Fetch from external host with timeout
+        response = requests.get(external_url, timeout=10, stream=True)
+        response.raise_for_status()
+        
+        content_type = response.headers.get('Content-Type', 'image/jpeg')
+        
+        # Validate content type
+        allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/heic', 'image/heif']
+        if content_type not in allowed_types:
+            logger.warning(f"Image proxy blocked non-image content-type: {content_type}")
+            return HttpResponseBadRequest('Invalid content type')
+        
+        # Stream response to avoid loading full image in memory
+        django_response = HttpResponse(
+            response.iter_content(chunk_size=8192),
+            content_type=content_type
+        )
+        
+        # Set cache headers - 1 year, immutable
+        django_response['Cache-Control'] = 'public, max-age=31536000, immutable'
+        django_response['Content-Length'] = response.headers.get('Content-Length', '')
+        
+        return django_response
+        
+    except requests.Timeout:
+        logger.error(f"Image proxy timeout for {external_url}")
+        return HttpResponseBadRequest('Image fetch timeout')
+    except requests.RequestException as e:
+        logger.error(f"Image proxy error for {external_url}: {e}")
+        return HttpResponseBadRequest('Failed to fetch image')
