@@ -60,6 +60,7 @@ File: **`static/css/variables.css`** — every component reads from these variab
 - Status colours (success/warning/error/info), radii, shadows, fonts, breakpoints, touch-target sizes
 
 The gold gradient on the logo accent lives separately in **`static/css/main.css`** under `.brand-accent`.
+**Section backgrounds**: `.section` (default beige), `.section--white` (white), `.section--gradient` (beige→white gradient, works in light/dark) — used by Best Sellers on homepage.
 
 After editing CSS, hard-refresh (Ctrl+Shift+R); in production run `python manage.py collectstatic`.
 
@@ -89,6 +90,7 @@ After editing CSS, hard-refresh (Ctrl+Shift+R); in production run `python manage
 | Gateway keys | See README table |
 | Canonical site URL | `SITE_URL=https://yourdomain.com` |
 | Debug mode / hosts / secret key | `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_SECRET_KEY` |
+| ImgBB API key | `IMGBB_API_KEY` |
 
 ---
 
@@ -101,6 +103,44 @@ Declared once in **`config/settings/base.py`** (`CURRENCY_SYMBOL = '₦'`). Note
 ## 10. Minimum password length
 
 Django validator default is 8 (`config/settings/base.py`). If you raise it, also update the chip text in `templates/includes/_password_hints.html` ("8+ characters").
+
+---
+
+## 11. Image loading & proxy  *(new)*
+
+- **All external images (ImgBB) go through `/products/image-proxy/`** — served with `Cache-Control: public, max-age=31536000, immutable` so browsers cache 1 year.
+- **Template tag**: `{% image_proxy_url image.url [width] [height] %}` — only proxies ImgBB URLs; others pass through.
+- **Skeleton placeholders**: pulse animation while loading → fade-in on complete. Used everywhere: product cards, category cards, detail gallery, inventory tables, form previews.
+- **Error fallback**: broken/missing images show a minimalist SVG placeholder.
+- **Preload critical images**: hero & primary product image get `<link rel="preload" as="image" fetchpriority="high">` in page `<head>`.
+- **Non-blocking decode**: `decoding="async"` on all `<img>` tags.
+- **Medium quality on cards**: product grid uses `medium_url` (320px) instead of tiny `thumbnail_url` (150px) — sharp at 400px display.
+
+---
+
+## 12. Global loading bar
+
+- **`#fdl-loading`** in `templates/base.html` — shows immediately on page start, hides on `window.load`.
+- Also shows during HTMX requests and full-page navigation (`beforeunload`).
+- **3-second force-hide** safety timeout in `static/js/main.js` if load event misfires.
+- Gold progress bar with indeterminate animation.
+
+---
+
+## 13. Mobile theme toggle
+
+- **Sun/moon icon button** at bottom-left of both mobile nav drawers (main site + inventory).
+- Click toggles `data-theme` on `<html>`, persists to `localStorage`, updates browser theme-color meta.
+- Logic lives in `static/js/main.js` → `toggleTheme()` (single line in `@click` avoids Alpine parsing issues).
+- Icon swap via CSS `[data-theme="light"]` / `[data-theme="dark"]` selectors.
+
+---
+
+## 14. Best Sellers gradient section
+
+- Homepage Best Sellers uses `.section--gradient` (beige→white in light, dark beige→darker in dark).
+- Defined in `static/css/main.css` with dark-mode override.
+- Sits between Featured (default beige) and New Arrivals (white) for visual rhythm.
 
 ---
 

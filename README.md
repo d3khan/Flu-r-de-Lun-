@@ -8,7 +8,7 @@
 
 - **Full storefront** — home with hero & featured collections, category browsing, product detail pages with image galleries + zoom, search, sorting, pagination
 - **Cart system** — session carts for guests that **merge into your account on login**, HTMX slide-in cart drawer, live stock validation
-- **Wishlist** — one-tap heart toggles, move items to cart
+- **Wishlist** — one-tap heart toggles, move items to cart, **persisted in database per user** (survives restarts/deploy)
 - **Accounts** — email-based auth, address book with defaults, profile management, password reset
 - **3-step checkout** — shipping → payment method → confirm, with free shipping over ₦50,000
 - **Dual payments**
@@ -16,6 +16,8 @@
   - *Manual*: bank details page + pre-filled WhatsApp confirmation message
 - **Order lifecycle** — FDL-XXXXXXXX order numbers, status timeline, cancel-with-stock-restoration, reorder, guest order tracking by number + email
 - **Admin dashboard** — manage products/categories/images, orders with status actions, manual-payment bank details, contact messages, site settings
+- **Image reliability** — **server-side image proxy** for all external (ImgBB) images: long-term browser caching, skeleton loading placeholders, error fallback, preload critical images, `decoding="async"`
+- **Global loading indicator** — gold progress bar on initial load, HTMX requests, and page navigation; 3s force-hide safety
 - **PWA-ready** — manifest, service worker (network-first HTML / cache-first static), offline page
 - **Accessible** — skip links, ARIA labels, 48px touch targets, WCAG-AA text contrast
 
@@ -24,10 +26,10 @@
 | Layer | Choice |
 |---|---|
 | Backend | Django 5.x+, Python 3.13 |
-| Database | SQLite (dev) → PostgreSQL (prod) |
+| Database | SQLite (dev) → PostgreSQL (prod, Neon + PgBouncer) |
 | Frontend | HTMX (partial updates) + Alpine.js (UI state), hand-crafted CSS design system (`static/css/variables.css`) |
 | Fonts | Playfair Display + Inter (self-hosted WOFF2) |
-| Images | django-imagekit auto-thumbnails (400/800/1200px WebP) |
+| Images | django-imagekit auto-thumbnails (400/800/1200px WebP) + **ImgBB proxy** |
 | Payments | Paystack & Flutterwave REST APIs |
 | Static serving | WhiteNoise |
 
@@ -71,6 +73,7 @@ Visit `http://127.0.0.1:8000` · Admin at `/admin`.
 | `PAYMENT_GATEWAY` | `paystack` or `flutterwave` |
 | `PAYSTACK_SECRET_KEY` / `PAYSTACK_PUBLIC_KEY` | From dashboard.paystack.com (`sk_test_…` for testing) |
 | `FLUTTERWAVE_SECRET_KEY` / `…PUBLIC_KEY` / `…ENCRYPTION_KEY` | From app.flutterwave.com |
+| `IMGBB_API_KEY` | For uploading product/category images to ImgBB |
 
 See [`dotenv_example.txt`](dotenv_example.txt) for the full list and [`instructions.md`](instructions.md) for everything you can customise without touching code.
 
@@ -84,9 +87,9 @@ See [`dotenv_example.txt`](dotenv_example.txt) for the full list and [`instructi
 ```
 ├── apps/
 │   ├── core/        # Home, about, contact, legal pages, SiteSettings singleton
-│   ├── products/    # Category, Product, ProductImage (+ ImageKit thumbnails)
+│   ├── products/    # Category, Product, ProductImage (+ ImageKit thumbnails), **Image Proxy view**
 │   ├── cart/        # Session + user carts, HTMX drawer partials
-│   ├── wishlist/    # Toggle, move-to-cart
+│   ├── wishlist/    # Toggle, move-to-cart, **DB-persisted per user**
 │   ├── accounts/    # CustomUser (email login), Address book
 │   ├── orders/      # Order, OrderItem, status history, admin views
 │   ├── payments/    # Gateway services, webhooks, ManualPaymentInfo
