@@ -44,6 +44,9 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 
+    <!-- mian.js from main site for loading animation stopping -->
+    <script src="{% static 'js/main.js' %}" defer></script>
+
     {% block extra_head %}{% endblock %}
 </head>
 <body x-data="app" class="inventory-body" data-theme="light">
