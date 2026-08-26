@@ -11,16 +11,14 @@ SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 ALLOWED_HOSTS = os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
 
 # Database
-# Parse DATABASE_URL first, then add options
+# Neon pooled connections (PgBouncer) don't support startup parameters like
+# default_transaction_isolation. Use the URL as-is (already has sslmode=require).
+# DISABLE_SERVER_SIDE_CURSORS prevents "cursor does not exist" errors with PgBouncer.
 database_config = dj_database_url.config(
     default=os.environ.get('DATABASE_URL'),
     conn_max_age=600,
     conn_health_checks=True,
 )
-# Add PostgreSQL connection options
-database_config['OPTIONS'] = {
-    'options': '-c default_transaction_isolation=read_committed -c statement_timeout=30000'
-}
 database_config['DISABLE_SERVER_SIDE_CURSORS'] = True
 
 DATABASES = {
