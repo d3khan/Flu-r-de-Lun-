@@ -11,15 +11,21 @@ SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 ALLOWED_HOSTS = os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
 
 # Database
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,
-        conn_health_checks=True,
-        options={'options': '-c default_transaction_isolation=read_committed -c statement_timeout=30000'}
-    )
+# Parse DATABASE_URL first, then add options
+database_config = dj_database_url.config(
+    default=os.environ.get('DATABASE_URL'),
+    conn_max_age=600,
+    conn_health_checks=True,
+)
+# Add PostgreSQL connection options
+database_config['OPTIONS'] = {
+    'options': '-c default_transaction_isolation=read_committed -c statement_timeout=30000'
 }
-DATABASES['default']['DISABLE_SERVER_SIDE_CURSORS'] = True
+database_config['DISABLE_SERVER_SIDE_CURSORS'] = True
+
+DATABASES = {
+    'default': database_config,
+}
 
 # Security headers
 SECURE_SSL_REDIRECT = True
