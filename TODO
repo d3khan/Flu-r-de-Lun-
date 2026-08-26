@@ -24,3 +24,4 @@
    - If WhatsApp API setup is complex/requires verification, just display her WhatsApp number with click-to-chat link instead
 
 7. **Make total in cart include cost of shipping fee**
+8. **cart sidebar does nt update with multiple items in cart at once**
