@@ -1379,10 +1379,43 @@
   border-color: var(--color-beige-300);
 }
 
+.inventory-category-card {
+  position: relative;
+}
+
 .inventory-category-card__image {
   width: 100%;
   aspect-ratio: 4/3;
   object-fit: cover;
+  transition: opacity var(--transition-normal);
+  position: relative;
+  z-index: 1;
+}
+
+.inventory-category-card__image.is-loading {
+  opacity: 0;
+}
+
+.inventory-category-card__image.is-loaded {
+  opacity: 1;
+}
+
+.inventory-category-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--color-beige-100) 25%, var(--color-beige-200) 50%, var(--color-beige-100) 75%);
+  background-size: 200% 200%;
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.inventory-category-card:has(.inventory-category-card__image.is-loaded)::before {
+  opacity: 0;
 }
 
 .inventory-category-card__placeholder {
@@ -1393,6 +1426,8 @@
   align-items: center;
   justify-content: center;
   color: var(--color-beige-400);
+  position: relative;
+  z-index: 1;
 }
 
 .inventory-category-card__content {

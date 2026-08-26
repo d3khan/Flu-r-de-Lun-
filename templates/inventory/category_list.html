@@ -27,7 +27,8 @@
         {% for category in categories %}
         <article class="inventory-category-card">
             {% if category.image_url %}
-                <img src="{% image_proxy_url category.image_url %}" alt="{{ category.name }}" class="inventory-category-card__image" loading="lazy" decoding="async">
+                <img src="{% image_proxy_url category.image_url %}" alt="{{ category.name }}" class="inventory-category-card__image is-loading" loading="lazy" decoding="async"
+                     onload="this.classList.remove('is-loading');this.classList.add('is-loaded')">
             {% else %}
                 <div class="inventory-category-card__placeholder">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
