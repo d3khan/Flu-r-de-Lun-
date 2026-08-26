@@ -121,12 +121,14 @@
 
     var loadingEl = null;
     var requestCount = 0;
+    var initialLoadComplete = false;
 
     function showLoading() {
         if (!loadingEl) {
             loadingEl = document.getElementById('fdl-loading');
         }
-        if (loadingEl) {
+        // Don't show for HTMX requests during initial page load
+        if (loadingEl && initialLoadComplete) {
             requestCount++;
             loadingEl.classList.add('is-active');
         }
@@ -136,7 +138,7 @@
         if (!loadingEl) {
             loadingEl = document.getElementById('fdl-loading');
         }
-        if (loadingEl) {
+        if (loadingEl && initialLoadComplete) {
             requestCount = Math.max(0, requestCount - 1);
             if (requestCount === 0) {
                 loadingEl.classList.remove('is-active');
@@ -158,6 +160,7 @@
                 loadingEl.classList.remove('is-active');
             }
             requestCount = 0;
+            initialLoadComplete = true;
         }
 
         if (document.readyState === 'complete') {
@@ -166,7 +169,7 @@
             window.addEventListener('load', hideInitialLoading);
         }
 
-        // Show/hide during HTMX requests
+        // Show/hide during HTMX requests (only after initial load)
         document.body.addEventListener('htmx:beforeRequest', showLoading);
         document.body.addEventListener('htmx:afterRequest', hideLoading);
         document.body.addEventListener('htmx:responseError', hideLoading);
@@ -186,6 +189,7 @@
                     loadingEl.classList.remove('is-active');
                 }
                 requestCount = 0;
+                initialLoadComplete = true;
             }
         });
     });
