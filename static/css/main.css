@@ -1332,7 +1332,7 @@ button.mobile-nav__link {
 .mobile-nav__theme-toggle {
   position: absolute;
   bottom: var(--space-4);
-  right: var(--space-4);
+  left: var(--space-4);
   z-index: 10;
 }
 
