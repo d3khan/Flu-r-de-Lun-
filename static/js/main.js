@@ -194,3 +194,14 @@
         });
     });
 })();
+
+/* Global theme toggle function for mobile nav buttons */
+function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('fdl-theme', next);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', next === 'dark' ? '#201b16' : '#c9a962');
+}

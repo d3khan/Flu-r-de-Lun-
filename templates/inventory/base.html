@@ -268,15 +268,7 @@
             <div class="mobile-nav__theme-toggle">
                 <button type="button"
                         class="icon-btn mobile-theme-toggle"
-                        @click="
-                            const html = document.documentElement;
-                            const isDark = html.getAttribute('data-theme') === 'dark';
-                            const next = isDark ? 'light' : 'dark';
-                            html.setAttribute('data-theme', next);
-                            localStorage.setItem('fdl-theme', next);
-                            const meta = document.querySelector('meta[name=\"theme-color\"]');
-                            if (meta) meta.setAttribute('content', next === 'dark' ? '#201b16' : '#c9a962');
-                        "
+                        @click="toggleTheme()"
                         :aria-label="document.documentElement.getAttribute('data-theme') === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
                         title="">
                     <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
