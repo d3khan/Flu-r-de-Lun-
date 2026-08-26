@@ -147,6 +147,25 @@
     document.addEventListener('DOMContentLoaded', function () {
         loadingEl = document.getElementById('fdl-loading');
 
+        // Show loading bar immediately on initial page load
+        if (loadingEl && document.readyState === 'loading') {
+            loadingEl.classList.add('is-active');
+        }
+
+        // Hide loading bar when page is fully loaded
+        function hideInitialLoading() {
+            if (loadingEl) {
+                loadingEl.classList.remove('is-active');
+            }
+            requestCount = 0;
+        }
+
+        if (document.readyState === 'complete') {
+            hideInitialLoading();
+        } else {
+            window.addEventListener('load', hideInitialLoading);
+        }
+
         // Show/hide during HTMX requests
         document.body.addEventListener('htmx:beforeRequest', showLoading);
         document.body.addEventListener('htmx:afterRequest', hideLoading);

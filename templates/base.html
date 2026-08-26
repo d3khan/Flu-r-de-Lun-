@@ -72,6 +72,12 @@
     <div id="fdl-loading" class="fdl-loading" aria-hidden="true">
         <div class="fdl-loading__bar"></div>
     </div>
+    <script>
+        (function() {
+            var el = document.getElementById('fdl-loading');
+            if (el) el.classList.add('is-active');
+        })();
+    </script>
 
     <!-- Skip to main content -->
     <a href="#main-content" class="skip-link">{% trans "Skip to main content" %}</a>
