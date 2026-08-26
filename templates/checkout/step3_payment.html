@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n humanize %}
+{% load static i18n humanize brand_tags %}
 
 {% block title %}{% trans "Checkout — Confirm Order" %} — {{ site_settings.site_name }}{% endblock %}
 
@@ -36,7 +36,9 @@
                                 <div class="cart-item__media" style="width: 72px; height: 84px;">
                                     {% with image=item.product.primary_image %}
                                         {% if image %}
-                                            <img src="{{ image.thumbnail_url }}" alt="{{ item.product.name }}" loading="lazy">
+                                            <img src="{% image_proxy_url image.thumbnail_url %}" alt="{{ item.product.name }}" loading="lazy" decoding="async"
+                                                 class="is-loading"
+                                                 onload="this.classList.remove('is-loading');this.classList.add('is-loaded')">
                                         {% endif %}
                                     {% endwith %}
                                 </div>

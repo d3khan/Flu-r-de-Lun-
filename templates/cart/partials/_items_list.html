@@ -1,4 +1,4 @@
-{% load static i18n humanize %}
+{% load static i18n humanize brand_tags %}
 {% comment %}
 Cart items list. Renders for the cart page and the drawer (compact=True).
 All mutation buttons are fire-and-forget: the server responds with OOB
@@ -11,7 +11,9 @@ per-button targets are needed.
             <a href="{{ item.product.get_absolute_url }}" class="cart-item__media" aria-label="{{ item.product.name }}">
                 {% with image=item.product.primary_image %}
                     {% if image %}
-                        <img src="{{ image.thumbnail_url }}" alt="{{ image.alt_text|default:item.product.name }}" loading="lazy">
+                        <img src="{% image_proxy_url image.thumbnail_url %}" alt="{{ image.alt_text|default:item.product.name }}" loading="lazy" decoding="async"
+                             class="is-loading"
+                             onload="this.classList.remove('is-loading');this.classList.add('is-loaded')">
                     {% else %}
                         <span class="product-card__placeholder">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="7.5" cy="12" r="4.5"/><circle cx="16.5" cy="12" r="4.5"/><path d="M12 10.6c-.9-1.1-3.1-1.1-4 .8M12 10.6c.9-1.1 3.1-1.1 4 .8"/></svg>

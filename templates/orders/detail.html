@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n humanize %}
+{% load static i18n humanize brand_tags %}
 
 {% block title %}{{ order.order_number }} — {{ site_settings.site_name }}{% endblock %}
 
@@ -34,7 +34,9 @@
                     <div class="cart-page-item" style="grid-template-columns: 72px 1fr; padding-block: var(--space-3); border-color: var(--color-beige-200);">
                         <div class="cart-item__media" style="width: 72px; height: 84px;">
                             {% if item.product and item.product.primary_image %}
-                                <img src="{{ item.product.primary_image.thumbnail_url }}" alt="{{ item.product_name }}" loading="lazy">
+                                <img src="{% image_proxy_url item.product.primary_image.thumbnail_url %}" alt="{{ item.product_name }}" loading="lazy" decoding="async"
+                                     class="is-loading"
+                                     onload="this.classList.remove('is-loading');this.classList.add('is-loaded')">
                             {% endif %}
                         </div>
                         <div class="cart-item__info">

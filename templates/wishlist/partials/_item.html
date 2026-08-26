@@ -1,10 +1,12 @@
-{% load static i18n humanize %}
+{% load static i18n humanize brand_tags %}
 {# Single wishlist item #}
 <div class="cart-page-item" style="grid-template-columns: 96px 1fr; background: var(--color-white); border: 1px solid var(--color-beige-200); border-radius: var(--radius-lg); padding: var(--space-4);">
     <a href="{{ item.product.get_absolute_url }}" class="cart-item__media" aria-label="{{ item.product.name }}">
         {% with image=item.product.primary_image %}
             {% if image %}
-                <img src="{{ image.thumbnail_url }}" alt="{{ image.alt_text|default:item.product.name }}" loading="lazy">
+                <img src="{% image_proxy_url image.thumbnail_url %}" alt="{{ image.alt_text|default:item.product.name }}" loading="lazy" decoding="async"
+                     class="is-loading"
+                     onload="this.classList.remove('is-loading');this.classList.add('is-loaded')">
             {% else %}
                 <span class="product-card__placeholder">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><circle cx="7.5" cy="12" r="4.5"/><circle cx="16.5" cy="12" r="4.5"/><path d="M12 10.6c-.9-1.1-3.1-1.1-4 .8M12 10.6c.9-1.1 3.1-1.1 4 .8"/></svg>
@@ -16,7 +18,7 @@
     <div class="cart-item__info">
         <a href="{{ item.product.get_absolute_url }}" class="cart-item__name">{{ item.product.name }}</a>
 
-        <div class="product-card__price mt-2" style="justify-content: flex-start;">
+        <div class="product-card__price mt-2" style="flex-direction: column; align-items: flex-start; gap: 4px;">
             {% if item.product.is_on_sale %}
                 <span class="price-compare">₦{{ item.product.compare_at_price|intcomma }}</span>
                 <span class="price-sale">₦{{ item.product.price|intcomma }}</span>
