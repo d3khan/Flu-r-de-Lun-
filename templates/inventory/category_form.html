@@ -1,5 +1,5 @@
 {% extends 'inventory/base.html' %}
-{% load static i18n %}
+{% load static i18n brand_tags %}
 
 {% block title %}{{ title }} — Inventory{% endblock %}
 
@@ -89,8 +89,10 @@
                     <div class="image-preview" id="categoryImagePreview">
                         {# Preview only — the file input lives OUTSIDE this div #}
                         <img id="categoryPreviewImg"
-                             {% if category and category.image_url %}src="{{ category.image_url }}"{% else %}hidden{% endif %}
-                             alt="{{ category.name }}">
+                             {% if category and category.image_url %}src="{% image_proxy_url category.image_url %}"{% else %}hidden{% endif %}
+                             alt="{{ category.name }}" loading="lazy" decoding="async"
+                             class="is-loading"
+                             onload="this.classList.remove('is-loading');this.classList.add('is-loaded')">
                         <div class="image-preview__placeholder" id="categoryPreviewPlaceholder" {% if category and category.image_url %}hidden{% endif %}>
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>

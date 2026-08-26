@@ -1,4 +1,4 @@
-{% load static i18n %}
+{% load static i18n brand_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,6 +48,17 @@
 </head>
 <body x-data="app" class="inventory-body" data-theme="light">
     <a href="#main-content" class="skip-link">{% trans "Skip to main content" %}</a>
+
+    <!-- Global loading indicator -->
+    <div id="fdl-loading" class="fdl-loading" aria-hidden="true">
+        <div class="fdl-loading__bar"></div>
+    </div>
+    <script>
+        (function() {
+            var el = document.getElementById('fdl-loading');
+            if (el) el.classList.add('is-active');
+        })();
+    </script>
 
     <!-- Inventory Header -->
     <header class="inventory-header" role="banner">

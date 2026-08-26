@@ -1,5 +1,5 @@
 {% extends 'inventory/base.html' %}
-{% load static i18n %}
+{% load static i18n brand_tags %}
 
 {% block title %}{{ title }} — Inventory{% endblock %}
 
@@ -222,8 +222,10 @@
                         <div class="image-preview" id="primaryImagePreview">
                             {# Preview only — the file input lives OUTSIDE this div #}
                             <img id="primaryPreviewImg"
-                                 {% if product and product.primary_image %}src="{{ product.primary_image.medium_url }}"{% else %}hidden{% endif %}
-                                 alt="{{ product.name }}">
+                                 {% if product and product.primary_image %}src="{% image_proxy_url product.primary_image.medium_url %}"{% else %}hidden{% endif %}
+                                 alt="{{ product.name }}" loading="lazy" decoding="async"
+                                 class="is-loading"
+                                 onload="this.classList.remove('is-loading');this.classList.add('is-loaded')">
                             <div class="image-preview__placeholder" id="primaryPreviewPlaceholder" {% if product and product.primary_image %}hidden{% endif %}>
                                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                                     <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -250,7 +252,9 @@
                             {% if product %}
                                 {% for image in product.images.all|slice:"1:" %}
                                     <div class="additional-image-item" data-image-row="{{ image.pk }}">
-                                        <img src="{{ image.thumbnail_url }}" alt="{{ image.alt_text }}">
+                                        <img src="{% image_proxy_url image.thumbnail_url %}" alt="{{ image.alt_text }}" loading="lazy" decoding="async"
+                                             class="is-loading"
+                                             onload="this.classList.remove('is-loading');this.classList.add('is-loaded')">
                                         {# Removal intent marker: the ✕ button sets this to 1; server deletes row + ImgBB copy #}
                                         <input type="hidden" name="remove_image_{{ image.pk }}" id="remove_image_{{ image.pk }}" value="">
                                         <div class="additional-image-actions">

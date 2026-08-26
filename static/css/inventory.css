@@ -388,6 +388,38 @@
   border-radius: var(--radius-md);
   object-fit: cover;
   flex-shrink: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.product-cell__image.is-loading {
+  opacity: 0;
+}
+
+.product-cell__image.is-loaded {
+  opacity: 1;
+}
+
+.product-cell {
+  position: relative;
+}
+
+.product-cell::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--color-beige-100) 25%, var(--color-beige-200) 50%, var(--color-beige-100) 75%);
+  background-size: 200% 200%;
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: var(--radius-md);
+}
+
+.product-cell:has(.product-cell__image.is-loaded)::before {
+  opacity: 0;
 }
 
 .product-cell__placeholder {
@@ -400,6 +432,8 @@
   justify-content: center;
   color: var(--color-beige-400);
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .product-cell__info {
@@ -966,6 +1000,21 @@
   cursor: pointer;
 }
 
+.image-preview::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--color-beige-100) 25%, var(--color-beige-200) 50%, var(--color-beige-100) 75%);
+  background-size: 200% 200%;
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.image-preview:has(img.is-loaded)::before {
+  opacity: 0;
+}
+
 .image-preview:hover {
   border-color: var(--color-gold);
 }
@@ -984,6 +1033,17 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: opacity var(--transition-normal);
+  position: relative;
+  z-index: 1;
+}
+
+.image-preview img.is-loading {
+  opacity: 0;
+}
+
+.image-preview img.is-loaded {
+  opacity: 1;
 }
 
 /* The hidden attribute must always win over the display rules above,
@@ -1002,6 +1062,8 @@
   text-align: center;
   padding: var(--space-4);
   pointer-events: none;
+  position: relative;
+  z-index: 1;
 }
 
 .additional-images-preview {
@@ -1377,10 +1439,6 @@
 .inventory-category-card:hover {
   box-shadow: var(--shadow-md);
   border-color: var(--color-beige-300);
-}
-
-.inventory-category-card {
-  position: relative;
 }
 
 .inventory-category-card__image {
