@@ -19,6 +19,7 @@
         <li><a href="{% url 'products:list' %}?sort=newest" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "New Arrivals" %}</a></li>
         <li><a href="{% url 'core:about' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Our Story" %}</a></li>
         <li><a href="{% url 'core:contact' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Contact" %}</a></li>
+        <li><a href="{% url 'orders:guest_lookup' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Track Order" %}</a></li>
     </ul>
 
     <ul class="mobile-nav__list mobile-nav__list--secondary">
@@ -37,7 +38,6 @@
             <li><a href="{% url 'accounts:login' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Login" %}</a></li>
             <li><a href="{% url 'accounts:register' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Create Account" %}</a></li>
         {% endif %}
-        <li><a href="{% url 'orders:guest_lookup' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Track Order" %}</a></li>
     </ul>
 
     {% if site_settings.whatsapp_number %}
