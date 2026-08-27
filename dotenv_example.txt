@@ -27,6 +27,13 @@ FLUTTERWAVE_ENCRYPTION_KEY=your-32-char-encryption-key
 # Payment Gateway Choice: paystack or flutterwave
 PAYMENT_GATEWAY=paystack
 
+# Enable/disable online payments
+PAYMENTS_ENABLED=false
+
+# Shipping
+SHIPPING_COST=1500
+FREE_SHIPPING_THRESHOLD=50000
+
 # Redis (for production)
 # REDIS_URL=redis://localhost:6379/0
 

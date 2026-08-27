@@ -1,0 +1,89 @@
+{% extends 'inventory/base.html' %}
+{% load static i18n humanize %}
+
+{% block title %}{% trans "Orders" %} — Inventory{% endblock %}
+
+{% block content %}
+<div class="inventory-products">
+    <header class="inventory-page-header">
+        <div class="inventory-page-header__content">
+            <h1 class="inventory-page-header__title">{% trans "Orders" %}</h1>
+            <p class="inventory-page-header__subtitle">{% trans "Review and manage customer orders" %}</p>
+        </div>
+    </header>
+
+    <!-- Filters -->
+    <form class="inventory-filters" method="GET" action="">
+        <div class="inventory-filters__row">
+            <div class="inventory-filters__search">
+                <label for="status" class="visually-hidden">{% trans "Filter by status" %}</label>
+                <select name="status" id="status" class="form-control" onchange="this.form.submit()">
+                    <option value="">{% trans "All statuses" %}</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if value == current_status %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="inventory-filters__search">
+                <label for="payment_method" class="visually-hidden">{% trans "Filter by payment method" %}</label>
+                <select name="payment_method" id="payment_method" class="form-control" onchange="this.form.submit()">
+                    <option value="">{% trans "All payment methods" %}</option>
+                    {% for value, label in payment_method_choices %}
+                        <option value="{{ value }}" {% if value == current_payment_method %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="inventory-filters__search">
+                <label for="verified" class="visually-hidden">{% trans "Filter by payment" %}</label>
+                <select name="verified" id="verified" class="form-control" onchange="this.form.submit()">
+                    <option value="">{% trans "Any payment" %}</option>
+                    <option value="false" {% if current_verified == 'false' %}selected{% endif %}>{% trans "Unpaid" %}</option>
+                    <option value="true" {% if current_verified == 'true' %}selected{% endif %}>{% trans "Paid" %}</option>
+                </select>
+            </div>
+        </div>
+    </form>
+
+    <div class="inventory-table-wrap">
+        <table class="inventory-table">
+            <thead>
+                <tr>
+                    <th>{% trans "Order" %}</th>
+                    <th>{% trans "Date" %}</th>
+                    <th>{% trans "Customer" %}</th>
+                    <th>{% trans "Status" %}</th>
+                    <th>{% trans "Payment" %}</th>
+                    <th>{% trans "Total" %}</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in page_obj %}
+                    <tr>
+                        <td><a href="{% url 'inventory:order_detail' order.id %}">{{ order.order_number }}</a></td>
+                        <td>{{ order.created_at|date:"d M Y, H:i" }}</td>
+                        <td>{{ order.full_name }}</td>
+                        <td><span class="status status--{{ order.status }}">{{ order.get_status_display }}</span></td>
+                        <td>
+                            {{ order.get_payment_method_display }}
+                            {% if order.payment_verified %}<span class="status status--confirmed">{% trans "Paid" %}</span>{% else %}<span class="status status--pending">{% trans "Unpaid" %}</span>{% endif %}
+                        </td>
+                        <td>₦{{ order.total|intcomma }}</td>
+                        <td><a href="{% url 'inventory:order_detail' order.id %}" class="btn btn--secondary btn--sm">{% trans "View" %}</a></td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7" class="text-center text-muted">{% trans "No orders found." %}</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+        <div class="inventory-pagination">
+            {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_payment_method %}&payment_method={{ current_payment_method }}{% endif %}{% if current_verified %}&verified={{ current_verified }}{% endif %}" class="btn btn--ghost btn--sm">{% trans "Previous" %}</a>{% endif %}
+            <span class="inventory-pagination__info">{% blocktrans with num=page_obj.number total=page_obj.paginator.num_pages %}Page {{ num }} of {{ total }}{% endblocktrans %}</span>
+            {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if current_payment_method %}&payment_method={{ current_payment_method }}{% endif %}{% if current_verified %}&verified={{ current_verified }}{% endif %}" class="btn btn--ghost btn--sm">{% trans "Next" %}</a>{% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

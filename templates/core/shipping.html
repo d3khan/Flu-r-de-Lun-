@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n humanize %}
 
 {% block title %}{% trans "Shipping & Delivery" %} — {{ site_settings.site_name }}{% endblock %}
 
@@ -13,8 +13,8 @@
         <article class="legal-content prose" style="padding-bottom: var(--space-16);">
             <h2>{% trans "Shipping Rates" %}</h2>
             <ul>
-                <li>{% trans "Flat rate: ₦1,500 nationwide" %}</li>
-                <li>{% trans "Free shipping on orders over ₦50,000" %}</li>
+                <li>{% blocktrans with cost=SHIPPING_COST|intcomma %}Flat rate: ₦{{ cost }} nationwide{% endblocktrans %}</li>
+                <li>{% blocktrans with threshold=FREE_SHIPPING_THRESHOLD|intcomma %}Free shipping on orders over ₦{{ threshold }}{% endblocktrans %}</li>
             </ul>
 
             <h2>{% trans "Delivery Times" %}</h2>

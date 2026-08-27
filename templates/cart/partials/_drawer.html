@@ -1,18 +1,20 @@
 {% load static i18n humanize %}
 {# Cart drawer content — also returned standalone by HTMX add-to-cart #}
-<div class="drawer__header">
-    <span class="drawer__title">{% trans "Your Cart" %} <span class="text-muted">({{ cart.total_items }})</span></span>
-    <button type="button" class="icon-btn" @click="cartDrawerOpen = false" aria-label="{% trans 'Close cart' %}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
-    </button>
-</div>
+<div id="cart-drawer-inner">
+    <div class="drawer__header">
+        <span class="drawer__title">{% trans "Your Cart" %} <span class="text-muted">({{ cart.total_items }})</span></span>
+        <button type="button" class="icon-btn" @click="cartDrawerOpen = false" aria-label="{% trans 'Close cart' %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
 
-<div id="cart-drawer-body" class="drawer__body">
-    {% if cart.items.all %}
-        {% include 'cart/partials/_items_list.html' with cart=cart compact=True %}
-    {% else %}
-        {% include 'cart/partials/_empty_cart.html' with compact=True %}
-    {% endif %}
-</div>
+    <div id="cart-drawer-body" class="drawer__body">
+        {% if cart.items.all %}
+            {% include 'cart/partials/_items_list.html' with cart=cart compact=True %}
+        {% else %}
+            {% include 'cart/partials/_empty_cart.html' with compact=True %}
+        {% endif %}
+    </div>
 
-{% include 'cart/partials/_drawer_footer.html' with cart=cart %}
+    {% include 'cart/partials/_drawer_footer.html' with cart=cart %}
+</div>

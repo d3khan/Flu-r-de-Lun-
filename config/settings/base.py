@@ -157,6 +157,13 @@ FLUTTERWAVE_ENCRYPTION_KEY = os.environ.get('FLUTTERWAVE_ENCRYPTION_KEY', '')
 # Payment gateway choice: 'paystack' or 'flutterwave'
 PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY', 'paystack')
 
+# Enable/disable online payments (Paystack/Flutterwave)
+PAYMENTS_ENABLED = os.environ.get('PAYMENTS_ENABLED', 'false').lower() in ('true', '1', 'yes')
+
+# Shipping
+SHIPPING_COST = int(os.environ.get('SHIPPING_COST', '1500'))
+FREE_SHIPPING_THRESHOLD = int(os.environ.get('FREE_SHIPPING_THRESHOLD', '50000'))
+
 # ImgBB Media Storage
 IMGBB_API_KEY = os.environ.get('IMGBB_API_KEY', '')
 

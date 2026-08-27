@@ -107,8 +107,13 @@ def payment_webhook(request):
         return HttpResponse(f'Error: {str(e)}', status=500)
 
 
+from django.conf import settings
+
 def initiate_gateway_payment(request, order_id):
     """AJAX endpoint to create payment link and redirect."""
+    if not getattr(settings, 'PAYMENTS_ENABLED', False):
+        return JsonResponse({'success': False, 'error': _('Online payments under development')}, status=503)
+    
     order = get_object_or_404(Order, id=order_id)
     
     if order.payment_method != 'gateway':

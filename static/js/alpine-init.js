@@ -41,6 +41,7 @@
                     /* Open the drawer when an add-to-cart / move-to-cart
                        action broadcasts the dedicated trigger. */
                     document.body.addEventListener('fdlOpenCart', function () {
+                        self.closeQuickView();
                         if (!self.cartDrawerOpen) self.cartDrawerOpen = true;
                     });
 
@@ -56,13 +57,20 @@
                 },
 
                 openCart: function () {
+                    this.closeQuickView();
                     this.cartDrawerOpen = true;
+                },
+
+                closeQuickView: function () {
+                    var qv = document.getElementById('quick-view-root');
+                    if (qv) qv.innerHTML = '';
                 },
 
                 closeAll: function () {
                     this.mobileMenuOpen = false;
                     this.cartDrawerOpen = false;
                     this.searchOpen = false;
+                    this.closeQuickView();
                 },
 
                 addToast: function (message, type) {

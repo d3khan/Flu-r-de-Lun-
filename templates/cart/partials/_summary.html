@@ -1,7 +1,7 @@
 {% load static i18n humanize %}
 {# Order summary. Params: flat (bool) — renders without card chrome for drawer footer #}
 <div class="summary-card{% if flat %} summary-card--flat{% endif %}">
-    {% with threshold=50000 %}
+    {% with threshold=FREE_SHIPPING_THRESHOLD %}
         {% if cart.total_price < threshold %}
             <div class="free-shipping-progress">
                 <p class="free-shipping-progress__text">
@@ -22,11 +22,11 @@
     </div>
     <div class="summary-row">
         <span>{% trans "Shipping" %}</span>
-        <span>{% if cart.total_price >= 50000 %}{% trans "Free" %}{% else %}₦1,500{% endif %}</span>
+        <span>{% if cart.shipping_cost == 0 %}{% trans "Free" %}{% else %}₦{{ cart.shipping_cost|intcomma }}{% endif %}</span>
     </div>
     <div class="summary-row summary-row--total">
         <span>{% trans "Total" %}</span>
-        <span>₦{{ cart.total_price|intcomma }}</span>
+        <span>₦{{ cart.grand_total|intcomma }}</span>
     </div>
     <p class="summary-note">{% trans "Shipping & payment options confirmed at checkout." %}</p>
 </div>

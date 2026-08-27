@@ -6,18 +6,20 @@ import logging
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_http_methods, require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.db.models import Q, Count, F
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponseForbidden
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
+from django.utils import timezone
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 from apps.products.models import Product, Category, ProductImage
+from apps.orders.models import Order, OrderStatusHistory
 from apps.core.utils.imgbb import get_imgbb_service
 from .forms import ProductForm, ProductStockForm, CategoryForm, ProductImageForm
 
@@ -651,3 +653,112 @@ def category_delete(request, pk):
 
 # Import models for F expressions
 from django.db import models
+
+
+# --- Order management (inventory section) -------------------------------
+
+@inventory_login_required
+def inventory_order_list(request):
+    """List orders in the inventory section with filters."""
+    orders = Order.objects.all().select_related('user').prefetch_related('items')
+
+    status = request.GET.get('status')
+    if status:
+        orders = orders.filter(status=status)
+
+    payment_method = request.GET.get('payment_method')
+    if payment_method:
+        orders = orders.filter(payment_method=payment_method)
+
+    verified = request.GET.get('verified')
+    if verified == 'true':
+        orders = orders.filter(payment_verified=True)
+    elif verified == 'false':
+        orders = orders.filter(payment_verified=False)
+
+    orders = orders.order_by('-created_at')
+
+    paginator = Paginator(orders, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'status_choices': Order.STATUS_CHOICES,
+        'payment_method_choices': Order.PAYMENT_METHOD_CHOICES,
+        'current_status': status,
+        'current_payment_method': payment_method,
+        'current_verified': verified,
+    }
+    return render(request, 'inventory/order_list.html', context)
+
+
+@inventory_login_required
+def inventory_order_detail(request, pk):
+    """Full order view with Mark Paid and Change Status actions."""
+    order = get_object_or_404(
+        Order.objects.select_related('user').prefetch_related('items__product', 'status_history'),
+        pk=pk,
+    )
+    context = {
+        'order': order,
+        'status_choices': Order.STATUS_CHOICES,
+    }
+    return render(request, 'inventory/order_detail.html', context)
+
+
+@inventory_login_required
+@require_POST
+def inventory_order_verify(request, pk):
+    """Toggle the payment_verified flag on an order."""
+    order = get_object_or_404(Order, pk=pk)
+    order.payment_verified = not order.payment_verified
+    order.payment_verified_at = timezone.now() if order.payment_verified else None
+    order.save(update_fields=['payment_verified', 'payment_verified_at'])
+    if order.payment_verified:
+        messages.success(
+            request,
+            _('Order %(num)s marked as paid.') % {'num': order.order_number},
+        )
+    else:
+        messages.success(
+            request,
+            _('Order %(num)s unmarked as paid.') % {'num': order.order_number},
+        )
+    return redirect('inventory:order_detail', pk=pk)
+
+
+@inventory_login_required
+@require_POST
+def inventory_order_status(request, pk):
+    """Change an order's status and log it to the status history."""
+    order = get_object_or_404(Order, pk=pk)
+    new_status = request.POST.get('status')
+    note = request.POST.get('note', '')
+
+    valid_statuses = dict(Order.STATUS_CHOICES)
+    if new_status and new_status in valid_statuses and new_status != order.status:
+        old_status = order.status
+        order.status = new_status
+        now = timezone.now()
+        if new_status == 'confirmed' and not order.confirmed_at:
+            order.confirmed_at = now
+        elif new_status == 'shipped' and not order.shipped_at:
+            order.shipped_at = now
+        elif new_status == 'delivered' and not order.delivered_at:
+            order.delivered_at = now
+        elif new_status == 'cancelled' and not order.cancelled_at:
+            order.cancelled_at = now
+        order.save()
+        OrderStatusHistory.objects.create(
+            order=order,
+            status=new_status,
+            note=note or _('Status changed from %(old)s to %(new)s')
+            % {'old': old_status, 'new': new_status},
+            created_by=None,
+        )
+        messages.success(request, _('Order status updated.'))
+    else:
+        messages.error(request, _('Invalid status selected.'))
+
+    return redirect('inventory:order_detail', pk=pk)

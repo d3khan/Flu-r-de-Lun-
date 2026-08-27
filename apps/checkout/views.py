@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db import transaction
 from django.http import JsonResponse
 from django.utils import timezone
+from django.conf import settings
 
 from apps.cart.models import Cart, CartItem
 from apps.products.models import Product
@@ -35,15 +36,7 @@ def get_or_create_cart(request):
     return cart
 
 
-# Shipping cost calculation
-SHIPPING_COST = 1500  # ₦1,500 flat rate
-FREE_SHIPPING_THRESHOLD = 50000  # Free shipping over ₦50,000
-
-def calculate_shipping(subtotal):
-    """Calculate shipping cost."""
-    if subtotal >= FREE_SHIPPING_THRESHOLD:
-        return 0
-    return SHIPPING_COST
+from apps.cart.utils import calculate_shipping
 
 
 def checkout_step1_shipping(request):
@@ -124,6 +117,8 @@ def checkout_step2_payment(request):
     if not shipping:
         return redirect('checkout:step1')
     
+    payments_enabled = getattr(settings, 'PAYMENTS_ENABLED', False)
+    
     subtotal = cart.total_price
     shipping_cost = calculate_shipping(subtotal)
     total = subtotal + shipping_cost
@@ -135,6 +130,9 @@ def checkout_step2_payment(request):
         
         if payment_method not in ['gateway', 'manual']:
             messages.error(request, _('Please select a payment method.'))
+        elif payment_method == 'gateway' and not payments_enabled:
+            # Online payments are not available yet
+            return render(request, 'checkout/payment_under_development.html')
         else:
             request.session['checkout_payment_method'] = payment_method
             return redirect('checkout:step3')
@@ -169,6 +167,10 @@ def checkout_step3_payment(request):
     total = subtotal + shipping_cost
     
     payment_info = ManualPaymentInfo.get_active()
+    
+    # Block gateway payment if disabled
+    if payment_method == 'gateway' and not getattr(settings, 'PAYMENTS_ENABLED', False):
+        return render(request, 'checkout/payment_under_development.html')
     
     if request.method == 'POST':
         with transaction.atomic():
@@ -207,11 +209,16 @@ def checkout_step3_payment(request):
                     # Decrease stock
                     item.product.stock_quantity -= item.quantity
                     item.product.save()
-            
+
+            # Remove purchased items from the cart
+            cart.clear()
+
             # Save order ID in session for payment step
             request.session['checkout_order_id'] = order.id
             
             if payment_method == 'gateway':
+                if not getattr(settings, 'PAYMENTS_ENABLED', False):
+                    return render(request, 'checkout/payment_under_development.html')
                 return redirect('checkout:gateway_payment', order_id=order.id)
             else:
                 return redirect('checkout:manual_payment', order_id=order.id)
@@ -231,6 +238,9 @@ def checkout_step3_payment(request):
 
 def gateway_payment(request, order_id):
     """Gateway payment page."""
+    if not getattr(settings, 'PAYMENTS_ENABLED', False):
+        return render(request, 'checkout/payment_under_development.html')
+    
     order = get_object_or_404(Order, id=order_id)
     
     # Verify ownership
