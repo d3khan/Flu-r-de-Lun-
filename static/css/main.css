@@ -3672,6 +3672,12 @@ button.account-nav__link {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 }
 
+@media (min-width: 768px) {
+  .wishlist-grid .cart-page-item {
+    grid-template-columns: 140px 1fr auto;
+  }
+}
+
 .mt-2 {
   margin-top: var(--space-2);
 }
