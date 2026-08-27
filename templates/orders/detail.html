@@ -103,13 +103,13 @@
             </section>
 
             <!-- Timeline -->
-            <aside class="card-panel" aria-label="{% trans 'Order status' %}" x-data="{{ order.status }}">
+            <aside class="card-panel" aria-label="{% trans 'Order status' %}">
                 <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "Status Timeline" %}</h2>
 
-                {% with history=order.status_history.all reversed %}
+                {% with history=order.status_history.all %}
                     {% if history %}
                         <ol class="timeline" style="padding-left: var(--space-5);">
-                            {% for entry in history %}
+                            {% for entry in history reversed %}
                                 <li class="timeline__item">
                                     <span class="timeline__status">{{ entry.get_status_display }}</span>
                                     {% if entry.note %}<p class="timeline__note">{{ entry.note }}</p>{% endif %}

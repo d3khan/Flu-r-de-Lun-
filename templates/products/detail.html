@@ -165,7 +165,7 @@
                 <ul class="pd-meta mt-6">
                     <li><strong>SKU:</strong> {{ product.sku }}</li>
                     {% if product.category %}<li><strong>{% trans "Category" %}:</strong> {{ product.category.name }}</li>{% endif %}
-                    <li><strong>{% trans "Shipping" %}:</strong> ₦1,500 — {% trans "free over ₦50,000" %}</li>
+                    <li><strong>{% trans "Shipping" %}:</strong> {% blocktrans with cost=SHIPPING_COST|intcomma threshold=FREE_SHIPPING_THRESHOLD|intcomma %}₦{{ cost }} — free over ₦{{ threshold }}{% endblocktrans %}</li>
                 </ul>
 
                 <!-- Next/Prev Product Navigation -->
@@ -207,10 +207,10 @@
                 </div>
             </section>
         {% endif %}
-    </div>
 
-    <!-- Zoom lightbox -->
-    <div class="zoom-lightbox" x-show="zoom" x-cloak @click="zoom = false" @keydown.escape.window="zoom = false">
-        <img :src="images[active]?.src" alt="">
+        <!-- Zoom lightbox (kept inside the product-detail x-data scope) -->
+        <div class="zoom-lightbox" x-show="zoom" x-cloak @click="zoom = false" @keydown.escape.window="zoom = false">
+            <img :src="images[active]?.src" alt="">
+        </div>
     </div>
 {% endblock %}

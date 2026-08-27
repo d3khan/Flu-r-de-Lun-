@@ -1,4 +1,5 @@
 from .models import Cart
+from .utils import SHIPPING_COST, FREE_SHIPPING_THRESHOLD
 
 
 def cart(request):
@@ -15,4 +16,6 @@ def cart(request):
     return {
         'cart': cart_obj,
         'cart_count': cart_obj.total_items,
+        'SHIPPING_COST': SHIPPING_COST,
+        'FREE_SHIPPING_THRESHOLD': FREE_SHIPPING_THRESHOLD,
     }

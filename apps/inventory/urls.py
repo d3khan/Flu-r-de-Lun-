@@ -27,4 +27,10 @@ urlpatterns = [
     path('categories/add/', views.category_create, name='category_create'),
     path('categories/<int:pk>/edit/', views.category_edit, name='category_edit'),
     path('categories/<int:pk>/delete/', views.category_delete, name='category_delete'),
+
+    # Orders
+    path('orders/', views.inventory_order_list, name='order_list'),
+    path('orders/<int:pk>/', views.inventory_order_detail, name='order_detail'),
+    path('orders/<int:pk>/verify/', views.inventory_order_verify, name='order_verify'),
+    path('orders/<int:pk>/status/', views.inventory_order_status, name='order_status'),
 ]
