@@ -31,12 +31,11 @@ def image_proxy_url(url, width=None, height=None):
     if not url:
         return ''
     
-    # Only proxy ImgBB images
-    allowed_hosts = ['ibb.co', 'i.ibb.co', 'imgbb.com']
+    # Only proxy ImgBB images (ibb.co and subdomains, plus imgbb.com)
     try:
         from urllib.parse import urlparse
         parsed = urlparse(url)
-        if parsed.netloc not in allowed_hosts:
+        if not (parsed.netloc.endswith('ibb.co') or parsed.netloc == 'imgbb.com'):
             return url  # Return original for local/other images
     except Exception:
         return url

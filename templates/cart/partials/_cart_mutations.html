@@ -39,14 +39,7 @@ single response regardless of which surface the user acted on.
     {% endif %}
 </div>
 
-{# 2) Drawer body: compact rows or empty note #}
-<div id="cart-drawer-body" hx-swap-oob="innerHTML">
-    {% if cart.items.all %}
-        {% include 'cart/partials/_items_list.html' with cart=cart compact=True %}
-    {% else %}
-        {% include 'cart/partials/_empty_cart.html' with compact=True %}
-    {% endif %}
+{# 2) Drawer: atomic inner swap (header count + body + footer) #}
+<div id="cart-drawer-inner" hx-swap-oob="true">
+    {% include 'cart/partials/_drawer.html' with cart=cart %}
 </div>
-
-{# 3) Drawer footer: totals + checkout actions (vanishes when empty) #}
-{% include 'cart/partials/_drawer_footer.html' with cart=cart %}

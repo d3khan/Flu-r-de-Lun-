@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.views.generic import ListView, DetailView
@@ -200,17 +200,17 @@ def image_proxy(request):
     Usage: /products/image-proxy/?url=<encoded_url>&w=<width>&h=<height>
     
     The URL is validated to only allow known external hosts (ImgBB).
+    On fetch failure, redirects to the original URL as fallback.
     """
     external_url = request.GET.get('url')
     if not external_url:
         return HttpResponseBadRequest('Missing url parameter')
     
-    # Validate URL - only allow known safe hosts
-    allowed_hosts = ['ibb.co', 'i.ibb.co', 'imgbb.com']
+    # Validate URL - only allow known safe hosts (ImgBB and subdomains)
     try:
         from urllib.parse import urlparse
         parsed = urlparse(external_url)
-        if parsed.netloc not in allowed_hosts:
+        if not (parsed.netloc.endswith('ibb.co') or parsed.netloc == 'imgbb.com'):
             logger.warning(f"Image proxy blocked non-allowed host: {parsed.netloc}")
             return HttpResponseBadRequest('Host not allowed')
     except Exception:
@@ -251,13 +251,14 @@ def image_proxy(request):
         
         # Set cache headers - 1 year, immutable
         django_response['Cache-Control'] = 'public, max-age=31536000, immutable'
-        django_response['Content-Length'] = response.headers.get('Content-Length', '')
+        # Only set Content-Length if present (avoid empty string)
+        content_length = response.headers.get('Content-Length')
+        if content_length:
+            django_response['Content-Length'] = content_length
         
         return django_response
         
-    except requests.Timeout:
-        logger.error(f"Image proxy timeout for {external_url}")
-        return HttpResponseBadRequest('Image fetch timeout')
-    except requests.RequestException as e:
+    except (requests.Timeout, requests.RequestException) as e:
         logger.error(f"Image proxy error for {external_url}: {e}")
-        return HttpResponseBadRequest('Failed to fetch image')
+        # Fallback: redirect to original URL so browser fetches directly
+        return redirect(external_url)

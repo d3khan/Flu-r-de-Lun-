@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Payments Under Development" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="auth-wrapper">
+            <div class="auth-card text-center">
+                <div class="under-construction-icon mb-6">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-16 h-16 mx-auto text-beige-400" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+                    </svg>
+                </div>
+                <h1 class="auth-card__title">{% trans "Payments Under Development" %}</h1>
+                <p class="auth-card__sub mb-8">
+                    {% trans "We're working on the payment experience. Online payments will be available soon." %}
+                </p>
+                
+                <div class="bg-beige-50 rounded-lg p-6 mb-6">
+                    <h3 class="font-medium text-beige-900 mb-3">{% trans "What you can do in the meantime:" %}</h3>
+                    <ul class="text-left text-beige-700 space-y-2 text-sm">
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-gold" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            {% blocktrans with contact_email=site_settings.email %}Contact support at <strong>{{ contact_email }}</strong> for immediate assistance{% endblocktrans %}
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-gold" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            {% trans "Use the Bank Transfer / WhatsApp Order option at checkout" %}
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-gold" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                            {% trans "Check back in a few days for online card/bank/USSD payments" %}
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="{% url 'checkout:step2' %}" class="btn btn--secondary btn--lg">{% trans "Back to Payment Method" %}</a>
+                    <a href="{% url 'core:home' %}" class="btn btn--secondary btn--lg">{% trans "Continue Shopping" %}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
