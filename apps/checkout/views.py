@@ -144,7 +144,6 @@ def checkout_step2_payment(request):
         'shipping_cost': shipping_cost,
         'total': total,
         'payment_info': payment_info,
-        'payments_enabled': payments_enabled,
         'step': 2,
     }
     return render(request, 'checkout/step2_payment.html', context)
