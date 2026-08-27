@@ -3669,12 +3669,15 @@ button.account-nav__link {
 .wishlist-grid {
   display: grid;
   gap: var(--space-6);
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
 @media (min-width: 768px) {
+  .wishlist-grid {
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  }
   .wishlist-grid .cart-page-item {
-    grid-template-columns: 140px 1fr auto;
+    grid-template-columns: 140px 1fr;
   }
 }
 
