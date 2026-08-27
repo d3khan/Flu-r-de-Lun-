@@ -209,7 +209,10 @@ def checkout_step3_payment(request):
                     # Decrease stock
                     item.product.stock_quantity -= item.quantity
                     item.product.save()
-            
+
+            # Remove purchased items from the cart
+            cart.clear()
+
             # Save order ID in session for payment step
             request.session['checkout_order_id'] = order.id
             

@@ -11,10 +11,23 @@
         <li><a href="{% url 'core:home' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Home" %}</a></li>
         <li><a href="{% url 'products:list' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Shop All" %}</a></li>
         {% if nav_categories %}
-            <li class="mobile-nav__group">{% trans "Collections" %}</li>
-            {% for category in nav_categories %}
-                <li><a href="{{ category.get_absolute_url }}" class="mobile-nav__link mobile-nav__link--sub" @click="mobileMenuOpen = false">{{ category.name }}</a></li>
-            {% endfor %}
+            <li class="mobile-nav__group" x-data="{ collectionsOpen: true }">
+                <button type="button"
+                        class="mobile-nav__group-toggle"
+                        @click="collectionsOpen = !collectionsOpen"
+                        :aria-expanded="collectionsOpen.toString()"
+                        aria-controls="mobile-collections">
+                    <span>{% trans "Collections" %}</span>
+                    <svg class="chevron" :class="{ 'is-rotated': collectionsOpen }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/>
+                    </svg>
+                </button>
+                <ul id="mobile-collections" class="mobile-nav__sublist" x-show="collectionsOpen">
+                    {% for category in nav_categories %}
+                        <li><a href="{{ category.get_absolute_url }}" class="mobile-nav__link mobile-nav__link--sub" @click="mobileMenuOpen = false">{{ category.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </li>
         {% endif %}
         <li><a href="{% url 'products:list' %}?sort=newest" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "New Arrivals" %}</a></li>
         <li><a href="{% url 'core:about' %}" class="mobile-nav__link" @click="mobileMenuOpen = false">{% trans "Our Story" %}</a></li>
