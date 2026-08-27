@@ -58,8 +58,7 @@ def guest_order_detail(request, order_number):
         order = Order.objects.filter(order_number=order_number.upper(), email__iexact=email).first()
         if order:
             return render(request, 'orders/detail.html', {'order': order, 'guest': True})
-        messages.error(request, _('Order not found. Please check your order number and email.'))
-    return render(request, 'orders/guest_lookup.html', {'order_number': order_number})
+    return render(request, 'orders/guest_not_found.html', {'order_number': order_number})
 
 
 @require_POST
