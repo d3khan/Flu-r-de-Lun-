@@ -1,5 +1,5 @@
 # TODO List - Fluér de Luné E-commerce
-1. **Fix Payment page**
+1. **Add payment using paystack**
 
 2. **Password Reset Email System**
    - Resend integration needs domain verification (resend.com/domains)
