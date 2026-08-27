@@ -117,6 +117,8 @@ def checkout_step2_payment(request):
     if not shipping:
         return redirect('checkout:step1')
     
+    payments_enabled = getattr(settings, 'PAYMENTS_ENABLED', False)
+    
     subtotal = cart.total_price
     shipping_cost = calculate_shipping(subtotal)
     total = subtotal + shipping_cost
@@ -128,6 +130,9 @@ def checkout_step2_payment(request):
         
         if payment_method not in ['gateway', 'manual']:
             messages.error(request, _('Please select a payment method.'))
+        elif payment_method == 'gateway' and not payments_enabled:
+            # Online payments are not available yet
+            return render(request, 'checkout/payment_under_development.html')
         else:
             request.session['checkout_payment_method'] = payment_method
             return redirect('checkout:step3')
@@ -139,6 +144,7 @@ def checkout_step2_payment(request):
         'shipping_cost': shipping_cost,
         'total': total,
         'payment_info': payment_info,
+        'payments_enabled': payments_enabled,
         'step': 2,
     }
     return render(request, 'checkout/step2_payment.html', context)

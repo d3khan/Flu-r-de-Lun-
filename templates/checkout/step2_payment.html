@@ -31,10 +31,13 @@
                         {% csrf_token %}
 
                         <div class="payment-options">
-                            <label class="payment-option" :class="{ 'is-selected': method === 'gateway' }">
-                                <input type="radio" name="payment_method" value="gateway" x-model="method" required>
+                            <label class="payment-option" :class="{ 'is-selected': method === 'gateway' }"{% if not payments_enabled %} style="opacity: .55; cursor: not-allowed;"{% endif %}>
+                                <input type="radio" name="payment_method" value="gateway" x-model="method" required{% if not payments_enabled %} disabled{% endif %}>
                                 <span>
-                                    <span class="payment-option__title">{% trans "Pay Now (Card / Transfer / USSD)" %}</span>
+                                    <span class="payment-option__title">
+                                        {% trans "Pay Now (Card / Transfer / USSD)" %}
+                                        {% if not payments_enabled %}<span style="display:inline-block; margin-left:.4rem; padding:.1rem .5rem; font-size:.7rem; border-radius:999px; background:var(--color-beige-200, #e9e2d8); color:var(--color-beige-700, #6b6256);">{% trans "Coming soon" %}</span>{% endif %}
+                                    </span>
                                     <span class="payment-option__desc">{% trans "Secure checkout via Paystack or Flutterwave. Card, bank transfer, USSD & more." %}</span>
                                 </span>
                                 <span class="payment-option__icon">
