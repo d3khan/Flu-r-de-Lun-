@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView
@@ -41,15 +41,20 @@ def guest_order_lookup(request):
         order_number = request.POST.get('order_number', '').strip().upper()
         email = request.POST.get('email', '').strip().lower()
         if order_number and email:
-            return redirect('orders:guest_detail', order_number=order_number)
+            return redirect(f"{reverse('orders:guest_detail', kwargs={'order_number': order_number})}?email={email}")
         messages.error(request, _('Please enter your order number and email.'))
     return render(request, 'orders/guest_lookup.html', {'order_number': ''})
 
 
 def guest_order_detail(request, order_number):
     """Guest order lookup by order number and email."""
+    email = None
     if request.method == 'POST':
-        email = request.POST.get('email', '').lower()
+        email = request.POST.get('email', '').strip().lower()
+    elif request.method == 'GET':
+        email = request.GET.get('email', '').strip().lower()
+
+    if email:
         order = Order.objects.filter(order_number=order_number.upper(), email__iexact=email).first()
         if order:
             return render(request, 'orders/detail.html', {'order': order, 'guest': True})
