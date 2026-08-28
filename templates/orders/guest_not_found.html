@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}{% trans "Order Not Found" %} — {{ site_settings.site_name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="auth-wrapper">
+            <div class="auth-card" style="text-align: center;">
+                <span class="empty-state__icon" style="margin-bottom: var(--space-4);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 48px; height: 48px; color: var(--color-beige-300);" aria-hidden="true">
+                        <path d="M12 9v4m0 4h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                </span>
+                <h1 class="auth-card__title">{% trans "Order Not Found" %}</h1>
+                <p class="auth-card__sub">
+                    {% blocktrans with order_number=order_number %}
+                        We couldn't find an order matching <strong>{{ order_number }}</strong>. Please double-check your order number and the email address used at checkout.
+                    {% endblocktrans %}
+                </p>
+                <div style="margin-top: var(--space-6); display: flex; flex-direction: column; gap: var(--space-3);">
+                    <a href="{% url 'orders:guest_lookup' %}" class="btn btn--gold btn--lg btn--block">{% trans "Try Again" %}</a>
+                    <a href="{% url 'core:home' %}" class="btn btn--secondary btn--lg btn--block">{% trans "Back to Home" %}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
