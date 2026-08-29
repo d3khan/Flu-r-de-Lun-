@@ -23,9 +23,9 @@
         <div class="checkout-grid">
             <!-- Items & customer -->
             <section class="card-panel">
-                <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "Items" %}</h2>
+                <h2 class="card-panel__title">{% trans "Items" %}</h2>
 
-                <div class="table-wrap" style="border: 0;">
+                <div class="table-wrap">
                     <table class="table">
                         <thead>
                             <tr><th>{% trans "Product" %}</th><th>SKU</th><th>{% trans "Qty" %}</th><th>{% trans "Price" %}</th><th>{% trans "Total" %}</th></tr>
@@ -44,7 +44,7 @@
                     </table>
                 </div>
 
-                <div class="mt-6">
+                <div class="orders-summary mt-6">
                     <div class="summary-row"><span>{% trans "Subtotal" %}</span><span>₦{{ order.subtotal|intcomma }}</span></div>
                     <div class="summary-row"><span>{% trans "Shipping" %}</span><span>₦{{ order.shipping_cost|intcomma }}</span></div>
                     <div class="summary-row summary-row--total"><span>{% trans "Total" %}</span><span>₦{{ order.total|intcomma }}</span></div>
@@ -54,19 +54,19 @@
 
                 <div class="form-row">
                     <div>
-                        <h3 style="font-size: var(--text-base); margin-bottom: var(--space-2);">{% trans "Customer" %}</h3>
+                        <h3 class="mb-2">{% trans "Customer" %}</h3>
                         <p class="address-review">{{ order.full_name }}<br>{{ order.email }}<br>{{ order.phone }}</p>
                         {% if order.user %}<p class="address-review mt-2"><strong>{% trans "Account:" %}</strong> {{ order.user.email }}</p>{% else %}<p class="address-review mt-2"><em>{% trans "Guest order" %}</em></p>{% endif %}
                     </div>
                     <div>
-                        <h3 style="font-size: var(--text-base); margin-bottom: var(--space-2);">{% trans "Shipping Address" %}</h3>
+                        <h3 class="mb-2">{% trans "Shipping Address" %}</h3>
                         <p class="address-review">{{ order.shipping_full_address|linebreaksbr }}</p>
                     </div>
                 </div>
 
                 {% if order.notes %}
                     <hr class="divider">
-                    <h3 style="font-size: var(--text-base); margin-bottom: var(--space-2);">{% trans "Notes" %}</h3>
+                    <h3 class="mb-2">{% trans "Notes" %}</h3>
                     <p class="address-review">{{ order.notes|linebreaksbr }}</p>
                 {% endif %}
             </section>
@@ -74,7 +74,7 @@
             <!-- Status management -->
             <aside>
                 <form method="post" class="card-panel mb-6">
-                    <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "Update Status" %}</h2>
+                    <h2 class="card-panel__title">{% trans "Update Status" %}</h2>
                     {% csrf_token %}
                     <div class="form-group">
                         <label for="status" class="form-label">{% trans "Status" %}</label>
@@ -93,8 +93,8 @@
 
                 {% if order.status_history.all %}
                     <div class="card-panel">
-                        <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "History" %}</h2>
-                        <ol class="timeline" style="padding-left: var(--space-5);">
+                        <h2 class="card-panel__title">{% trans "History" %}</h2>
+                        <ol class="timeline">
                             {% for entry in order.status_history.all %}
                                 <li class="timeline__item">
                                     <span class="timeline__status">{{ entry.get_status_display }}</span>
@@ -111,6 +111,6 @@
             </aside>
         </div>
 
-        <div style="height: var(--space-16);"></div>
+        <div class="mb-8"></div>
     </div>
 {% endblock %}

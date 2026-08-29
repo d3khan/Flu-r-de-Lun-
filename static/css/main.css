@@ -2010,6 +2010,13 @@ button.mobile-nav__link {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23bfae97' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
 
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+
 .filter-sidebar {
   margin-bottom: var(--space-6);
 }
@@ -2486,7 +2493,146 @@ button.mobile-nav__link {
   }
 }
 
-/* Summary card (drawer footer + cart page aside) */
+/* Orders Detail Page */
+.order-items-grid {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--color-beige-200);
+}
+
+.order-items-grid:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+@media (min-width: 480px) {
+  .order-items-grid {
+    grid-template-columns: 96px 1fr;
+    gap: var(--space-5);
+    padding-block: var(--space-5);
+  }
+}
+
+@media (min-width: 768px) {
+  .order-items-grid {
+    grid-template-columns: 110px 1fr;
+  }
+}
+
+.order-item__media {
+  width: 84px;
+  height: 96px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-beige-100);
+}
+
+@media (min-width: 480px) {
+  .order-item__media {
+    width: 96px;
+    height: 110px;
+  }
+}
+
+@media (min-width: 768px) {
+  .order-item__media {
+    width: 110px;
+    height: 126px;
+  }
+}
+
+.order-item__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.order-item__info {
+  min-width: 0;
+}
+
+.order-item__name {
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  line-height: var(--leading-snug);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.order-item__name:hover {
+  color: var(--color-gold-dark);
+}
+
+.order-item__unit-price {
+  font-size: var(--text-xs);
+  color: var(--color-beige-500);
+}
+
+.order-item__total {
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+/* Orders Detail Layout */
+.orders-detail-layout {
+  display: grid;
+  gap: var(--space-8);
+  padding-bottom: var(--space-16);
+}
+
+@media (min-width: 1024px) {
+  .orders-detail-layout {
+    grid-template-columns: 1.5fr 1fr;
+    align-items: start;
+  }
+}
+
+.orders-detail-layout .card-panel {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-beige-200);
+  border-radius: var(--radius-xl);
+  padding: clamp(var(--space-5), 4vw, var(--space-8));
+}
+
+.orders-detail-layout .card-panel__title {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-4);
+}
+
+/* Summary rows for orders detail */
+.orders-summary .summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-beige-700);
+  padding-block: var(--space-2);
+}
+
+.orders-summary .summary-row--total {
+  margin-top: var(--space-2);
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--color-beige-200);
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-beige-900);
+}
+
+/* Summary card for orders */
+.orders-detail-layout .summary-card {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+/* ==========================================================================
+   Summary card (drawer footer + cart page aside)
+   ========================================================================== */
 .summary-card {
   background-color: var(--color-white);
   border: 1px solid var(--color-beige-200);
