@@ -1,8 +1,44 @@
 from django import template
+from django.conf import settings
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 from urllib.parse import quote
 
 register = template.Library()
+
+
+@register.filter
+def break_long_words(value, max_length=None):
+    """
+    Insert zero-width spaces in words longer than max_length to allow breaking.
+    Usage: {{ product.name|break_long_words }} or {{ product.name|break_long_words:15 }}
+    Default max_length from settings.MAX_WORD_LENGTH (default 10).
+    """
+    if not value:
+        return ''
+    
+    if max_length is None:
+        max_length = getattr(settings, 'MAX_WORD_LENGTH', 10)
+    else:
+        try:
+            max_length = int(max_length)
+        except (ValueError, TypeError):
+            max_length = getattr(settings, 'MAX_WORD_LENGTH', 10)
+    
+    if max_length <= 0:
+        return value
+    
+    text = str(value)
+    result = []
+    for word in text.split(' '):
+        if len(word) > max_length:
+            # Insert zero-width space every max_length characters
+            chunks = [word[i:i+max_length] for i in range(0, len(word), max_length)]
+            result.append('&#8203;'.join(chunks))
+        else:
+            result.append(word)
+    
+    return mark_safe(' '.join(result))
 
 
 @register.filter
