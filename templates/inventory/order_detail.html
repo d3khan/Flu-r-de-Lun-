@@ -19,30 +19,32 @@
         </div>
     </header>
 
-    <div class="checkout-grid" style="max-width: 1080px; margin-inline: auto;">
+    <div class="orders-detail-layout">
         <!-- Items & details -->
         <section class="card-panel">
-            <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "Items" %}</h2>
+            <h2 class="card-panel__title">{% trans "Items" %}</h2>
             {% for item in order.items.all %}
-                <div class="cart-page-item" style="grid-template-columns: 72px 1fr; padding-block: var(--space-3); border-color: var(--color-beige-200);">
-                    <div class="cart-item__media" style="width: 72px; height: 84px;">
+                <div class="order-items-grid">
+                    <div class="order-item__media">
                         {% if item.product and item.product.primary_image %}
-                            <img src="{% image_proxy_url item.product.primary_image.thumbnail_url %}" alt="{{ item.product_name }}" loading="lazy" decoding="async">
+                            <img src="{% image_proxy_url item.product.primary_image.thumbnail_url %}" alt="{{ item.product_name }}" loading="lazy" decoding="async"
+                                 class="is-loading"
+                                 onload="this.classList.remove('is-loading');this.classList.add('is-loaded')">
                         {% endif %}
                     </div>
-                    <div class="cart-item__info">
+                    <div class="order-item__info">
                         {% if item.product %}
-                            <a href="{{ item.product.get_absolute_url }}" class="cart-item__name" target="_blank" rel="noopener">{{ item.product_name }}</a>
+                            <a href="{{ item.product.get_absolute_url }}" class="order-item__name" target="_blank" rel="noopener">{{ item.product_name }}</a>
                         {% else %}
-                            <span class="cart-item__name">{{ item.product_name }}</span>
+                            <span class="order-item__name">{{ item.product_name }}</span>
                         {% endif %}
-                        <span class="cart-item__unit-price">{{ item.quantity }} × ₦{{ item.price|intcomma }}</span>
+                        <span class="order-item__unit-price">{{ item.quantity }} × ₦{{ item.price|intcomma }}</span>
                     </div>
-                    <span class="cart-item__total">₦{{ item.total_price|intcomma }}</span>
+                    <span class="order-item__total">₦{{ item.total_price|intcomma }}</span>
                 </div>
             {% endfor %}
 
-            <div class="mt-6">
+            <div class="orders-summary mt-6">
                 <div class="summary-row"><span>{% trans "Subtotal" %}</span><span>₦{{ order.subtotal|intcomma }}</span></div>
                 <div class="summary-row"><span>{% trans "Shipping" %}</span><span>{% if order.shipping_cost == 0 %}{% trans "Free" %}{% else %}₦{{ order.shipping_cost|intcomma }}{% endif %}</span></div>
                 <div class="summary-row summary-row--total"><span>{% trans "Total" %}</span><span>₦{{ order.total|intcomma }}</span></div>
@@ -52,11 +54,11 @@
 
             <div class="form-row">
                 <div>
-                    <h3 style="font-size: var(--text-base); margin-bottom: var(--space-2);">{% trans "Delivery Address" %}</h3>
+                    <h3 class="mb-2">{% trans "Delivery Address" %}</h3>
                     <p class="address-review">{{ order.shipping_full_address|linebreaksbr }}</p>
                 </div>
                 <div>
-                    <h3 style="font-size: var(--text-base); margin-bottom: var(--space-2);">{% trans "Contact" %}</h3>
+                    <h3 class="mb-2">{% trans "Contact" %}</h3>
                     <p class="address-review">{{ order.full_name }}<br>{{ order.email }}<br>{{ order.phone }}</p>
                     <p class="address-review mt-4">
                         <strong>{% trans "Payment:" %}</strong> {{ order.get_payment_method_display }}
@@ -74,7 +76,7 @@
 
         <!-- Sidebar: actions + timeline -->
         <aside class="card-panel" aria-label="{% trans 'Order actions' %}">
-            <h2 class="card-panel__title" style="font-size: var(--text-lg);">{% trans "Actions" %}</h2>
+            <h2 class="card-panel__title">{% trans "Actions" %}</h2>
 
             <!-- Mark Paid -->
             <form method="post" action="{% url 'inventory:order_verify' order.id %}">
@@ -102,10 +104,10 @@
 
             <hr class="divider">
 
-            <h3 style="font-size: var(--text-base); margin-bottom: var(--space-2);">{% trans "Status Timeline" %}</h3>
+            <h3 class="mb-2">{% trans "Status Timeline" %}</h3>
             {% with history=order.status_history.all %}
                 {% if history %}
-                    <ol class="timeline" style="padding-left: var(--space-5);">
+                    <ol class="timeline">
                         {% for entry in history reversed %}
                             <li class="timeline__item">
                                 <span class="timeline__status">{{ entry.get_status_display }}</span>
@@ -115,7 +117,7 @@
                         {% endfor %}
                     </ol>
                 {% else %}
-                    <p class="text-muted" style="font-size: var(--text-sm);">{% trans "No updates yet." %}</p>
+                    <p class="text-muted">{% trans "No updates yet." %}</p>
                 {% endif %}
             {% endwith %}
         </aside>
