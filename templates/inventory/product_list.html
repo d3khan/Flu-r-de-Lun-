@@ -160,7 +160,7 @@
                                 </div>
                             {% endif %}
                             <div class="product-cell__info">
-                                <span class="product-cell__name">{{ product.name }}</span>
+                                <span class="product-cell__name">{{ product.name|break_long_word }}</span>
                                 <span class="product-cell__category">{{ product.category.name|default:"—" }}</span>
                             </div>
                         </div>

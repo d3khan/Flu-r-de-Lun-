@@ -338,7 +338,32 @@
   width: 100%;
   border-collapse: collapse;
   font-size: var(--text-sm);
+  table-layout: fixed;
 }
+
+.alert-table th,
+.inventory-table th {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-weight: var(--font-semibold);
+  color: var(--color-beige-600);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: var(--text-xs);
+  background-color: var(--color-beige-50);
+  border-bottom: 1px solid var(--color-beige-200);
+  white-space: nowrap;
+}
+
+/* Inventory table column widths */
+.inventory-table th:nth-child(1), .inventory-table td:nth-child(1) { min-width: 200px; } /* Product */
+.inventory-table th:nth-child(2), .inventory-table td:nth-child(2) { min-width: 100px; }  /* SKU */
+.inventory-table th:nth-child(3), .inventory-table td:nth-child(3) { min-width: 140px; } /* Category */
+.inventory-table th:nth-child(4), .inventory-table td:nth-child(4) { min-width: 100px; }  /* Price */
+.inventory-table th:nth-child(5), .inventory-table td:nth-child(5) { min-width: 80px; }   /* Stock */
+.inventory-table th:nth-child(6), .inventory-table td:nth-child(6) { min-width: 80px; }   /* Threshold */
+.inventory-table th:nth-child(7), .inventory-table td:nth-child(7) { min-width: 100px; }  /* Status */
+.inventory-table th:nth-child(8), .inventory-table td:nth-child(8) { min-width: 100px; }  /* Actions */
 
 .alert-table th,
 .inventory-table th {

@@ -1,8 +1,47 @@
 from django import template
+from django.conf import settings
+from django.utils.safestring import mark_safe
 from django.urls import reverse
 from urllib.parse import quote
 
 register = template.Library()
+
+
+@register.filter
+def break_long_word(value, max_length=None):
+    """
+    Insert soft hyphens (&shy;) in words longer than max_length.
+    Only breaks individual words, not entire sentences.
+    Usage: {{ product.name|break_long_word }} or {{ product.name|break_long_word:12 }}
+    Default max_length from settings.MAX_WORD_LENGTH (default 10).
+    """
+    if not value:
+        return ''
+    
+    if max_length is None:
+        max_length = getattr(settings, 'MAX_WORD_LENGTH', 10)
+    else:
+        try:
+            max_length = int(max_length)
+        except (ValueError, TypeError):
+            max_length = getattr(settings, 'MAX_WORD_LENGTH', 10)
+    
+    if max_length <= 0:
+        return value
+    
+    text = str(value)
+    words = text.split(' ')
+    result = []
+    
+    for word in words:
+        if len(word) > max_length:
+            # Split word into chunks of max_length and join with soft hyphen
+            chunks = [word[i:i+max_length] for i in range(0, len(word), max_length)]
+            result.append('&shy;'.join(chunks))
+        else:
+            result.append(word)
+    
+    return mark_safe(' '.join(result))
 
 
 @register.filter

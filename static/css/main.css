@@ -37,7 +37,7 @@
 
 *,
 *::before,
-*, *::before, *::after {
+*::after {
   box-sizing: border-box;
 }
 
@@ -1743,7 +1743,170 @@ button.mobile-nav__link {
   }
 }
 
-.product-card {
+/* Grid children must not expand beyond their cell */
+.products-grid > *,
+.order-items-grid > *,
+.cart-page-item > * {
+  min-width: 0;
+}
+
+/* Orders Detail Layout */
+.orders-detail-layout {
+  display: grid;
+  gap: var(--space-8);
+  padding-bottom: var(--space-16);
+}
+
+@media (min-width: 1024px) {
+  .orders-detail-layout {
+    grid-template-columns: 1.5fr 1fr;
+    align-items: start;
+  }
+}
+
+/* Prevent sidebar from stretching past footer */
+.orders-detail-layout > * {
+  min-height: 0;
+}
+
+.orders-detail-layout .card-panel {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-beige-200);
+  border-radius: var(--radius-xl);
+  padding: clamp(var(--space-5), 4vw, var(--space-8));
+}
+
+.orders-detail-layout .card-panel__title {
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-4);
+}
+
+/* Order Items Grid */
+.order-items-grid {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--color-beige-200);
+}
+
+.order-items-grid:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+@media (min-width: 480px) {
+  .order-items-grid {
+    grid-template-columns: 84px 1fr;
+    gap: var(--space-4);
+    padding-block: var(--space-4);
+  }
+}
+
+@media (min-width: 768px) {
+  .order-items-grid {
+    grid-template-columns: 96px 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .order-items-grid {
+    grid-template-columns: 110px 1fr;
+  }
+}
+
+/* Order Item Media */
+.order-item__media {
+  width: 72px;
+  height: 84px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-beige-100);
+  flex-shrink: 0;
+}
+
+@media (min-width: 480px) {
+  .order-item__media {
+    width: 84px;
+    height: 96px;
+  }
+}
+
+@media (min-width: 768px) {
+  .order-item__media {
+    width: 96px;
+    height: 110px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .order-item__media {
+    width: 110px;
+    height: 126px;
+  }
+}
+
+.order-item__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Order Item Info */
+.order-item__info {
+  min-width: 0;
+}
+
+.order-item__name {
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  line-height: var(--leading-snug);
+  display: block;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-item__name:hover {
+  color: var(--color-gold-dark);
+}
+
+.order-item__unit-price {
+  font-size: var(--text-xs);
+  color: var(--color-beige-500);
+}
+
+.order-item__total {
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+/* Orders Summary */
+.orders-summary .summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-beige-700);
+  padding-block: var(--space-2);
+}
+
+.orders-summary .summary-row--total {
+  margin-top: var(--space-2);
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--color-beige-200);
+  font-family: var(--font-serif);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-beige-900);
+}
+
+/* ==========================================================================
+   Product Card & Grids
+   ========================================================================== */
   position: relative;
   display: flex;
   flex-direction: column;
@@ -2883,6 +3046,7 @@ button.mobile-nav__link {
   border-collapse: collapse;
   font-size: var(--text-sm);
   min-width: 640px;
+  table-layout: fixed;
 }
 
 .table th {
@@ -2920,6 +3084,15 @@ button.mobile-nav__link {
 .table__link:hover {
   color: var(--color-gold-dark);
 }
+
+/* Table column widths for orders/admin tables */
+.table th:nth-child(1), .table td:nth-child(1) { min-width: 140px; } /* Order */
+.table th:nth-child(2), .table td:nth-child(2) { min-width: 130px; } /* Date */
+.table th:nth-child(3), .table td:nth-child(3) { min-width: 160px; } /* Customer */
+.table th:nth-child(4), .table td:nth-child(4) { min-width: 120px; } /* Status/Items */
+.table th:nth-child(5), .table td:nth-child(5) { min-width: 140px; } /* Payment */
+.table th:nth-child(6), .table td:nth-child(6) { min-width: 100px; } /* Total */
+.table th:nth-child(7), .table td:nth-child(7) { min-width: 80px; }  /* Actions */
 
 /* ==========================================================================
    Account Dashboard / Profile
