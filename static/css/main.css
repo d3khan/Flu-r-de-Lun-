@@ -3046,7 +3046,6 @@ button.mobile-nav__link {
   border-collapse: collapse;
   font-size: var(--text-sm);
   min-width: 640px;
-  table-layout: fixed;
 }
 
 .table th {
@@ -3084,15 +3083,6 @@ button.mobile-nav__link {
 .table__link:hover {
   color: var(--color-gold-dark);
 }
-
-/* Table column widths for orders/admin tables */
-.table th:nth-child(1), .table td:nth-child(1) { min-width: 140px; } /* Order */
-.table th:nth-child(2), .table td:nth-child(2) { min-width: 130px; } /* Date */
-.table th:nth-child(3), .table td:nth-child(3) { min-width: 160px; } /* Customer */
-.table th:nth-child(4), .table td:nth-child(4) { min-width: 120px; } /* Status/Items */
-.table th:nth-child(5), .table td:nth-child(5) { min-width: 140px; } /* Payment */
-.table th:nth-child(6), .table td:nth-child(6) { min-width: 100px; } /* Total */
-.table th:nth-child(7), .table td:nth-child(7) { min-width: 80px; }  /* Actions */
 
 /* ==========================================================================
    Account Dashboard / Profile
