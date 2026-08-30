@@ -176,6 +176,9 @@ SESSION_SAVE_EVERY_REQUEST = True
 # anonymous data truly expires on exit.
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
+# UI: Max characters before word break (for long unbroken strings like product names)
+MAX_WORD_LENGTH = int(os.environ.get('MAX_WORD_LENGTH', '10'))
+
 # Cache
 CACHES = {
     'default': {

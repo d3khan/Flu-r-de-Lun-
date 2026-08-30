@@ -11,13 +11,13 @@
         </header>
 
         {% if orders %}
-            <div class="orders-list" style="padding-bottom: var(--space-16);">
+            <div class="orders-list mb-8">
                 {% for order in orders %}
                     <a href="{% url 'orders:detail' order.id %}" class="order-card">
                         <span>
                             <span class="order-card__number">{{ order.order_number }}</span>
                             <span class="order-card__date"> · {{ order.created_at|date:"d M Y, H:i" }}</span><br>
-                            <span class="text-muted" style="font-size: var(--text-xs);">
+                            <span class="text-muted">
                                 {{ order.items.count }} {% blocktrans count counter=order.items.count %}item{% plural %}items{% endblocktrans %}
                                 · {{ order.get_payment_method_display }}
                             </span>
@@ -46,7 +46,7 @@
                 </nav>
             {% endif %}
         {% else %}
-            <div class="empty-state" style="padding-block: var(--space-16) var(--space-24);">
+            <div class="empty-state">
                 <span class="empty-state__icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 7h12l1 13H5L6 7Zm3 0V5a3 3 0 0 1 6 0v2"/></svg>
                 </span>

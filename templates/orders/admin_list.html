@@ -11,7 +11,7 @@
 
         <!-- Filters -->
         <form method="get" class="shop-toolbar" aria-label="{% trans 'Filter orders' %}">
-            <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+            <div class="filter-group">
                 <label for="f-status" class="sr-only">{% trans "Status" %}</label>
                 <select id="f-status" name="status" class="toolbar-select" onchange="this.form.submit()">
                     <option value="">{% trans "All statuses" %}</option>
@@ -80,6 +80,6 @@
             </nav>
         {% endif %}
 
-        <div style="height: var(--space-16);"></div>
+        <div class="mb-8"></div>
     </div>
 {% endblock %}
