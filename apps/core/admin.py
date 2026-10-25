@@ -18,6 +18,11 @@ class SiteSettingsAdmin(admin.ModelAdmin):
             'fields': ('business_hours', 'response_time'),
             'description': 'Shown on the contact page and footer. Leave blank to hide.',
         }),
+        ('Social Media', {
+            'fields': ('instagram_url', 'facebook_url', 'twitter_url', 'tiktok_url'),
+            'classes': ('collapse',),
+            'description': 'Shown on the contact page and footer. Leave blank to hide.',
+        }),
         ('WhatsApp', {
             'fields': ('whatsapp_number', 'whatsapp_message'),
             'description': 'Number format: 2348104260003 (no + or spaces). Powers WhatsApp buttons site-wide.',
