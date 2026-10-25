@@ -16,7 +16,7 @@
     </a>
 
     <div class="cart-item__info">
-        <a href="{{ item.product.get_absolute_url }}" class="cart-item__name">{{ item.product.name }}</a>
+        <a href="{{ item.product.get_absolute_url }}" class="cart-item__name">{{ item.product.name|break_long_word }}</a>
 
         <div class="product-card__price mt-2" style="flex-direction: column; align-items: flex-start; gap: 4px;">
             {% if item.product.is_on_sale %}

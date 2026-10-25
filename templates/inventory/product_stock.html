@@ -1,5 +1,5 @@
 {% extends 'inventory/base.html' %}
-{% load static i18n %}
+{% load static i18n brand_tags %}
 
 {% block title %}{% trans "Update Stock" %}: {{ product.name }} — Inventory{% endblock %}
 
@@ -8,7 +8,7 @@
     <header class="inventory-stock-header">
         <div>
             <h1 class="inventory-stock-title">{% trans "Update Stock" %}</h1>
-            <p class="inventory-stock-subtitle">{{ product.name }}</p>
+            <p class="inventory-stock-subtitle">{{ product.name|break_long_word }}</p>
         </div>
         <a href="{% url 'inventory:product_list' %}" class="btn btn--secondary">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -32,7 +32,7 @@
         {% endif %}
 
         <div class="inventory-stock-card__info">
-            <h2 class="inventory-stock-card__name">{{ product.name }}</h2>
+            <h2 class="inventory-stock-card__name">{{ product.name|break_long_word }}</h2>
             <p class="inventory-stock-card__sku"><code>{{ product.sku }}</code></p>
 
             <div class="inventory-stock-current">

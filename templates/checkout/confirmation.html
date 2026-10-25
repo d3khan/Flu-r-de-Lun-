@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n humanize %}
+{% load static i18n humanize brand_tags %}
 
 {% block title %}{% trans "Order Confirmed" %} — {{ site_settings.site_name }}{% endblock %}
 
@@ -10,17 +10,11 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
             </span>
 
-            {% if order.payment_method == 'gateway' and order.payment_verified %}
-                <h1>{% trans "Payment successful — thank you!" %}</h1>
-            {% elif order.payment_method == 'manual' %}
-                <h1>{% trans "Order received!" %}</h1>
-            {% else %}
-                <h1>{% trans "Thank you for your order!" %}</h1>
-            {% endif %}
+            <h1>{% trans "Thank you for your order!" %}</h1>
 
             <p class="lead mt-4">
-                {% blocktrans with number=order.order_number email=order.email %}
-                    Your order <strong>{{ number }}</strong> is confirmed. A receipt has been sent to {{ email }}.
+                {% blocktrans with number=order.order_number %}
+                    Your order <strong>{{ number }}</strong> has been received. Send it to our team on WhatsApp so we can confirm the details and get it moving.
                 {% endblocktrans %}
             </p>
 
@@ -33,7 +27,7 @@
 
                 {% for item in order.items.all %}
                     <div class="summary-row">
-                        <span>{{ item.product_name }} <span class="text-muted">× {{ item.quantity }}</span></span>
+                        <span>{{ item.product_name|break_long_word }} <span class="text-muted">× {{ item.quantity }}</span></span>
                         <span>₦{{ item.total_price|intcomma }}</span>
                     </div>
                 {% endfor %}
@@ -49,12 +43,15 @@
             </div>
 
             <p class="mt-4 text-muted" style="font-size: var(--text-sm);">
-                {% if order.payment_method == 'manual' %}
-                    {% trans "Haven't completed your transfer yet? Send payment proof on WhatsApp to speed up dispatch." %}
-                {% else %}
-                    {% trans "We'll notify you when your frames are on their way." %}
-                {% endif %}
+                {% trans "Keep your order number handy. Our team will confirm everything with you on WhatsApp." %}
             </p>
+
+            <a href="{{ whatsapp_url }}"
+               target="_blank" rel="noopener noreferrer"
+               class="btn btn--whatsapp btn--lg btn--block mt-6">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm4.6 12.1c-.2.6-1.2 1.1-1.7 1.2-.4.1-1 .1-1.6-.1-.4-.2-.9-.3-1.5-.6-2.7-1.1-4.4-3.7-4.5-3.9-.1-.2-1.1-1.4-1.1-2.7s.7-1.9.9-2.2c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.4.2.5.7 1.7.8 1.9v.5c0 .2-.1.3-.3.5l-.4.5c-.1.2-.4.3-.1.7a6.7 6.7 0 0 0 3.4 3c.2.1.4.1.5-.1l.8-1c.2-.2.4-.3.6-.1.2.1 1.4.7 1.7.8s.4.2.5.3c0 .1 0 .6-.2 1.2z"/></svg>
+                {% trans "Send Order on WhatsApp" %}
+            </a>
 
             <div style="display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap;" class="mt-8">
                 <a href="{% url 'products:list' %}" class="btn btn--gold btn--lg">{% trans "Continue Shopping" %}</a>

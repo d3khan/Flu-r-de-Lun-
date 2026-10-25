@@ -20,9 +20,9 @@
                     {% endfor %}
                 </select>
 
-                <label for="f-payment" class="sr-only">{% trans "Payment method" %}</label>
+                <label for="f-payment" class="sr-only">{% trans "Order channel" %}</label>
                 <select id="f-payment" name="payment_method" class="toolbar-select" onchange="this.form.submit()">
-                    <option value="">{% trans "All payment methods" %}</option>
+                    <option value="">{% trans "All channels" %}</option>
                     {% for value, label in payment_method_choices %}
                         <option value="{{ value }}" {% if current_payment_method == value %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}

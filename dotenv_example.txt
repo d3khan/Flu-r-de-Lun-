@@ -15,21 +15,6 @@ EMAIL_HOST_PASSWORD=your-app-password
 EMAIL_FROM_ADDRESS=your-email@gmail.com
 CONTACT_EMAIL=hello@yourdomain.com
 
-# Paystack
-PAYSTACK_SECRET_KEY=sk_test_xxxxx
-PAYSTACK_PUBLIC_KEY=pk_test_xxxxx
-
-# Flutterwave
-FLUTTERWAVE_SECRET_KEY=FLWSECK_TEST-xxxxx
-FLUTTERWAVE_PUBLIC_KEY=FLWPUBK_TEST-xxxxx
-FLUTTERWAVE_ENCRYPTION_KEY=your-32-char-encryption-key
-
-# Payment Gateway Choice: paystack or flutterwave
-PAYMENT_GATEWAY=paystack
-
-# Enable/disable online payments
-PAYMENTS_ENABLED=false
-
 # Shipping
 SHIPPING_COST=1500
 FREE_SHIPPING_THRESHOLD=50000
@@ -62,4 +47,5 @@ DJANGO_SUPERUSER_LAST_NAME=Name
 # Customer support display (optional; env overrides admin edits)
 BUSINESS_HOURS=
 RESPONSE_TIME=
-WHATSAPP_NUMBER=
+CONTACT_PHONE=+234 708 078 1217
+WHATSAPP_NUMBER=2347080781217

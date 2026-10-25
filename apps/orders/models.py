@@ -9,8 +9,7 @@ from apps.products.models import Product
 class Order(models.Model):
     """Customer order."""
     PAYMENT_METHOD_CHOICES = [
-        ('gateway', _('Payment Gateway')),
-        ('manual', _('Manual Transfer')),
+        ('whatsapp', _('WhatsApp')),
     ]
     
     STATUS_CHOICES = [
@@ -139,7 +138,7 @@ class Order(models.Model):
 
     @property
     def is_paid(self):
-        return self.payment_verified or self.payment_method == 'manual'
+        return bool(self.payment_verified)
 
 
 class OrderItem(models.Model):

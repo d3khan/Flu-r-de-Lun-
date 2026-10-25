@@ -32,9 +32,6 @@ urlpatterns = [
     # Orders
     path('orders/', include('apps.orders.urls', namespace='orders')),
 
-    # Payments
-    path('payments/', include('apps.payments.urls', namespace='payments')),
-
     # Checkout
     path('checkout/', include('apps.checkout.urls', namespace='checkout')),
 
