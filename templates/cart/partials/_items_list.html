@@ -23,7 +23,7 @@ per-button targets are needed.
             </a>
 
             <div class="cart-item__info">
-                <a href="{{ item.product.get_absolute_url }}" class="cart-item__name">{{ item.product.name }}</a>
+                <a href="{{ item.product.get_absolute_url }}" class="cart-item__name">{{ item.product.name|break_long_word }}</a>
                 <span class="cart-item__unit-price">₦{{ item.product.price|intcomma }}</span>
 
                 <div class="cart-item__controls">

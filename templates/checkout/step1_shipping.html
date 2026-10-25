@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static i18n humanize %}
+{% load static i18n humanize brand_tags %}
 
 {% block title %}{% trans "Checkout — Shipping" %} — {{ site_settings.site_name }}{% endblock %}
 
@@ -101,7 +101,7 @@
 
                     {% for item in cart.items.all %}
                         <div class="summary-row">
-                            <span>{{ item.product.name }} <span class="text-muted">× {{ item.quantity }}</span></span>
+                            <span>{{ item.product.name|break_long_word }} <span class="text-muted">× {{ item.quantity }}</span></span>
                             <span>₦{{ item.total_price|intcomma }}</span>
                         </div>
                     {% endfor %}

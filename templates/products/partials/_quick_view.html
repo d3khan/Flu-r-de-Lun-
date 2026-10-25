@@ -1,4 +1,4 @@
-{% load static i18n humanize %}
+{% load static i18n humanize brand_tags %}
 {# Quick view modal — loaded via HTMX into #quick-view-root #}
 <div class="modal" x-data x-show="true" x-cloak @keydown.escape.window="$el.closest('#quick-view-root').innerHTML = ''">
     <div class="modal__backdrop" @click="$el.closest('#quick-view-root').innerHTML = ''"></div>
@@ -24,7 +24,7 @@
             {% if product.category %}
                 <p class="pd-info__category">{{ product.category.name }}</p>
             {% endif %}
-            <h2 style="font-size: var(--text-xl);">{{ product.name }}</h2>
+            <h2 style="font-size: var(--text-xl);">{{ product.name|break_long_word }}</h2>
 
             <div class="pd-price">
                 {% if product.is_on_sale %}

@@ -1,5 +1,5 @@
 {% extends 'inventory/base.html' %}
-{% load static i18n humanize %}
+{% load static i18n humanize brand_tags %}
 
 {% block title %}{% trans "Delete Product" %} — Inventory{% endblock %}
 
@@ -30,7 +30,7 @@
             </div>
         {% endif %}
         <div class="inventory-delete-product__info">
-            <h2 class="inventory-delete-product__name">{{ product.name }}</h2>
+            <h2 class="inventory-delete-product__name">{{ product.name|break_long_word }}</h2>
             <dl class="inventory-delete-product__details">
                 <div>
                     <dt>{% trans "SKU" %}</dt>
