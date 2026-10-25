@@ -149,7 +149,8 @@ Self-service reset needs an email or SMS provider, and none is configured, so th
 - Enter the customer's account email → the page builds a signed, single-use link with Django's `default_token_generator` and offers **Copy link** / **Send on WhatsApp** (pre-filled message, normalised to `wa.me` format).
 - The link expires after `PASSWORD_RESET_TIMEOUT` (10 minutes in `config/settings/base.py` and `production.py`).
 - The customer opens the link on the storefront and sets a new password; the token stops working once used or once the password changes.
-- The public `/accounts/password/reset/` page remains a "message us on WhatsApp" explainer, not a self-service form.
+- The public `/accounts/password/reset/` page remains a "message us on WhatsApp" explainer, not a self-service form. The login page's "Forgot your password?" link goes straight there.
+- Registration and profile editing require a phone number (10–15 digits); it is stored as the WhatsApp number used for reset delivery. Existing accounts without one still appear in the tool, where staff can copy the link manually.
 
 ---
 

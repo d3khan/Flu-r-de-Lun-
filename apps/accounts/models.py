@@ -8,7 +8,15 @@ from django_countries.fields import CountryField
 class CustomUser(AbstractUser):
     """Custom user model using email as username."""
     email = models.EmailField(_('Email Address'), unique=True)
-    phone = models.CharField(_('Phone Number'), max_length=20, blank=True)
+    phone = models.CharField(
+        _('Phone Number'),
+        max_length=20,
+        blank=False,
+        help_text=_(
+            'WhatsApp number used for password reset links. Include the '
+            'country code, e.g. +234 810 426 0003.'
+        ),
+    )
     date_of_birth = models.DateField(_('Date of Birth'), null=True, blank=True)
     is_verified = models.BooleanField(_('Verified'), default=False)
     email_verified_at = models.DateTimeField(_('Email Verified At'), null=True, blank=True)

@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.contrib.auth.forms import (
     UserCreationForm, UserChangeForm, AuthenticationForm,
@@ -6,6 +8,18 @@ from django.contrib.auth.forms import (
 from django.utils.translation import gettext_lazy as _
 
 from .models import CustomUser, Address
+
+
+def _validated_phone(value):
+    """Require a dialable phone number (country code, 10-15 digits)."""
+    phone = (value or '').strip()
+    digits = re.sub(r'\D', '', phone)
+    if not 10 <= len(digits) <= 15:
+        raise forms.ValidationError(_(
+            'Enter a valid phone number with its country code, '
+            'e.g. +234 810 426 0003.'
+        ))
+    return phone
 
 
 class StyledFieldsMixin:
@@ -51,11 +65,16 @@ class CustomUserCreationForm(UserCreationForm):
     phone = forms.CharField(
         label=_('Phone Number'),
         max_length=20,
-        required=False,
+        required=True,
+        help_text=_(
+            'Use the WhatsApp number linked to this account. Password reset '
+            'links are sent to it on WhatsApp.'
+        ),
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': _('+234 8XX XXX XXXX'),
             'autocomplete': 'tel',
+            'required': True,
         })
     )
     password1 = forms.CharField(
@@ -85,6 +104,9 @@ class CustomUserCreationForm(UserCreationForm):
             raise forms.ValidationError(_('A user with this email already exists.'))
         return email
 
+    def clean_phone(self):
+        return _validated_phone(self.cleaned_data.get('phone'))
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email'].lower()
@@ -111,6 +133,9 @@ class CustomUserChangeForm(UserChangeForm):
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
             'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
+
+    def clean_phone(self):
+        return _validated_phone(self.cleaned_data.get('phone'))
 
 
 class CustomAuthenticationForm(StyledFieldsMixin, AuthenticationForm):
