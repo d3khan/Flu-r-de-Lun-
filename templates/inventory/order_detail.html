@@ -88,7 +88,7 @@
                         <option value="{{ value }}" {% if value == order.status %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
-                <p class="form-help mb-2">{% trans "Stock is deducted once, when the order first becomes Confirmed, Processing or Delivered." %}</p>
+                <p class="form-help mb-2">{% trans "Stock is deducted once, when the order first becomes Confirmed, Processing or Delivered, and restored if it is cancelled or refunded." %}</p>
                 <label for="note" class="form-label">{% trans "Note (optional)" %}</label>
                 <textarea name="note" id="note" rows="2" class="form-control mb-2" placeholder="{% trans 'Add a note…' %}"></textarea>
                 <button type="submit" class="btn btn--primary btn--block">{% trans "Update Status" %}</button>

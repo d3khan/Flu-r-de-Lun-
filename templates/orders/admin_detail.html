@@ -77,7 +77,7 @@
                             {% endfor %}
                         </select>
                     </div>
-                    <p class="form-help mb-4">{% trans "Stock is deducted once, when the order first becomes Confirmed, Processing or Delivered." %}</p>
+                    <p class="form-help mb-4">{% trans "Stock is deducted once, when the order first becomes Confirmed, Processing or Delivered, and restored if it is cancelled or refunded." %}</p>
                     <div class="form-group">
                         <label for="note" class="form-label">{% trans "Note (optional)" %}</label>
                         <textarea id="note" name="note" class="form-textarea" rows="3"></textarea>

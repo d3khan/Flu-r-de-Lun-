@@ -10,6 +10,16 @@
             <h1 class="inventory-page-header__title">{% trans "Orders" %}</h1>
             <p class="inventory-page-header__subtitle">{% trans "Review and manage customer orders" %}</p>
         </div>
+        <div class="inventory-page-header__actions">
+            <a href="{% url 'inventory:password_reset_link' %}" class="btn btn--secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="7.5" cy="15.5" r="5.5"/>
+                    <path d="m21 2-9.6 9.6"/>
+                    <path d="m15.5 7.5 3 3L22 7l-3-3"/>
+                </svg>
+                <span>{% trans "Password Reset" %}</span>
+            </a>
+        </div>
     </header>
 
     <!-- Filters -->

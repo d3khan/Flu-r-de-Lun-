@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.contrib.auth.forms import (
     UserCreationForm, UserChangeForm, AuthenticationForm,
@@ -5,7 +7,19 @@ from django.contrib.auth.forms import (
 )
 from django.utils.translation import gettext_lazy as _
 
-from .models import CustomUser, Address
+from .models import CustomUser
+
+
+def _validated_phone(value):
+    """Require a dialable phone number (country code, 10-15 digits)."""
+    phone = (value or '').strip()
+    digits = re.sub(r'\D', '', phone)
+    if not 10 <= len(digits) <= 15:
+        raise forms.ValidationError(_(
+            'Enter a valid phone number with its country code, '
+            'e.g. +234 810 426 0003.'
+        ))
+    return phone
 
 
 class StyledFieldsMixin:
@@ -51,11 +65,16 @@ class CustomUserCreationForm(UserCreationForm):
     phone = forms.CharField(
         label=_('Phone Number'),
         max_length=20,
-        required=False,
+        required=True,
+        help_text=_(
+            'Use the WhatsApp number linked to this account. Password reset '
+            'links are sent to it on WhatsApp.'
+        ),
         widget=forms.TextInput(attrs={
             'class': 'form-control',
             'placeholder': _('+234 8XX XXX XXXX'),
             'autocomplete': 'tel',
+            'required': True,
         })
     )
     password1 = forms.CharField(
@@ -85,6 +104,9 @@ class CustomUserCreationForm(UserCreationForm):
             raise forms.ValidationError(_('A user with this email already exists.'))
         return email
 
+    def clean_phone(self):
+        return _validated_phone(self.cleaned_data.get('phone'))
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email'].lower()
@@ -112,6 +134,9 @@ class CustomUserChangeForm(UserChangeForm):
             'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
 
+    def clean_phone(self):
+        return _validated_phone(self.cleaned_data.get('phone'))
+
 
 class CustomAuthenticationForm(StyledFieldsMixin, AuthenticationForm):
     """Custom login form using email."""
@@ -131,36 +156,6 @@ class CustomAuthenticationForm(StyledFieldsMixin, AuthenticationForm):
             'autocomplete': 'current-password',
         })
     )
-
-
-class AddressForm(forms.ModelForm):
-    """Address form."""
-    class Meta:
-        model = Address
-        fields = [
-            'label', 'first_name', 'last_name', 'phone',
-            'address_line_1', 'address_line_2', 'city', 'state',
-            'postal_code', 'country', 'is_default'
-        ]
-        widgets = {
-            'label': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Home')}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control'}),
-            'address_line_1': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Street address')}),
-            'address_line_2': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Apartment, suite, etc.')}),
-            'city': forms.TextInput(attrs={'class': 'form-control'}),
-            'state': forms.TextInput(attrs={'class': 'form-control'}),
-            'postal_code': forms.TextInput(attrs={'class': 'form-control'}),
-            'country': forms.Select(attrs={'class': 'form-select'}),
-            'is_default': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        }
-        labels = {
-            'label': _('Address Label'),
-            'address_line_1': _('Address Line 1'),
-            'address_line_2': _('Address Line 2'),
-            'postal_code': _('Postal Code'),
-        }
 
 
 class CustomPasswordChangeForm(StyledFieldsMixin, PasswordChangeForm):

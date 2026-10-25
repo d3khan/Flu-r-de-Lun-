@@ -33,3 +33,6 @@ DJANGO_SUPERUSER_LAST_NAME=
 
 # UI: Max characters before word break (for long unbroken product names)
 MAX_WORD_LENGTH=10
+
+# TEMPORARY: instant password-reset test option (opens the link, no delivery)
+# PASSWORD_RESET_TEST_MODE=True

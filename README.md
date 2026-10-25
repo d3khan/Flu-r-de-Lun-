@@ -9,10 +9,10 @@
 - **Full storefront** — home with hero & featured collections, category browsing, product detail pages with image galleries + zoom, search, sorting, pagination
 - **Cart system** — session carts for guests that **merge into your account on login**, HTMX slide-in cart drawer, live stock validation
 - **Wishlist** — one-tap heart toggles, move items to cart, **persisted in database per user** (survives restarts/deploy)
-- **Accounts** — email-based auth, address book with defaults, profile management, password reset
+- **Accounts** — email-based auth, profile management, required WhatsApp number, staff-issued password reset links
 - **3-step checkout** — details → review → confirm. Only name, email and phone are collected; how the customer receives the order is agreed on WhatsApp
 - **WhatsApp checkout** — after placing an order, the customer is handed off to WhatsApp with the order details pre-filled; the team confirms everything directly in chat
-- **Order lifecycle** — FDL-XXXXXXXX order numbers, status timeline, reorder, guest order tracking by number + email. Stock is deducted **once**, when an order first becomes Confirmed, Processing or Delivered
+- **Order lifecycle** — FDL-XXXXXXXX order numbers, status timeline, reorder, guest order tracking by number + email. Stock is deducted **once**, when an order first becomes Confirmed, Processing or Delivered, and restored if it is cancelled or refunded
 - **Admin dashboard** — manage products/categories/images, orders with status actions, contact messages, site settings
 - **Image reliability** — **server-side image proxy** for all external (ImgBB) images: long-term browser caching, skeleton loading placeholders, error fallback, preload critical images, `decoding="async"`
 - **Global loading indicator** — gold progress bar on initial load, HTMX requests, and page navigation; 3s force-hide safety
@@ -86,7 +86,7 @@ Place a test order through checkout and continue to WhatsApp. The order is recor
 │   ├── products/    # Category, Product, ProductImage (+ ImageKit thumbnails), **Image Proxy view**
 │   ├── cart/        # Session + user carts, HTMX drawer partials
 │   ├── wishlist/    # Toggle, move-to-cart, **DB-persisted per user**
-│   ├── accounts/    # CustomUser (email login), Address book
+│   ├── accounts/    # CustomUser (email login), profile and password management
 │   ├── orders/      # Order, OrderItem, status history, admin views
 │   └── checkout/    # 3-step details → review → confirm, WhatsApp hand-off
 ├── config/settings/ # base / development / production

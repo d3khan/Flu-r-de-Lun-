@@ -3,6 +3,8 @@ Views for inventory management.
 """
 import os
 import logging
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
@@ -11,6 +13,9 @@ from django.views.decorators.csrf import csrf_protect
 from django.db.models import Q, Count, F
 from django.core.paginator import Paginator
 from django.http import JsonResponse, HttpResponseForbidden
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext
 from django.utils import timezone
@@ -20,7 +25,9 @@ logger = logging.getLogger(__name__)
 
 from apps.products.models import Product, Category, ProductImage
 from apps.orders.models import Order, OrderStatusHistory
+from apps.core.models import SiteSettings
 from apps.core.utils.imgbb import get_imgbb_service
+from apps.core.utils.whatsapp import build_whatsapp_url
 from .forms import ProductForm, ProductStockForm, CategoryForm, ProductImageForm
 
 
@@ -751,7 +758,8 @@ def inventory_order_status(request, pk):
             order.cancelled_at = now
         order.save()
         # Deducts once on Confirmed/Processing/Delivered and restores on
-        # cancellation. The flag prevents repeat deductions on status toggles.
+        # cancellation or refund. The flag prevents repeat deductions on
+        # status toggles.
         order.apply_status_stock()
         OrderStatusHistory.objects.create(
             order=order,
@@ -765,3 +773,64 @@ def inventory_order_status(request, pk):
         messages.error(request, _('Invalid status selected.'))
 
     return redirect('inventory:order_detail', pk=pk)
+
+
+@inventory_login_required
+@require_http_methods(['GET', 'POST'])
+def password_reset_link(request):
+    """Generate a one-time password reset link for staff to deliver manually.
+
+    Self-service reset needs an email or SMS provider to deliver the link.
+    Staff look the customer up here instead and send the link over WhatsApp.
+    """
+    user_model = get_user_model()
+    email = ''
+    account = None
+    reset_url = ''
+    whatsapp_url = ''
+    expires_minutes = max(
+        1, int(getattr(settings, 'PASSWORD_RESET_TIMEOUT', 600)) // 60
+    )
+
+    if request.method == 'POST':
+        email = (request.POST.get('email') or '').strip()
+        account = user_model.objects.filter(
+            email__iexact=email, is_active=True
+        ).first()
+
+        if account is None:
+            messages.error(
+                request, _('No active account uses that email address.')
+            )
+        else:
+            uidb64 = urlsafe_base64_encode(force_bytes(account.pk))
+            token = default_token_generator.make_token(account)
+            reset_url = request.build_absolute_uri(reverse(
+                'accounts:password_reset_confirm',
+                kwargs={'uidb64': uidb64, 'token': token},
+            ))
+            if account.phone:
+                whatsapp_url = build_whatsapp_url(
+                    _(
+                        'Hello %(name)s, here is your secure password reset link '
+                        'for %(site)s. It can be used once and expires in '
+                        '%(minutes)s minutes: %(url)s'
+                    ) % {
+                        'name': account.get_full_name() or account.email,
+                        'site': SiteSettings.get_settings().site_name,
+                        'minutes': expires_minutes,
+                        'url': reset_url,
+                    },
+                    number=account.phone,
+                )
+                if whatsapp_url == '#':
+                    whatsapp_url = ''
+
+    return render(request, 'inventory/password_reset_link.html', {
+        'title': _('Password Reset Link'),
+        'email': email,
+        'account': account,
+        'reset_url': reset_url,
+        'whatsapp_url': whatsapp_url,
+        'expires_minutes': expires_minutes,
+    })

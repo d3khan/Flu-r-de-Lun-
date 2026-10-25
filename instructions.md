@@ -43,7 +43,7 @@ Admin → **Products**.
 Stock is **not** reduced when an order is placed. It is deducted **once**, the first time staff change the order status to **Confirmed**, **Processing** or **Delivered** in the inventory dashboard (or Django admin).
 
 - The order keeps a `stock_deducted` flag, so switching the status back and forth never deducts twice.
-- Cancelling an order restores stock only if it had already been deducted.
+- Cancelling or refunding an order restores stock only if it had already been deducted. A refunded order that is confirmed again takes the stock out once more.
 - If a product sells out between order placement and confirmation, the team can cancel or adjust the order before stock is taken.
 
 ---
@@ -138,6 +138,20 @@ Django validator default is 8 (`config/settings/base.py`). If you raise it, also
 - Homepage Best Sellers uses `.section--gradient` (beige→white in light, dark beige→darker in dark).
 - Defined in `static/css/main.css` with dark-mode override.
 - Sits between Featured (default beige) and New Arrivals (white) for visual rhythm.
+
+---
+
+## 15. Password reset (staff-issued link)
+
+Self-service reset needs an email or SMS provider, and none is configured, so the customer form points people to WhatsApp instead. Staff issue the link from inventory:
+
+- **`/inventory/password-reset-link/`** — linked from the Dashboard and Orders headers (`apps/inventory/views.py`, `templates/inventory/password_reset_link.html`).
+- Enter the customer's account email → the page builds a signed, single-use link with Django's `default_token_generator` and offers **Copy link** / **Send on WhatsApp** (pre-filled message, normalised to `wa.me` format).
+- The link expires after `PASSWORD_RESET_TIMEOUT` (10 minutes in `config/settings/base.py` and `production.py`).
+- The customer opens the link on the storefront and sets a new password; the token stops working once used or once the password changes.
+- The public `/accounts/password/reset/` page remains a "message us on WhatsApp" explainer, not a self-service form. The login page's "Forgot your password?" link goes straight there.
+- **Temporary test option:** with `PASSWORD_RESET_TEST_MODE=True` (set in the local `.env`), the reset page also shows **Without our team**, which opens the signed reset link immediately instead of delivering it. It is off by default in production. Delete the block marked `TEMPORARY TEST MODE` in `templates/accounts/password_reset_under_development.html` to remove it, and unset `PASSWORD_RESET_TEST_MODE` to close the endpoint.
+- Registration and profile editing require a phone number (10–15 digits); it is stored as the WhatsApp number used for reset delivery. Existing accounts without one still appear in the tool, where staff can copy the link manually.
 
 ---
 

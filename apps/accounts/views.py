@@ -1,21 +1,25 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, update_session_auth_hash
+from django.shortcuts import render, redirect
+from django.conf import settings
+from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import (
     LoginView, LogoutView, PasswordChangeView, PasswordResetView,
     PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView
 )
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.views.generic import CreateView, UpdateView, ListView, DetailView, DeleteView
+from django.views.generic import CreateView
+from django.views.decorators.http import require_POST
 from django.urls import reverse_lazy
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
-from django.http import JsonResponse
+from django.http import Http404
 
-from .models import CustomUser, Address
+from .models import CustomUser
 from .forms import (
     CustomUserCreationForm, CustomUserChangeForm,
-    CustomAuthenticationForm, AddressForm,
+    CustomAuthenticationForm,
     CustomPasswordChangeForm, CustomSetPasswordForm,
     CustomPasswordResetForm,
 )
@@ -135,73 +139,55 @@ def profile_edit(request):
     return render(request, 'accounts/profile_edit.html', {'form': form})
 
 
-class AddressListView(LoginRequiredMixin, ListView):
-    model = Address
-    template_name = 'accounts/address_list.html'
-    context_object_name = 'addresses'
-
-    def get_queryset(self):
-        return Address.objects.filter(user=self.request.user)
-
-
-class AddressCreateView(LoginRequiredMixin, CreateView):
-    model = Address
-    form_class = AddressForm
-    template_name = 'accounts/address_form.html'
-    success_url = reverse_lazy('accounts:address_list')
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        # If this is the first address, make it default
-        if not Address.objects.filter(user=self.request.user).exists():
-            form.instance.is_default = True
-        messages.success(self.request, _('Address added successfully.'))
-        return super().form_valid(form)
-
-
-class AddressUpdateView(LoginRequiredMixin, UpdateView):
-    model = Address
-    form_class = AddressForm
-    template_name = 'accounts/address_form.html'
-    success_url = reverse_lazy('accounts:address_list')
-
-    def get_queryset(self):
-        return Address.objects.filter(user=self.request.user)
-
-    def form_valid(self, form):
-        messages.success(self.request, _('Address updated successfully.'))
-        return super().form_valid(form)
-
-
-class AddressDeleteView(LoginRequiredMixin, DeleteView):
-    model = Address
-    template_name = 'accounts/address_confirm_delete.html'
-    success_url = reverse_lazy('accounts:address_list')
-
-    def get_queryset(self):
-        return Address.objects.filter(user=self.request.user)
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(request, _('Address deleted.'))
-        return super().delete(request, *args, **kwargs)
-
-
-@login_required
-def address_set_default(request, pk):
-    """Set address as default via HTMX."""
-    address = get_object_or_404(Address, pk=pk, user=request.user)
-    Address.objects.filter(user=request.user, is_default=True).update(is_default=False)
-    address.is_default = True
-    address.save()
-    
-    if request.htmx:
-        return JsonResponse({'success': True})
-    return redirect('accounts:address_list')
-
-
 def password_reset_under_development(request):
-    """Temporary page for password reset under development."""
+    """Password reset landing page: staff-assisted, plus a test-only shortcut."""
     # site_settings comes from the context processor; passing an explicit
     # value here (e.g. None) would override it and blank the contact
     # email in this template and the shared footer.
-    return render(request, 'accounts/password_reset_under_development.html')
+    return render(request, 'accounts/password_reset_under_development.html', {
+        'password_reset_test_mode': getattr(
+            settings, 'PASSWORD_RESET_TEST_MODE', False
+        ),
+    })
+
+
+@require_POST
+def password_reset_instant(request):
+    """TEMPORARY test mode: open a reset link without delivering it.
+
+    While PASSWORD_RESET_TEST_MODE is on, anyone who knows an account email
+    can reset that account, so it is off by default in production. Delete the
+    marked block in password_reset_under_development.html to hide the entry
+    point, and unset PASSWORD_RESET_TEST_MODE to close this endpoint.
+    """
+    if not getattr(settings, 'PASSWORD_RESET_TEST_MODE', False):
+        raise Http404
+
+    email = (request.POST.get('email') or '').strip()
+    account = get_user_model().objects.filter(
+        email__iexact=email, is_active=True
+    ).first()
+
+    if account is None:
+        messages.error(request, _('No active account uses that email address.'))
+        return redirect('accounts:password_reset')
+
+    # Exercise the real reset-email path (console backend locally) before
+    # opening the same signed link in the browser.
+    reset_form = CustomPasswordResetForm({'email': account.email})
+    if reset_form.is_valid():
+        reset_form.save(
+            request=request,
+            use_https=request.is_secure(),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            email_template_name='accounts/password_reset_email.html',
+            subject_template_name='accounts/password_reset_subject.txt',
+        )
+
+    uidb64 = urlsafe_base64_encode(force_bytes(account.pk))
+    token = default_token_generator.make_token(account)
+    return redirect(
+        'accounts:password_reset_confirm',
+        uidb64=uidb64,
+        token=token,
+    )
