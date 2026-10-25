@@ -7,7 +7,7 @@ from django.contrib.auth.forms import (
 )
 from django.utils.translation import gettext_lazy as _
 
-from .models import CustomUser, Address
+from .models import CustomUser
 
 
 def _validated_phone(value):
@@ -156,36 +156,6 @@ class CustomAuthenticationForm(StyledFieldsMixin, AuthenticationForm):
             'autocomplete': 'current-password',
         })
     )
-
-
-class AddressForm(forms.ModelForm):
-    """Address form."""
-    class Meta:
-        model = Address
-        fields = [
-            'label', 'first_name', 'last_name', 'phone',
-            'address_line_1', 'address_line_2', 'city', 'state',
-            'postal_code', 'country', 'is_default'
-        ]
-        widgets = {
-            'label': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Home')}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control'}),
-            'address_line_1': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Street address')}),
-            'address_line_2': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Apartment, suite, etc.')}),
-            'city': forms.TextInput(attrs={'class': 'form-control'}),
-            'state': forms.TextInput(attrs={'class': 'form-control'}),
-            'postal_code': forms.TextInput(attrs={'class': 'form-control'}),
-            'country': forms.Select(attrs={'class': 'form-select'}),
-            'is_default': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
-        }
-        labels = {
-            'label': _('Address Label'),
-            'address_line_1': _('Address Line 1'),
-            'address_line_2': _('Address Line 2'),
-            'postal_code': _('Postal Code'),
-        }
 
 
 class CustomPasswordChangeForm(StyledFieldsMixin, PasswordChangeForm):

@@ -8,7 +8,6 @@ from django.http import JsonResponse
 from apps.cart.models import Cart, CartItem
 from apps.products.models import Product
 from apps.orders.models import Order, OrderItem
-from apps.accounts.models import Address
 from apps.core.models import SiteSettings
 from apps.core.utils.whatsapp import order_whatsapp_url
 
@@ -277,27 +276,3 @@ def checkout_validate_stock(request):
         'out_of_stock': out_of_stock,
         'low_stock': low_stock,
     })
-
-
-@require_POST
-def checkout_save_address(request):
-    """Save address to user profile from checkout."""
-    if not request.user.is_authenticated:
-        return JsonResponse({'success': False, 'error': 'Authentication required'}, status=401)
-    
-    address = Address.objects.create(
-        user=request.user,
-        label=request.POST.get('label', 'Home'),
-        first_name=request.POST.get('first_name'),
-        last_name=request.POST.get('last_name'),
-        phone=request.POST.get('phone'),
-        address_line_1=request.POST.get('address_line_1'),
-        address_line_2=request.POST.get('address_line_2', ''),
-        city=request.POST.get('city'),
-        state=request.POST.get('state'),
-        postal_code=request.POST.get('postal_code', ''),
-        country='NG',
-        is_default=request.POST.get('is_default') == 'true',
-    )
-    
-    return JsonResponse({'success': True, 'address_id': address.id})

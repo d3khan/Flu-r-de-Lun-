@@ -13,5 +13,4 @@ urlpatterns = [
 
     # AJAX endpoints
     path('validate-stock/', views.checkout_validate_stock, name='validate_stock'),
-    path('save-address/', views.checkout_save_address, name='save_address'),
 ]
