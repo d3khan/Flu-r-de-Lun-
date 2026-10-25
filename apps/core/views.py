@@ -1,14 +1,10 @@
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from django.views.generic import TemplateView, FormView
-from django.urls import reverse_lazy
+from django.shortcuts import render
+from django.views.generic import TemplateView
 from django.utils.translation import gettext_lazy as _
 from django.utils.safestring import mark_safe
-from django.http import HttpResponse
 from urllib.parse import quote
 
-from .models import SiteSettings, ContactMessage
-from .forms import ContactForm
+from .models import SiteSettings
 from apps.wishlist.utils import annotate_in_wishlist
 
 
@@ -105,23 +101,16 @@ class AboutView(TemplateView):
     template_name = 'core/about.html'
 
 
-class ContactView(FormView):
-    """Contact page with form.
+class ContactView(TemplateView):
+    """Contact page.
 
-    The form is stored in the database (ContactMessage, viewable in the
-    admin); it is not emailed anywhere because no email provider is
-    configured. Customers reach us through the contact methods listed below
-    instead, which are driven by SiteSettings so a new channel (Instagram,
-    Twitter, …) only needs one field and one entry here.
+    The contact form was removed because no email provider is configured,
+    so submissions had nowhere to go. Customers reach us through the contact
+    methods listed here instead, which are driven by SiteSettings so a new
+    channel (Instagram, X, Telegram, …) only needs one SiteSettings field
+    plus one entry in CONTACT_ICONS and contact_methods().
     """
     template_name = 'core/contact.html'
-    form_class = ContactForm
-    success_url = reverse_lazy('core:contact')
-
-    def form_valid(self, form):
-        form.save()
-        messages.success(self.request, _("Thank you for your message! We'll get back to you soon."))
-        return super().form_valid(form)
 
     def contact_methods(self, site_settings):
         """Build the list of contact methods shown on the page."""
@@ -174,16 +163,6 @@ class ContactView(FormView):
                 'text': _('Chat with us instantly'),
                 'external': True,
                 'icon_html': CONTACT_ICONS['whatsapp'],
-            })
-
-        if site_settings.address:
-            methods.append({
-                'key': 'pin',
-                'title': _('Studio'),
-                'href': None,
-                'lines': site_settings.address.splitlines(),
-                'external': False,
-                'icon_html': CONTACT_ICONS['pin'],
             })
 
         for key, url, title in (
