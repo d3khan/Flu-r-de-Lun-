@@ -349,6 +349,7 @@
 
 .alert-section__table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ==========================================================================
@@ -357,10 +358,11 @@
 
 .alert-table,
 .inventory-table {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: var(--text-sm);
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .alert-table th,
@@ -406,6 +408,12 @@
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--color-beige-100);
   vertical-align: middle;
+  white-space: nowrap;
+}
+
+.alert-table td[colspan],
+.inventory-table td[colspan] {
+  white-space: normal;
 }
 
 .alert-table tbody tr:last-child td,
@@ -468,6 +476,11 @@
   opacity: 0;
 }
 
+/* No image means the skeleton never finishes; keep the row clean. */
+.product-cell:not(:has(.product-cell__image))::before {
+  display: none;
+}
+
 .product-cell__placeholder {
   width: 48px;
   height: 48px;
@@ -487,14 +500,14 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .product-cell__name {
   font-weight: var(--font-medium);
   color: var(--color-beige-900);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .product-cell__category {
@@ -715,6 +728,7 @@
 
 .inventory-table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-beige-200);
   background-color: var(--color-white);
@@ -1666,6 +1680,7 @@
 
 .inventory-section__table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-beige-200);
   background-color: var(--color-white);
