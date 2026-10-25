@@ -136,6 +136,10 @@ SITE_ID = 1
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'Fluér de Luné <noreply@fleurdelune.com>'
 
+# Password reset links are delivered by staff over WhatsApp, so keep the link
+# short-lived. Django's token generator reads this setting.
+PASSWORD_RESET_TIMEOUT = int(os.environ.get('PASSWORD_RESET_TIMEOUT') or 600)
+
 # App version for cache busting
 APP_VERSION = os.environ.get('APP_VERSION', '1.0.0')
 

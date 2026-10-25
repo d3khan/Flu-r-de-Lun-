@@ -141,6 +141,18 @@ Django validator default is 8 (`config/settings/base.py`). If you raise it, also
 
 ---
 
+## 15. Password reset (staff-issued link)
+
+Self-service reset needs an email or SMS provider, and none is configured, so the customer form points people to WhatsApp instead. Staff issue the link from inventory:
+
+- **`/inventory/password-reset-link/`** — linked from the Dashboard and Orders headers (`apps/inventory/views.py`, `templates/inventory/password_reset_link.html`).
+- Enter the customer's account email → the page builds a signed, single-use link with Django's `default_token_generator` and offers **Copy link** / **Send on WhatsApp** (pre-filled message, normalised to `wa.me` format).
+- The link expires after `PASSWORD_RESET_TIMEOUT` (10 minutes in `config/settings/base.py` and `production.py`).
+- The customer opens the link on the storefront and sets a new password; the token stops working once used or once the password changes.
+- The public `/accounts/password/reset/` page remains a "message us on WhatsApp" explainer, not a self-service form.
+
+---
+
 ## Golden rules
 
 1. Content → **Admin**. Styling → **variables.css**. Copy → **templates**. Numbers/prices → **settings + summary templates**. Keys/secrets → **.env**.

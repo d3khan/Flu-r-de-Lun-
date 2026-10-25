@@ -33,4 +33,7 @@ urlpatterns = [
     path('orders/<int:pk>/', views.inventory_order_detail, name='order_detail'),
     path('orders/<int:pk>/verify/', views.inventory_order_verify, name='order_verify'),
     path('orders/<int:pk>/status/', views.inventory_order_status, name='order_status'),
+
+    # Password reset link (staff-assisted, delivered over WhatsApp)
+    path('password-reset-link/', views.password_reset_link, name='password_reset_link'),
 ]

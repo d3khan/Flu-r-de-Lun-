@@ -9,7 +9,7 @@
 - **Full storefront** — home with hero & featured collections, category browsing, product detail pages with image galleries + zoom, search, sorting, pagination
 - **Cart system** — session carts for guests that **merge into your account on login**, HTMX slide-in cart drawer, live stock validation
 - **Wishlist** — one-tap heart toggles, move items to cart, **persisted in database per user** (survives restarts/deploy)
-- **Accounts** — email-based auth, address book with defaults, profile management, password reset
+- **Accounts** — email-based auth, address book with defaults, profile management, staff-issued password reset links sent over WhatsApp
 - **3-step checkout** — details → review → confirm. Only name, email and phone are collected; how the customer receives the order is agreed on WhatsApp
 - **WhatsApp checkout** — after placing an order, the customer is handed off to WhatsApp with the order details pre-filled; the team confirms everything directly in chat
 - **Order lifecycle** — FDL-XXXXXXXX order numbers, status timeline, reorder, guest order tracking by number + email. Stock is deducted **once**, when an order first becomes Confirmed, Processing or Delivered, and restored if it is cancelled or refunded
