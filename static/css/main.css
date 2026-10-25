@@ -422,6 +422,7 @@ p {
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
+  max-width: 100%;
   min-height: var(--touch-target-comfortable);
   padding: var(--space-3) var(--space-6);
   font-family: var(--font-sans);
@@ -527,6 +528,10 @@ p {
 .btn--block {
   display: flex;
   width: 100%;
+  max-width: 100%;
+  /* Long labels wrap instead of forcing the page wider than the viewport. */
+  white-space: normal;
+  text-align: center;
 }
 
 .btn svg {
@@ -1922,18 +1927,21 @@ button.mobile-nav__link {
 /* ==========================================================================
    Product Card & Grids
    ========================================================================== */
+.product-card {
   position: relative;
   display: flex;
   flex-direction: column;
   /* Full-card frame: encloses category, name, price and badges so product
      details are never confused between neighbouring cards. */
-  border: 1px solid var(--color-beige-200);
+  border: 1px solid var(--color-gold);
   border-radius: var(--radius-lg);
   padding: var(--space-3);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .product-card:hover {
-  border-color: var(--color-gold);
+  border-color: var(--color-gold-dark);
+  box-shadow: var(--shadow-md);
 }
 
 .product-card__media {
@@ -2079,15 +2087,13 @@ button.mobile-nav__link {
   background-color: var(--color-gold);
 }
 
+[data-theme="dark"] .category-card__name,
+[data-theme="dark"] .category-card__count {
+  color: var(--color-white);
+}
+
 [data-theme="dark"] .product-card__quick-view:hover,
 [data-theme="dark"] .product-card__quick-view:focus-visible {
-
-
-  [data-theme="dark"] .category-card__name,
-  [data-theme="dark"] .category-card__count {
-    color: var(--color-white);
-  }
-
   color: var(--color-white);
   background-color: var(--color-gold-dark);
 }
@@ -2922,70 +2928,70 @@ button.mobile-nav__link {
   margin-bottom: var(--space-6);
 }
 
-/* Payment method radio cards */
-.payment-options {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.payment-option {
-  position: relative;
+/* WhatsApp checkout hand-off */
+.whatsapp-checkout-note {
   display: flex;
   gap: var(--space-4);
   align-items: flex-start;
-  padding: var(--space-4) var(--space-5);
-  border: 1.5px solid var(--color-beige-200);
+  padding: var(--space-5);
+  border: 1px solid rgba(37, 211, 102, 0.35);
   border-radius: var(--radius-lg);
-  background-color: var(--color-white);
-  cursor: pointer;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+  background-color: rgba(37, 211, 102, 0.08);
 }
 
-.payment-option:hover {
-  border-color: var(--color-beige-300);
-}
-
-.payment-option.is-selected {
-  border-color: var(--color-gold);
-  background-color: #fdfaf3;
-  box-shadow: var(--shadow-focus);
-}
-
-[data-theme="dark"] .payment-option.is-selected {
-  background-color: #2e2820;
-}
-
-.payment-option input {
-  margin-top: 4px;
-  width: 20px;
-  height: 20px;
+.whatsapp-checkout-note__icon {
+  display: inline-flex;
   flex-shrink: 0;
+  color: #25d366;
 }
 
-.payment-option__title {
+.whatsapp-checkout-note__icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+.whatsapp-checkout-note__title {
   font-weight: var(--font-semibold);
-  font-size: var(--text-base);
-  display: block;
+  color: var(--color-beige-900);
 }
 
-.payment-option__desc {
-  font-size: var(--text-xs);
-  color: var(--color-beige-600);
-  margin-top: 2px;
+.whatsapp-checkout-note__text {
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-beige-700);
+  line-height: var(--leading-relaxed);
 }
 
-.payment-option__icon {
-  margin-left: auto;
-  color: var(--color-beige-400);
+.whatsapp-steps {
+  display: grid;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.whatsapp-steps__item {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  text-align: left;
+  font-size: var(--text-sm);
+  color: var(--color-beige-700);
+}
+
+.whatsapp-steps__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-}
-
-.payment-option__icon svg {
   width: 28px;
   height: 28px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-gold);
+  color: var(--color-white);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-xs);
 }
 
-/* Bank details block (manual payment) */
+/* Definition list used by profile and address summaries */
 .bank-details {
   display: grid;
   gap: var(--space-3);
@@ -3012,23 +3018,6 @@ button.mobile-nav__link {
   text-align: right;
 }
 
-.copy-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border: 0;
-  background: transparent;
-  color: var(--color-gold-dark);
-  font-size: var(--text-xs);
-  cursor: pointer;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-}
-
-.copy-btn:hover {
-  background-color: rgba(201, 169, 98, 0.15);
-}
-
 /* Address review block */
 .address-review {
   font-size: var(--text-sm);
@@ -3038,24 +3027,6 @@ button.mobile-nav__link {
 
 .address-review strong {
   color: var(--color-beige-900);
-}
-
-/* Gateway redirect screen */
-.gateway-screen {
-  max-width: 520px;
-  margin-inline: auto;
-  padding-block: var(--space-16);
-  text-align: center;
-}
-
-.gateway-screen__spinner {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto var(--space-6);
-  border: 3px solid var(--color-beige-200);
-  border-top-color: var(--color-gold);
-  border-radius: var(--radius-full);
-  animation: spin 0.9s linear infinite;
 }
 
 @keyframes spin {

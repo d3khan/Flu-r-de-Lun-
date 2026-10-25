@@ -6,8 +6,10 @@
             <!-- Brand -->
             <div class="footer-brand">
                 <a href="{% url 'core:home' %}" class="footer-logo" aria-label="{{ site_settings.site_name }} - {% trans 'Home' %}">
-                    {% if site_settings.logo %}
-                        <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" class="footer-logo__img" loading="lazy">
+                    {% if site_settings.logo_exists %}
+                        <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" class="footer-logo__img" loading="lazy" decoding="async"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='inline-block';">
+                        <span class="footer-logo__text" style="display:none;">{{ site_settings.site_name|brand_first }}{% if site_settings.site_name|brand_rest %} <em class="brand-accent">{{ site_settings.site_name|brand_rest }}</em>{% endif %}</span>
                     {% else %}
                         <span class="footer-logo__text">{{ site_settings.site_name|brand_first }}{% if site_settings.site_name|brand_rest %} <em class="brand-accent">{{ site_settings.site_name|brand_rest }}</em>{% endif %}</span>
                     {% endif %}
@@ -86,7 +88,7 @@
                     </li>
                     {% if site_settings.phone %}
                         <li>
-                            <a href="tel:{{ site_settings.phone }}" class="footer-link footer-link--icon">
+                            <a href="tel:{{ site_settings.phone_href }}" class="footer-link footer-link--icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.9a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.9.6 2.9.7a2 2 0 0 1 1.7 2z"/></svg>
                                 {{ site_settings.phone }}
                             </a>
@@ -119,9 +121,8 @@
                 &copy; {% now "Y" %} {{ site_settings.site_name }}. {% trans "All rights reserved." %}
             </p>
             <p class="footer-payments">
-                <span class="footer-payments__label">{% trans "Secure payments" %}</span>
-                <span class="payment-chip">Paystack</span>
-                <span class="payment-chip">{% trans "Bank Transfer" %}</span>
+                <span class="footer-payments__label">{% trans "Orders & support" %}</span>
+                <a class="payment-chip" href="https://wa.me/{{ site_settings.whatsapp_number }}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
             </p>
         </div>
     </div>

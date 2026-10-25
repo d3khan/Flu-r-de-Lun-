@@ -16,11 +16,11 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         }),
         ('Customer Support', {
             'fields': ('business_hours', 'response_time'),
-            'description': 'Shown on the contact page, footer and manual payment step. Leave blank to hide.',
+            'description': 'Shown on the contact page and footer. Leave blank to hide.',
         }),
         ('WhatsApp', {
             'fields': ('whatsapp_number', 'whatsapp_message'),
-            'description': 'Number format: 2348012345678 (no + or spaces). Powers WhatsApp buttons site-wide.',
+            'description': 'Number format: 2347080781217 (no + or spaces). Powers WhatsApp buttons site-wide.',
         }),
         ('SEO', {
             'fields': ('meta_description', 'meta_keywords'),
