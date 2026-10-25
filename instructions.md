@@ -43,7 +43,7 @@ Admin → **Products**.
 Stock is **not** reduced when an order is placed. It is deducted **once**, the first time staff change the order status to **Confirmed**, **Processing** or **Delivered** in the inventory dashboard (or Django admin).
 
 - The order keeps a `stock_deducted` flag, so switching the status back and forth never deducts twice.
-- Cancelling an order restores stock only if it had already been deducted.
+- Cancelling or refunding an order restores stock only if it had already been deducted. A refunded order that is confirmed again takes the stock out once more.
 - If a product sells out between order placement and confirmation, the team can cancel or adjust the order before stock is taken.
 
 ---

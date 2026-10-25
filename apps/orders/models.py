@@ -170,7 +170,7 @@ class Order(models.Model):
         return True
 
     def restore_stock(self):
-        """Put items back for a cancelled order (only if they were taken)."""
+        """Put items back for a cancelled or refunded order (if taken)."""
         if not self.stock_deducted:
             return False
         with transaction.atomic():
@@ -189,10 +189,10 @@ class Order(models.Model):
         return True
 
     def apply_status_stock(self):
-        """Deduct on the first stock-bearing status; restore on cancellation."""
+        """Deduct on the first stock-bearing status; restore on cancel/refund."""
         if self.status in self.STOCK_STATUSES:
             return self.deduct_stock()
-        if self.status == 'cancelled':
+        if self.status in {'cancelled', 'refunded'}:
             return self.restore_stock()
         return False
 

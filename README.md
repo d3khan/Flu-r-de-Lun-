@@ -12,7 +12,7 @@
 - **Accounts** — email-based auth, address book with defaults, profile management, password reset
 - **3-step checkout** — details → review → confirm. Only name, email and phone are collected; how the customer receives the order is agreed on WhatsApp
 - **WhatsApp checkout** — after placing an order, the customer is handed off to WhatsApp with the order details pre-filled; the team confirms everything directly in chat
-- **Order lifecycle** — FDL-XXXXXXXX order numbers, status timeline, reorder, guest order tracking by number + email. Stock is deducted **once**, when an order first becomes Confirmed, Processing or Delivered
+- **Order lifecycle** — FDL-XXXXXXXX order numbers, status timeline, reorder, guest order tracking by number + email. Stock is deducted **once**, when an order first becomes Confirmed, Processing or Delivered, and restored if it is cancelled or refunded
 - **Admin dashboard** — manage products/categories/images, orders with status actions, contact messages, site settings
 - **Image reliability** — **server-side image proxy** for all external (ImgBB) images: long-term browser caching, skeleton loading placeholders, error fallback, preload critical images, `decoding="async"`
 - **Global loading indicator** — gold progress bar on initial load, HTMX requests, and page navigation; 3s force-hide safety
