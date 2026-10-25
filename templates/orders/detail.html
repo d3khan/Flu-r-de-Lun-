@@ -53,10 +53,6 @@
 
                 <div class="orders-summary mt-6">
                     <div class="summary-row"><span>{% trans "Subtotal" %}</span><span>₦{{ order.subtotal|intcomma }}</span></div>
-                    <div class="summary-row">
-                        <span>{% trans "Shipping" %}</span>
-                        <span>{% if order.shipping_cost == 0 %}{% trans "Free" %}{% else %}₦{{ order.shipping_cost|intcomma }}{% endif %}</span>
-                    </div>
                     <div class="summary-row summary-row--total"><span>{% trans "Total" %}</span><span>₦{{ order.total|intcomma }}</span></div>
                 </div>
 
@@ -64,26 +60,14 @@
 
                 <div class="form-row">
                     <div>
-                        <h3 class="mb-2">{% trans "Delivery Address" %}</h3>
-                        <p class="address-review">{{ order.shipping_full_address|linebreaksbr }}</p>
-                    </div>
-                    <div>
                         <h3 class="mb-2">{% trans "Contact" %}</h3>
                         <p class="address-review">{{ order.full_name }}<br>{{ order.email }}<br>{{ order.phone }}</p>
-                        <p class="address-review mt-4">
-                            <strong>{% trans "Order via:" %}</strong> {{ order.get_payment_method_display }}
+                    </div>
+                    <div>
+                        <h3 class="mb-2">{% trans "Order via" %}</h3>
+                        <p class="address-review">{{ order.get_payment_method_display }}
                             {% if order.payment_reference %}<br><small>{{ order.payment_reference }}</small>{% endif %}
                         </p>
-                        {% if order.tracking_number %}
-                            <p class="address-review mt-2">
-                                <strong>{% trans "Tracking:" %}</strong>
-                                {% if order.tracking_url %}
-                                    <a href="{{ order.tracking_url }}" target="_blank" rel="noopener noreferrer">{{ order.tracking_number }}</a>
-                                {% else %}
-                                    {{ order.tracking_number }}
-                                {% endif %}
-                            </p>
-                        {% endif %}
                     </div>
                 </div>
 

@@ -34,18 +34,29 @@ def get_or_create_cart(request):
     return cart
 
 
-from apps.cart.utils import calculate_shipping
+def _contact_details_from_session(request):
+    """Return the contact details saved during checkout.
+
+    Older sessions used the key ``checkout_shipping`` and carried address
+    fields; only the contact fields are reused now.
+    """
+    details = request.session.get('checkout_details')
+    if details:
+        return details
+    legacy = request.session.get('checkout_shipping') or {}
+    if legacy:
+        return {key: legacy.get(key, '') for key in ('first_name', 'last_name', 'email', 'phone')}
+    return None
 
 
-def checkout_step1_shipping(request):
-    """Step 1: Shipping information."""
+def checkout_step1_details(request):
+    """Step 1: name, email and phone for the WhatsApp order."""
     cart = get_or_create_cart(request)
-    
+
     if not cart.items.exists():
         messages.warning(request, _('Your cart is empty.'))
         return redirect('cart:detail')
-    
-    # Pre-fill from user profile if authenticated
+
     initial = {}
     if request.user.is_authenticated:
         initial = {
@@ -54,73 +65,51 @@ def checkout_step1_shipping(request):
             'email': request.user.email,
             'phone': request.user.phone,
         }
-        
-        # Try to get default address
-        default_address = Address.objects.filter(user=request.user, is_default=True).first()
-        if default_address:
-            initial.update({
-                'address_line_1': default_address.address_line_1,
-                'address_line_2': default_address.address_line_2,
-                'city': default_address.city,
-                'state': default_address.state,
-                'postal_code': default_address.postal_code,
-            })
-    
+
     if request.method == 'POST':
-        # Store shipping info in session
-        request.session['checkout_shipping'] = {
+        details = {
             'first_name': request.POST.get('first_name', '').strip(),
             'last_name': request.POST.get('last_name', '').strip(),
             'email': request.POST.get('email', '').strip().lower(),
             'phone': request.POST.get('phone', '').strip(),
-            'address_line_1': request.POST.get('address_line_1', '').strip(),
-            'address_line_2': request.POST.get('address_line_2', '').strip(),
-            'city': request.POST.get('city', '').strip(),
-            'state': request.POST.get('state', '').strip(),
-            'postal_code': request.POST.get('postal_code', '').strip(),
         }
-        
-        # Validate required fields
-        shipping = request.session['checkout_shipping']
-        required = ['first_name', 'last_name', 'email', 'phone', 'address_line_1', 'city', 'state']
-        missing = [f for f in required if not shipping.get(f)]
-        
+        request.session['checkout_details'] = details
+
+        required = ['first_name', 'last_name', 'email', 'phone']
+        missing = [f for f in required if not details.get(f)]
+
         if missing:
             messages.error(request, _('Please fill in all required fields.'))
             # Keep what the customer already typed instead of resetting the
             # form to the saved profile values.
-            initial = {**initial, **shipping}
+            initial = {**initial, **details}
         else:
             return redirect('checkout:step2')
-    
+
     subtotal = cart.total_price
-    shipping_cost = calculate_shipping(subtotal)
-    
     context = {
         'cart': cart,
         'subtotal': subtotal,
-        'shipping_cost': shipping_cost,
-        'total': subtotal + shipping_cost,
+        'total': subtotal,
         'initial': initial,
         'step': 1,
     }
-    return render(request, 'checkout/step1_shipping.html', context)
+    return render(request, 'checkout/step1_details.html', context)
 
 
 def checkout_step2_payment(request):
-    """Step 2: Confirm the single WhatsApp ordering path."""
+    """Step 2: review the order and continue to WhatsApp."""
     cart = get_or_create_cart(request)
 
     if not cart.items.exists():
         return redirect('cart:detail')
 
-    shipping = request.session.get('checkout_shipping')
-    if not shipping:
+    details = _contact_details_from_session(request)
+    if not details:
         return redirect('checkout:step1')
 
     subtotal = cart.total_price
-    shipping_cost = calculate_shipping(subtotal)
-    total = subtotal + shipping_cost
+    total = subtotal
 
     if request.method == 'POST':
         request.session['checkout_payment_method'] = 'whatsapp'
@@ -128,9 +117,8 @@ def checkout_step2_payment(request):
 
     context = {
         'cart': cart,
-        'shipping': shipping,
+        'details': details,
         'subtotal': subtotal,
-        'shipping_cost': shipping_cost,
         'total': total,
         'step': 2,
     }
@@ -138,16 +126,16 @@ def checkout_step2_payment(request):
 
 
 def checkout_step3_payment(request):
-    """Step 3: Review the order, then place it."""
+    """Step 3: review the order, then place it."""
     cart = get_or_create_cart(request)
 
     if not cart.items.exists():
         return redirect('cart:detail')
 
-    shipping = request.session.get('checkout_shipping')
+    details = _contact_details_from_session(request)
     payment_method = request.session.get('checkout_payment_method')
 
-    if not shipping or not payment_method:
+    if not details or not payment_method:
         return redirect('checkout:step1')
 
     # Sessions created before the WhatsApp-only flow may still hold an old
@@ -156,8 +144,7 @@ def checkout_step3_payment(request):
         payment_method = request.session['checkout_payment_method'] = 'whatsapp'
 
     subtotal = cart.total_price
-    shipping_cost = calculate_shipping(subtotal)
-    total = subtotal + shipping_cost
+    total = subtotal
 
     if request.method == 'POST':
         # Never create an order for an item that has sold out or whose stock
@@ -182,19 +169,13 @@ def checkout_step3_payment(request):
             order = Order.objects.create(
                 user=request.user if request.user.is_authenticated else None,
                 session_key=request.session.session_key if not request.user.is_authenticated else '',
-                first_name=shipping['first_name'],
-                last_name=shipping['last_name'],
-                email=shipping['email'],
-                phone=shipping['phone'],
-                shipping_address_line_1=shipping['address_line_1'],
-                shipping_address_line_2=shipping['address_line_2'],
-                shipping_city=shipping['city'],
-                shipping_state=shipping['state'],
-                shipping_postal_code=shipping['postal_code'],
-                shipping_country='NG',
+                first_name=details['first_name'],
+                last_name=details['last_name'],
+                email=details['email'],
+                phone=details['phone'],
                 payment_method='whatsapp',
                 subtotal=subtotal,
-                shipping_cost=shipping_cost,
+                shipping_cost=0,
                 total=total,
                 status='pending',
             )
@@ -208,9 +189,9 @@ def checkout_step3_payment(request):
                     price=item.product.price,
                     quantity=item.quantity,
                 )
-                item.product.stock_quantity -= item.quantity
-                item.product.save(update_fields=['stock_quantity', 'updated_at'])
 
+            # Stock stays in the catalogue until the order is confirmed,
+            # processing or delivered (see Order.apply_status_stock).
             cart.clear()
             request.session['checkout_order_id'] = order.id
 
@@ -218,9 +199,8 @@ def checkout_step3_payment(request):
 
     context = {
         'cart': cart,
-        'shipping': shipping,
+        'details': details,
         'subtotal': subtotal,
-        'shipping_cost': shipping_cost,
         'total': total,
         'step': 3,
     }
@@ -247,10 +227,12 @@ def whatsapp_payment(request, order_id):
     if order is None:
         return redirect('core:home')
 
+    site_settings = SiteSettings.get_settings()
     context = {
         'order': order,
         'whatsapp_url': order_whatsapp_url(order),
-        'whatsapp_number': SiteSettings.get_settings().whatsapp_number,
+        'whatsapp_number': site_settings.whatsapp_number,
+        'whatsapp_display': site_settings.whatsapp_display,
     }
     return render(request, 'checkout/whatsapp_payment.html', context)
 
@@ -262,7 +244,7 @@ def order_confirmation(request, order_id):
         return redirect('core:home')
 
     # Clear checkout session data
-    for key in ['checkout_shipping', 'checkout_payment_method', 'checkout_order_id']:
+    for key in ['checkout_details', 'checkout_shipping', 'checkout_payment_method', 'checkout_order_id']:
         request.session.pop(key, None)
 
     context = {

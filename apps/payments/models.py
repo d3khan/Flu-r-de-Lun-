@@ -130,6 +130,8 @@ class PaymentTransaction(models.Model):
         self.order.status = 'confirmed'
         self.order.confirmed_at = timezone.now()
         self.order.save()
+        # Legacy gateway path: keep the one-time stock rule in sync.
+        self.order.apply_status_stock()
 
     def mark_failed(self, gateway_response=None):
         """Mark transaction as failed."""

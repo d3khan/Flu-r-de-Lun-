@@ -1,4 +1,5 @@
-from django.db import models
+from django.db import models, transaction
+from django.db.models import F
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django_countries.fields import CountryField
@@ -42,11 +43,12 @@ class Order(models.Model):
     email = models.EmailField(_('Email'))
     phone = models.CharField(_('Phone'), max_length=20)
     
-    # Shipping address
-    shipping_address_line_1 = models.CharField(_('Address Line 1'), max_length=255)
+    # Legacy address columns. New orders only collect contact details; these
+    # stay in place so historical orders keep their original data.
+    shipping_address_line_1 = models.CharField(_('Address Line 1'), max_length=255, blank=True, default='')
     shipping_address_line_2 = models.CharField(_('Address Line 2'), max_length=255, blank=True)
-    shipping_city = models.CharField(_('City'), max_length=100)
-    shipping_state = models.CharField(_('State'), max_length=100)
+    shipping_city = models.CharField(_('City'), max_length=100, blank=True, default='')
+    shipping_state = models.CharField(_('State'), max_length=100, blank=True, default='')
     shipping_postal_code = models.CharField(_('Postal Code'), max_length=20, blank=True)
     shipping_country = CountryField(_('Country'), default='NG')
     
@@ -76,6 +78,9 @@ class Order(models.Model):
     
     # Status
     status = models.CharField(_('Status'), max_length=20, choices=STATUS_CHOICES, default='pending')
+    # Stock is deducted once, the first time an order reaches Confirmed,
+    # Processing or Delivered. Reverting the status does not deduct again.
+    stock_deducted = models.BooleanField(_('Stock Deducted'), default=False)
     notes = models.TextField(_('Notes'), blank=True)
     
     # Tracking
@@ -139,6 +144,57 @@ class Order(models.Model):
     @property
     def is_paid(self):
         return bool(self.payment_verified)
+
+    # Statuses that mean the order is real enough to take stock out of the
+    # catalogue. The one-way flag below guarantees a single deduction per
+    # order, no matter how many times the status is changed afterwards.
+    STOCK_STATUSES = {'confirmed', 'processing', 'delivered'}
+
+    def deduct_stock(self):
+        """Take each item out of stock once; safe to call repeatedly."""
+        if self.stock_deducted:
+            return False
+        with transaction.atomic():
+            order = Order.objects.select_for_update().get(pk=self.pk)
+            if order.stock_deducted:
+                self.stock_deducted = True
+                return False
+            for item in order.items.all():
+                if item.product_id:
+                    Product.objects.filter(pk=item.product_id).update(
+                        stock_quantity=F('stock_quantity') - item.quantity
+                    )
+            order.stock_deducted = True
+            order.save(update_fields=['stock_deducted'])
+            self.stock_deducted = True
+        return True
+
+    def restore_stock(self):
+        """Put items back for a cancelled order (only if they were taken)."""
+        if not self.stock_deducted:
+            return False
+        with transaction.atomic():
+            order = Order.objects.select_for_update().get(pk=self.pk)
+            if not order.stock_deducted:
+                self.stock_deducted = False
+                return False
+            for item in order.items.all():
+                if item.product_id:
+                    Product.objects.filter(pk=item.product_id).update(
+                        stock_quantity=F('stock_quantity') + item.quantity
+                    )
+            order.stock_deducted = False
+            order.save(update_fields=['stock_deducted'])
+            self.stock_deducted = False
+        return True
+
+    def apply_status_stock(self):
+        """Deduct on the first stock-bearing status; restore on cancellation."""
+        if self.status in self.STOCK_STATUSES:
+            return self.deduct_stock()
+        if self.status == 'cancelled':
+            return self.restore_stock()
+        return False
 
 
 class OrderItem(models.Model):

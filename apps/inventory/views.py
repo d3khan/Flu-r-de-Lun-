@@ -750,6 +750,9 @@ def inventory_order_status(request, pk):
         elif new_status == 'cancelled' and not order.cancelled_at:
             order.cancelled_at = now
         order.save()
+        # Deducts once on Confirmed/Processing/Delivered and restores on
+        # cancellation. The flag prevents repeat deductions on status toggles.
+        order.apply_status_stock()
         OrderStatusHistory.objects.create(
             order=order,
             status=new_status,

@@ -10,9 +10,3 @@
    - Link expires too quickly (10 minutes)
    - Users report "link expired" error
    - Need to investigate PASSWORD_RESET_TIMEOUT and token generation
-
-3. **Telegram Notifications for Confirmed Orders**
-   - Trigger when an order is confirmed by the team
-   - Include product images, names, quantities, prices and totals
-   - Send to the business owner's Telegram
-   - Deferred until requested

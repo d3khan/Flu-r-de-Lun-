@@ -2749,34 +2749,6 @@ button.mobile-nav__link {
   text-align: center;
 }
 
-.free-shipping-progress {
-  margin-bottom: var(--space-4);
-}
-
-.free-shipping-progress__track {
-  height: 6px;
-  border-radius: var(--radius-full);
-  background-color: var(--color-beige-100);
-  overflow: hidden;
-  margin-top: var(--space-2);
-}
-
-.free-shipping-progress__bar {
-  height: 100%;
-  border-radius: var(--radius-full);
-  background-color: var(--color-gold);
-  transition: width var(--transition-slow);
-}
-
-.free-shipping-progress__text {
-  font-size: var(--text-xs);
-  color: var(--color-beige-600);
-}
-
-.free-shipping-progress__text strong {
-  color: var(--color-gold-dark);
-}
-
 /* ==========================================================================
    Empty States
    ========================================================================== */

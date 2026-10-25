@@ -46,7 +46,6 @@
 
             <div class="orders-summary mt-6">
                 <div class="summary-row"><span>{% trans "Subtotal" %}</span><span>₦{{ order.subtotal|intcomma }}</span></div>
-                <div class="summary-row"><span>{% trans "Shipping" %}</span><span>{% if order.shipping_cost == 0 %}{% trans "Free" %}{% else %}₦{{ order.shipping_cost|intcomma }}{% endif %}</span></div>
                 <div class="summary-row summary-row--total"><span>{% trans "Total" %}</span><span>₦{{ order.total|intcomma }}</span></div>
             </div>
 
@@ -54,22 +53,14 @@
 
             <div class="form-row">
                 <div>
-                    <h3 class="mb-2">{% trans "Delivery Address" %}</h3>
-                    <p class="address-review">{{ order.shipping_full_address|linebreaksbr }}</p>
-                </div>
-                <div>
                     <h3 class="mb-2">{% trans "Contact" %}</h3>
                     <p class="address-review">{{ order.full_name }}<br>{{ order.email }}<br>{{ order.phone }}</p>
-                    <p class="address-review mt-4">
-                        <strong>{% trans "Payment:" %}</strong> {{ order.get_payment_method_display }}
+                </div>
+                <div>
+                    <h3 class="mb-2">{% trans "Payment" %}</h3>
+                    <p class="address-review">{{ order.get_payment_method_display }}
                         {% if order.payment_reference %}<br><small>{{ order.payment_reference }}</small>{% endif %}
                     </p>
-                    {% if order.tracking_number %}
-                        <p class="address-review mt-2">
-                            <strong>{% trans "Tracking:" %}</strong>
-                            {% if order.tracking_url %}<a href="{{ order.tracking_url }}" target="_blank" rel="noopener noreferrer">{{ order.tracking_number }}</a>{% else %}{{ order.tracking_number }}{% endif %}
-                        </p>
-                    {% endif %}
                 </div>
             </div>
         </section>
@@ -97,6 +88,7 @@
                         <option value="{{ value }}" {% if value == order.status %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
+                <p class="form-help mb-2">{% trans "Stock is deducted once, when the order first becomes Confirmed, Processing or Delivered." %}</p>
                 <label for="note" class="form-label">{% trans "Note (optional)" %}</label>
                 <textarea name="note" id="note" rows="2" class="form-control mb-2" placeholder="{% trans 'Add a note…' %}"></textarea>
                 <button type="submit" class="btn btn--primary btn--block">{% trans "Update Status" %}</button>

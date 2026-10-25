@@ -11,7 +11,6 @@ urlpatterns = [
     path('contact/', views.ContactView.as_view(), name='contact'),
     path('privacy/', views.PrivacyView.as_view(), name='privacy'),
     path('terms/', views.TermsView.as_view(), name='terms'),
-    path('shipping/', views.ShippingView.as_view(), name='shipping'),
     path('returns/', views.ReturnsView.as_view(), name='returns'),
     path('offline/', views.OfflineView.as_view(), name='offline'),
     

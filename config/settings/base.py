@@ -146,35 +146,50 @@ CURRENCY_CODE = 'NGN'
 # Canonical site URL (used in emails, canonical links, etc.)
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
 
-# Canonical contact details. The current business line is the default, and
-# known stale deployment values are ignored so an old number can never come
-# back across the storefront, checkout or WhatsApp hand-off.
-CANONICAL_WHATSAPP_NUMBER = '2347080781217'
-CANONICAL_CONTACT_PHONE = '+234 708 078 1217'
-_LEGACY_PHONE_DIGITS = {'2348127918480', '2348104260003'}
+# Canonical contact details. The business line is 0810 426 0003. Numbers are
+# normalised to international format for wa.me links, while the display value
+# stays readable. Known stale deployment values are ignored so an old number
+# can never come back across the storefront, checkout or WhatsApp hand-off.
+CANONICAL_WHATSAPP_NUMBER = '2348104260003'
+CANONICAL_CONTACT_PHONE = '+234 810 426 0003'
+_STALE_PHONE_DIGITS = {'2347080781217', '2348127918480'}
 
 
 def _digits(value):
     return re.sub(r'\D', '', value or '')
 
 
-_configured_whatsapp = os.environ.get('WHATSAPP_NUMBER', '').strip()
+def normalize_whatsapp_number(value):
+    """Return a wa.me-compatible number: 08104260003 -> 2348104260003."""
+    digits = _digits(value)
+    if len(digits) == 11 and digits.startswith('0'):
+        return f'234{digits[1:]}'
+    if len(digits) == 10:
+        return f'234{digits}'
+    return digits
+
+
+def format_phone(value):
+    """Display a Nigerian number in +234 810 426 0003 form."""
+    digits = normalize_whatsapp_number(value)
+    if len(digits) == 13 and digits.startswith('234'):
+        return f'+{digits[:3]} {digits[3:6]} {digits[6:9]} {digits[9:]}'
+    return value or ''
+
+
+_configured_whatsapp = normalize_whatsapp_number(os.environ.get('WHATSAPP_NUMBER', '').strip())
 WHATSAPP_NUMBER = (
     _configured_whatsapp
-    if _configured_whatsapp and _digits(_configured_whatsapp) not in _LEGACY_PHONE_DIGITS
+    if _configured_whatsapp and _configured_whatsapp not in _STALE_PHONE_DIGITS
     else CANONICAL_WHATSAPP_NUMBER
 )
 
 _configured_phone = os.environ.get('CONTACT_PHONE', '').strip()
 CONTACT_PHONE = (
-    _configured_phone
-    if _configured_phone and _digits(_configured_phone) not in _LEGACY_PHONE_DIGITS
+    format_phone(_configured_phone)
+    if _configured_phone and _digits(_configured_phone) not in _STALE_PHONE_DIGITS
     else CANONICAL_CONTACT_PHONE
 )
-
-# Shipping
-SHIPPING_COST = int(os.environ.get('SHIPPING_COST', '1500'))
-FREE_SHIPPING_THRESHOLD = int(os.environ.get('FREE_SHIPPING_THRESHOLD', '50000'))
 
 # ImgBB Media Storage
 IMGBB_API_KEY = os.environ.get('IMGBB_API_KEY', '')

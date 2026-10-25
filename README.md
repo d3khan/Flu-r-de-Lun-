@@ -10,9 +10,9 @@
 - **Cart system** — session carts for guests that **merge into your account on login**, HTMX slide-in cart drawer, live stock validation
 - **Wishlist** — one-tap heart toggles, move items to cart, **persisted in database per user** (survives restarts/deploy)
 - **Accounts** — email-based auth, address book with defaults, profile management, password reset
-- **3-step checkout** — shipping → review → confirm, with free shipping over ₦50,000
+- **3-step checkout** — details → review → confirm. Only name, email and phone are collected; how the customer receives the order is agreed on WhatsApp
 - **WhatsApp checkout** — after placing an order, the customer is handed off to WhatsApp with the order details pre-filled; the team confirms everything directly in chat
-- **Order lifecycle** — FDL-XXXXXXXX order numbers, status timeline, cancel-with-stock-restoration, reorder, guest order tracking by number + email
+- **Order lifecycle** — FDL-XXXXXXXX order numbers, status timeline, reorder, guest order tracking by number + email. Stock is deducted **once**, when an order first becomes Confirmed, Processing or Delivered
 - **Admin dashboard** — manage products/categories/images, orders with status actions, contact messages, site settings
 - **Image reliability** — **server-side image proxy** for all external (ImgBB) images: long-term browser caching, skeleton loading placeholders, error fallback, preload critical images, `decoding="async"`
 - **Global loading indicator** — gold progress bar on initial load, HTMX requests, and page navigation; 3s force-hide safety
@@ -68,15 +68,15 @@ Visit `http://127.0.0.1:8000` · Admin at `/admin`.
 | `DJANGO_DEBUG` | `False` in production |
 | `DJANGO_ALLOWED_HOSTS` | Comma-separated domains |
 | `SITE_URL` | Canonical URL for links and metadata |
-| `WHATSAPP_NUMBER` | Business WhatsApp line, digits only (defaults to `2347080781217`) |
-| `CONTACT_PHONE` | Display phone number (defaults to `+234 708 078 1217`) |
+| `WHATSAPP_NUMBER` | Business WhatsApp line, local or international format (defaults to `2348104260003`) |
+| `CONTACT_PHONE` | Display phone number (defaults to `+234 810 426 0003`) |
 | `IMGBB_API_KEY` | For uploading product/category images to ImgBB |
 
 See [`dotenv_example.txt`](dotenv_example.txt) for the full list and [`instructions.md`](instructions.md) for everything you can customise without touching code.
 
 ## Testing the Order Flow
 
-Place a test order through checkout and continue to WhatsApp. The order is recorded first, then the pre-filled message opens in WhatsApp. Staff can mark the order as paid in the inventory dashboard once it is confirmed.
+Place a test order through checkout and continue to WhatsApp. The order is recorded first, then the pre-filled message opens in WhatsApp. Stock is not reduced at that point: it is deducted once staff move the order to Confirmed, Processing or Delivered in the inventory dashboard.
 
 ## Project Structure
 
@@ -88,11 +88,11 @@ Place a test order through checkout and continue to WhatsApp. The order is recor
 │   ├── wishlist/    # Toggle, move-to-cart, **DB-persisted per user**
 │   ├── accounts/    # CustomUser (email login), Address book
 │   ├── orders/      # Order, OrderItem, status history, admin views
-│   └── checkout/    # 3-step flow, shipping calc, stock reservation, WhatsApp hand-off
+│   └── checkout/    # 3-step details → review → confirm, WhatsApp hand-off
 ├── config/settings/ # base / development / production
 ├── templates/       # One folder per app + base.html
 ├── static/          # css (design tokens + main.css), js, fonts, images
 └── requirements/
 ```
 
-> See **[instructions.md](instructions.md)** for a guide to customising content, colours, prices, shipping rules and more.
+> See **[instructions.md](instructions.md)** for a guide to customising content, colours, prices and more.

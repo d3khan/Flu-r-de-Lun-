@@ -75,6 +75,8 @@ def order_cancel(request, pk):
         order.status = 'cancelled'
         order.cancelled_at = timezone.now()
         order.save()
+        # Returns stock only if it was deducted when the order was confirmed.
+        order.apply_status_stock()
             
         OrderStatusHistory.objects.create(
             order=order,
@@ -82,12 +84,6 @@ def order_cancel(request, pk):
             note=_('Cancelled by customer'),
             created_by=request.user
         )
-            
-        # Restore stock
-        for item in order.items.all():
-            if item.product:
-                item.product.stock_quantity += item.quantity
-                item.product.save()
     messages.success(request, _('Order cancelled successfully.'))
     return redirect('orders:detail', pk=pk)
     
@@ -174,6 +170,7 @@ def order_detail_admin(request, pk):
                 order.cancelled_at = now
             
             order.save()
+            order.apply_status_stock()
             
             OrderStatusHistory.objects.create(
                 order=order,

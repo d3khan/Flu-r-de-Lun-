@@ -8,7 +8,7 @@
         <div class="auth-wrapper" style="max-width: 560px;">
             <div class="auth-card">
                 <h1 class="auth-card__title">{% if object %}{% trans "Edit Address" %}{% else %}{% trans "Add New Address" %}{% endif %}</h1>
-                <p class="auth-card__sub">{% trans "We'll use this for deliveries." %}</p>
+                <p class="auth-card__sub">{% trans "Keep your contact details handy for future orders." %}</p>
 
                 <form method="post" novalidate>
                     {% csrf_token %}

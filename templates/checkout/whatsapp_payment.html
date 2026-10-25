@@ -14,7 +14,7 @@
                         {% trans "Order" %} <strong>{{ order.order_number }}</strong> · {% trans "Total" %} <strong>₦{{ order.total|intcomma }}</strong>
                     </p>
                     <p class="text-muted mt-2">
-                        {% blocktrans with number=whatsapp_number %}Tap the button below to open WhatsApp and send the pre-filled message to +{{ number }}.{% endblocktrans %}
+                        {% blocktrans with number=whatsapp_display %}Tap the button below to open WhatsApp and send the pre-filled message to {{ number }}.{% endblocktrans %}
                     </p>
                 </div>
 
@@ -38,11 +38,11 @@
                     </div>
                     <div class="whatsapp-steps__item">
                         <span class="whatsapp-steps__num">2</span>
-                        <p>{% trans "Our team confirms your order and delivery details." %}</p>
+                        <p>{% trans "Our team confirms your order details with you." %}</p>
                     </div>
                     <div class="whatsapp-steps__item">
                         <span class="whatsapp-steps__num">3</span>
-                        <p>{% trans "We prepare and dispatch your frames." %}</p>
+                        <p>{% trans "We prepare your frames and arrange how you'll receive them with you on WhatsApp." %}</p>
                     </div>
                 </div>
 

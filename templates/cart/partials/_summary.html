@@ -1,32 +1,13 @@
 {% load static i18n humanize %}
 {# Order summary. Params: flat (bool) — renders without card chrome for drawer footer #}
 <div class="summary-card{% if flat %} summary-card--flat{% endif %}">
-    {% with threshold=FREE_SHIPPING_THRESHOLD %}
-        {% if cart.total_price < threshold %}
-            <div class="free-shipping-progress">
-                <p class="free-shipping-progress__text">
-                    {% trans "Spend" %} <strong>₦{{ threshold|floatformat:0|intcomma }}</strong> {% trans "more for free shipping" %}
-                </p>
-                <div class="free-shipping-progress__track">
-                    <div class="free-shipping-progress__bar" style="width: {% widthratio cart.total_price threshold 100 %}%;"></div>
-                </div>
-            </div>
-        {% else %}
-            <p class="free-shipping-progress__text mb-4">🎉 {% trans "You've unlocked" %} <strong>{% trans "free shipping" %}</strong>!</p>
-        {% endif %}
-    {% endwith %}
-
     <div class="summary-row">
         <span>{% trans "Subtotal" %}</span>
         <span>₦{{ cart.total_price|intcomma }}</span>
-    </div>
-    <div class="summary-row">
-        <span>{% trans "Shipping" %}</span>
-        <span>{% if cart.shipping_cost == 0 %}{% trans "Free" %}{% else %}₦{{ cart.shipping_cost|intcomma }}{% endif %}</span>
     </div>
     <div class="summary-row summary-row--total">
         <span>{% trans "Total" %}</span>
         <span>₦{{ cart.grand_total|intcomma }}</span>
     </div>
-    <p class="summary-note">{% trans "Delivery details are confirmed at checkout." %}</p>
+    <p class="summary-note">{% trans "Receiving arrangements are confirmed on WhatsApp." %}</p>
 </div>

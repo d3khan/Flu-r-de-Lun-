@@ -31,7 +31,7 @@ class SiteSettings(models.Model):
     
     # Business WhatsApp line used for every order hand-off
     whatsapp_number = models.CharField(_('WhatsApp Number'), max_length=20,
-        help_text=_('Format: 2347080781217 (no + or spaces)'), blank=True)
+        help_text=_('Format: 2348104260003 (no + or spaces)'), blank=True)
     whatsapp_message = models.TextField(_('WhatsApp Message Template'),
         default=_('Hi Fluér de Luné, I want to inquire about {product_name}.'), blank=True)
 
@@ -71,11 +71,29 @@ class SiteSettings(models.Model):
         """Dial-safe phone value for tel: links."""
         return re.sub(r'[^\d+]', '', self.phone or '')
 
+    @property
+    def whatsapp_display(self):
+        """Readable international form of the WhatsApp line."""
+        digits = self.whatsapp_number or ''
+        if len(digits) == 13 and digits.startswith('234'):
+            return f'+{digits[:3]} {digits[3:6]} {digits[6:9]} {digits[9:]}'
+        return digits
+
+    @staticmethod
+    def normalize_whatsapp(value):
+        """Convert local (0810…) or international digits to wa.me format."""
+        digits = re.sub(r'\D', '', value or '')
+        if len(digits) == 11 and digits.startswith('0'):
+            return f'234{digits[1:]}'
+        if len(digits) == 10:
+            return f'234{digits}'
+        return digits
+
     def save(self, *args, **kwargs):
         # Enforce singleton and keep the WhatsApp number in wa.me format.
         self.pk = 1
         if self.whatsapp_number:
-            self.whatsapp_number = re.sub(r'\D', '', self.whatsapp_number)
+            self.whatsapp_number = self.normalize_whatsapp(self.whatsapp_number)
         super().save(*args, **kwargs)
 
     @classmethod
@@ -96,7 +114,7 @@ class SiteSettings(models.Model):
         changed = []
         for field, (value, transform) in env_sync.items():
             if transform == 'digits':
-                value = re.sub(r'\D', '', value or '')
+                value = cls.normalize_whatsapp(value)
             if value and getattr(obj, field) != value:
                 setattr(obj, field, value)
                 changed.append(field)

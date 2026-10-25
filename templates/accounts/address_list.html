@@ -7,7 +7,7 @@
     <div class="container">
         <header class="page-header">
             <h1>{% trans "My Addresses" %}</h1>
-            <p>{% trans "Manage your saved delivery addresses." %}</p>
+            <p>{% trans "Manage your saved addresses." %}</p>
         </header>
 
         <div class="account-layout" style="grid-template-columns: 1fr;">
@@ -54,7 +54,7 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                         </span>
                         <p class="empty-state__title">{% trans "No addresses saved yet" %}</p>
-                        <p class="empty-state__text">{% trans "Add an address for faster checkout." %}</p>
+                        <p class="empty-state__text">{% trans "Save an address to keep your details on file." %}</p>
                         <a href="{% url 'accounts:address_add' %}" class="btn btn--primary btn--sm">+ {% trans "Add Address" %}</a>
                     </div>
                 {% endif %}

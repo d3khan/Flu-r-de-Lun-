@@ -14,7 +14,7 @@
 
             <p class="lead mt-4">
                 {% blocktrans with number=order.order_number %}
-                    Your order <strong>{{ number }}</strong> has been received. Send it to our team on WhatsApp so we can confirm the details and get it moving.
+                    Your order <strong>{{ number }}</strong> has been received. Send it to our team on WhatsApp so we can confirm the details with you directly.
                 {% endblocktrans %}
             </p>
 
@@ -32,10 +32,6 @@
                     </div>
                 {% endfor %}
 
-                <div class="summary-row">
-                    <span>{% trans "Shipping to" %}</span>
-                    <span>{{ order.shipping_city }}, {{ order.shipping_state }}</span>
-                </div>
                 <div class="summary-row">
                     <span>{% trans "Status" %}</span>
                     <span><span class="status status--{{ order.status }}">{{ order.get_status_display }}</span></span>

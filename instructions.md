@@ -17,16 +17,16 @@ Everything below can be changed **without touching code logic** — most content
 | Instagram/Facebook/X/TikTok URLs | Footer social icons (blank = icon hidden) |
 | WhatsApp Message Template | Floating chat button, product "Ask About This Piece", mobile menu |
 
-> WhatsApp number format: `2347080781217` (country code, no `+`, no spaces). The number is controlled by `WHATSAPP_NUMBER` in `.env` and is kept consistent across every page by the site settings singleton.
+> WhatsApp number format: `2348104260003` (country code, no `+`, no spaces). `WHATSAPP_NUMBER` in `.env` also accepts the local form `08104260003` and converts it automatically. The site settings singleton keeps the number consistent across every page.
 > The message template supports `{product_name}` on product pages.
 
 ---
 
 ## 2. WhatsApp checkout
 
-Checkout is a single WhatsApp flow: shipping → review → confirm. Placing an order records it and opens WhatsApp with the order number, customer name and total already filled in. There are no other payment routes or bank-detail screens.
+Checkout is a single WhatsApp flow: details → review → confirm. Only name, email and phone are collected. Placing an order records it and opens WhatsApp with the order number, customer name and total already filled in. How the customer receives the order is agreed with the team in that chat; there are no shipping options, payment routes or bank-detail screens.
 
-To change the number, set `CONTACT_PHONE` and `WHATSAPP_NUMBER` in `.env`. The fallback default is the business line `+234 708 078 1217`.
+To change the number, set `CONTACT_PHONE` and `WHATSAPP_NUMBER` in `.env`. The fallback default is the business line `+234 810 426 0003`.
 
 ---
 
@@ -38,16 +38,13 @@ Admin → **Products**.
 
 ---
 
-## 4. Shipping cost & free-shipping threshold  *(code constants)*
+## 4. Stock deduction  *(order status)*
 
-File: **`apps/checkout/views.py`**, top of file:
+Stock is **not** reduced when an order is placed. It is deducted **once**, the first time staff change the order status to **Confirmed**, **Processing** or **Delivered** in the inventory dashboard (or Django admin).
 
-```python
-SHIPPING_COST = 1500              # ₦1,500 flat rate
-FREE_SHIPPING_THRESHOLD = 50000   # free over ₦50,000
-```
-
-⚠️ The cart summary also displays these numbers as text — update them in **`templates/cart/partials/_summary.html`** (`₦{{ threshold… }}`, `₦50,000`, `₦1,500`) and in checkout step templates if you change either value.
+- The order keeps a `stock_deducted` flag, so switching the status back and forth never deducts twice.
+- Cancelling an order restores stock only if it had already been deducted.
+- If a product sells out between order placement and confirmation, the team can cancel or adjust the order before stock is taken.
 
 ---
 
@@ -77,7 +74,7 @@ After editing CSS, hard-refresh (Ctrl+Shift+R); in production run `python manage
 
 - Hero headline/stats/value-props and section headings: **`templates/core/home.html`**
 - Our Story content: `templates/core/about.html`
-- Legal text (Privacy/Terms/Shipping/Returns): the matching `templates/core/*.html` files
+- Legal text (Privacy/Terms/Returns): the matching `templates/core/*.html` files
 - Password requirement chips: `templates/includes/_password_hints.html`
 
 ---
@@ -86,8 +83,8 @@ After editing CSS, hard-refresh (Ctrl+Shift+R); in production run `python manage
 
 | Change | Variable |
 |---|---|
-| Business WhatsApp number | `WHATSAPP_NUMBER=2347080781217` |
-| Display phone number | `CONTACT_PHONE=+234 708 078 1217` |
+| Business WhatsApp number | `WHATSAPP_NUMBER=08104260003` |
+| Display phone number | `CONTACT_PHONE=+234 810 426 0003` |
 | Canonical site URL | `SITE_URL=https://yourdomain.com` |
 | Debug mode / hosts / secret key | `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_SECRET_KEY` |
 | ImgBB API key | `IMGBB_API_KEY` |
@@ -146,5 +143,5 @@ Django validator default is 8 (`config/settings/base.py`). If you raise it, also
 
 ## Golden rules
 
-1. Content → **Admin**. Styling → **variables.css**. Copy → **templates**. Numbers/prices/shipping → **checkout/views.py + summary template**. Keys/secrets → **.env**.
+1. Content → **Admin**. Styling → **variables.css**. Copy → **templates**. Numbers/prices → **settings + summary templates**. Keys/secrets → **.env**.
 2. Never commit your `.env`, `db.sqlite3`, or `media/` folder (already covered by `.gitignore`).

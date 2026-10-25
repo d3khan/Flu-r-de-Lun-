@@ -24,12 +24,12 @@ class OrderAdmin(admin.ModelAdmin):
         'order_number', 'full_name', 'email', 'total',
         'payment_method', 'payment_badge', 'status_badge', 'created_at',
     )
-    list_filter = ('status', 'payment_method', 'payment_verified', 'shipping_state', 'created_at')
+    list_filter = ('status', 'payment_method', 'payment_verified', 'created_at')
     search_fields = ('order_number', 'email', 'first_name', 'last_name', 'phone')
     readonly_fields = (
         'order_number', 'user', 'session_key', 'subtotal', 'total',
         'payment_verified_at', 'confirmed_at', 'shipped_at', 'delivered_at',
-        'cancelled_at', 'created_at', 'updated_at',
+        'cancelled_at', 'created_at', 'updated_at', 'stock_deducted',
     )
     inlines = [OrderItemInline, StatusHistoryInline]
     date_hierarchy = 'created_at'
@@ -38,24 +38,24 @@ class OrderAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Order', {'fields': ('order_number', 'user', 'session_key', 'status')}),
         ('Customer', {'fields': ('first_name', 'last_name', 'email', 'phone')}),
-        ('Shipping Address', {
-            'fields': ('shipping_address_line_1', 'shipping_address_line_2',
-                       'shipping_city', 'shipping_state', 'shipping_postal_code',
-                       'shipping_country')
-        }),
         ('Payment', {
             'fields': ('payment_method', 'payment_reference',
                        'payment_verified', 'payment_verified_at'),
         }),
-        ('Totals', {'fields': ('subtotal', 'shipping_cost', 'discount', 'tax', 'total')}),
-        ('Fulfilment', {'fields': ('tracking_number', 'tracking_url', 'notes'),
-                        'classes': ('collapse',)}),
+        ('Totals', {'fields': ('subtotal', 'discount', 'tax', 'total', 'stock_deducted')}),
+        ('Notes', {'fields': ('notes',), 'classes': ('collapse',)}),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at', 'confirmed_at', 'shipped_at',
                        'delivered_at', 'cancelled_at'),
             'classes': ('collapse',),
         }),
     )
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # Deduct on first entry to Confirmed/Processing/Delivered; the order
+        # itself guards against deducting more than once.
+        obj.apply_status_stock()
 
     @admin.display(description='Payment')
     def payment_badge(self, obj):
@@ -82,6 +82,7 @@ class OrderAdmin(admin.ModelAdmin):
             if not order.confirmed_at:
                 order.confirmed_at = timezone.now()
             order.save()
+            order.apply_status_stock()
             OrderStatusHistory.objects.create(order=order, status='confirmed', note='Confirmed via admin')
             updated += 1
         self.message_user(request, f'{updated} order(s) confirmed.')
@@ -95,6 +96,7 @@ class OrderAdmin(admin.ModelAdmin):
             if not order.shipped_at:
                 order.shipped_at = timezone.now()
             order.save()
+            order.apply_status_stock()
             OrderStatusHistory.objects.create(order=order, status='shipped', note='Shipped via admin')
             updated += 1
         self.message_user(request, f'{updated} order(s) marked shipped.')

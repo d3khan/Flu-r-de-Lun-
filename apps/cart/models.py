@@ -3,7 +3,6 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 from apps.products.models import Product
-from apps.cart.utils import calculate_shipping
 
 
 class Cart(models.Model):
@@ -41,14 +40,9 @@ class Cart(models.Model):
         return sum(item.total_price for item in self.items.all())
 
     @property
-    def shipping_cost(self):
-        """Shipping cost for this cart."""
-        return calculate_shipping(self.total_price)
-
-    @property
     def grand_total(self):
-        """Grand total including shipping."""
-        return self.total_price + self.shipping_cost
+        """Order total. Receiving arrangements are discussed on WhatsApp."""
+        return self.total_price
 
     @property
     def item_count(self):

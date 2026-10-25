@@ -77,10 +77,6 @@ class TermsView(TemplateView):
     template_name = 'core/terms.html'
 
 
-class ShippingView(TemplateView):
-    template_name = 'core/shipping.html'
-
-
 class ReturnsView(TemplateView):
     template_name = 'core/returns.html'
 

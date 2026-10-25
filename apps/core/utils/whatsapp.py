@@ -6,9 +6,14 @@ from django.conf import settings
 
 
 def whatsapp_digits(number=None):
-    """Return a wa.me-compatible number (digits only)."""
+    """Return a wa.me-compatible number (international digits only)."""
     value = number if number is not None else getattr(settings, 'WHATSAPP_NUMBER', '')
-    return re.sub(r'\D', '', value or '')
+    digits = re.sub(r'\D', '', value or '')
+    if len(digits) == 11 and digits.startswith('0'):
+        return f'234{digits[1:]}'
+    if len(digits) == 10:
+        return f'234{digits}'
+    return digits
 
 
 def build_whatsapp_url(message='', number=None):
@@ -28,7 +33,7 @@ def order_message(order):
         f'Hello Fluér de Luné! I just placed order {order.order_number}. '
         f'Name: {order.full_name}. '
         f'Total: ₦{order.total:,.2f}. '
-        'Please help me complete this order.'
+        'Please help me complete this order and let me know how I can receive it.'
     )
 
 

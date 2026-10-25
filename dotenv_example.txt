@@ -1,29 +1,21 @@
 # Django
+PYTHON_VERSION=3.13.13
 DJANGO_SECRET_KEY=your-secret-key-here
 DJANGO_DEBUG=True
-DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,.onrender.com
 SITE_URL=http://localhost:8000
-
-# Database (for production)
-# DATABASE_URL=postgres://user:pass@localhost:5432/fleurdelune
-
-# Email
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-app-password
-EMAIL_FROM_ADDRESS=your-email@gmail.com
-CONTACT_EMAIL=hello@yourdomain.com
-
-# Shipping
-SHIPPING_COST=1500
-FREE_SHIPPING_THRESHOLD=50000
-
-# Redis (for production)
-# REDIS_URL=redis://localhost:6379/0
-
-# App Version
 APP_VERSION=1.0.0
+
+# Database (production)
+# DATABASE_URL=postgres://user:pass@host:5432/dbname?sslmode=require
+
+# Contact & support
+CONTACT_EMAIL=hello@yourdomain.com
+CONTACT_PHONE=+234 810 426 0003
+WHATSAPP_NUMBER=08104260003
+BUSINESS_HOURS=
+RESPONSE_TIME=
+EMAIL_FROM_ADDRESS=your-email@gmail.com
 
 # Media storage - ImgBB
 IMGBB_API_KEY=your-imgbb-api-key
@@ -32,20 +24,12 @@ IMGBB_API_KEY=your-imgbb-api-key
 INVENTORY_USERNAME=your-inventory-username
 INVENTORY_PASSWORD=your-inventory-password
 
-# Django superuser (used by `createsuperuser --noinput` in the deploy build)
+# Django superuser (used by the deploy build)
 DJANGO_SUPERUSER_USERNAME=your-admin-username
 DJANGO_SUPERUSER_EMAIL=you@example.com
 DJANGO_SUPERUSER_PASSWORD=change-me
+DJANGO_SUPERUSER_FIRST_NAME=
+DJANGO_SUPERUSER_LAST_NAME=
 
-# Optional: set USE_REDIS=true on Render to store cache/sessions in Redis.
-# Leave unset to use in-memory cache + database sessions (recommended, free).
-# USE_REDIS=true
-# Optional superuser display name
-DJANGO_SUPERUSER_FIRST_NAME=Your
-DJANGO_SUPERUSER_LAST_NAME=Name
-
-# Customer support display (optional; env overrides admin edits)
-BUSINESS_HOURS=
-RESPONSE_TIME=
-CONTACT_PHONE=+234 708 078 1217
-WHATSAPP_NUMBER=2347080781217
+# UI: Max characters before word break (for long unbroken product names)
+MAX_WORD_LENGTH=10

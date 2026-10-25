@@ -20,7 +20,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         }),
         ('WhatsApp', {
             'fields': ('whatsapp_number', 'whatsapp_message'),
-            'description': 'Number format: 2347080781217 (no + or spaces). Powers WhatsApp buttons site-wide.',
+            'description': 'Number format: 2348104260003 (no + or spaces). Powers WhatsApp buttons site-wide.',
         }),
         ('SEO', {
             'fields': ('meta_description', 'meta_keywords'),

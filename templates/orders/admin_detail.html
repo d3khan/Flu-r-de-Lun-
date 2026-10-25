@@ -46,22 +46,15 @@
 
                 <div class="orders-summary mt-6">
                     <div class="summary-row"><span>{% trans "Subtotal" %}</span><span>₦{{ order.subtotal|intcomma }}</span></div>
-                    <div class="summary-row"><span>{% trans "Shipping" %}</span><span>₦{{ order.shipping_cost|intcomma }}</span></div>
                     <div class="summary-row summary-row--total"><span>{% trans "Total" %}</span><span>₦{{ order.total|intcomma }}</span></div>
                 </div>
 
                 <hr class="divider">
 
-                <div class="form-row">
-                    <div>
-                        <h3 class="mb-2">{% trans "Customer" %}</h3>
-                        <p class="address-review">{{ order.full_name }}<br>{{ order.email }}<br>{{ order.phone }}</p>
-                        {% if order.user %}<p class="address-review mt-2"><strong>{% trans "Account:" %}</strong> {{ order.user.email }}</p>{% else %}<p class="address-review mt-2"><em>{% trans "Guest order" %}</em></p>{% endif %}
-                    </div>
-                    <div>
-                        <h3 class="mb-2">{% trans "Shipping Address" %}</h3>
-                        <p class="address-review">{{ order.shipping_full_address|linebreaksbr }}</p>
-                    </div>
+                <div>
+                    <h3 class="mb-2">{% trans "Customer" %}</h3>
+                    <p class="address-review">{{ order.full_name }}<br>{{ order.email }}<br>{{ order.phone }}</p>
+                    {% if order.user %}<p class="address-review mt-2"><strong>{% trans "Account:" %}</strong> {{ order.user.email }}</p>{% else %}<p class="address-review mt-2"><em>{% trans "Guest order" %}</em></p>{% endif %}
                 </div>
 
                 {% if order.notes %}
@@ -84,6 +77,7 @@
                             {% endfor %}
                         </select>
                     </div>
+                    <p class="form-help mb-4">{% trans "Stock is deducted once, when the order first becomes Confirmed, Processing or Delivered." %}</p>
                     <div class="form-group">
                         <label for="note" class="form-label">{% trans "Note (optional)" %}</label>
                         <textarea id="note" name="note" class="form-textarea" rows="3"></textarea>
