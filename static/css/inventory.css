@@ -177,20 +177,42 @@
 
 .inventory-stats {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
   margin-bottom: var(--space-8);
 }
 
-@media (min-width: 640px) {
+@media (min-width: 480px) {
   .inventory-stats {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .inventory-stats {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Six stats only fit once the container reaches its full 1200px width;
+   below that the value strings (e.g. ₦15,199,500) overflow their cards. */
+@media (min-width: 1280px) {
+  .inventory-stats {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .inventory-stats .stat-card {
+    padding: var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .inventory-stats .stat-card__icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .inventory-stats .stat-card__value {
+    font-size: var(--text-lg);
   }
 }
 
@@ -1232,6 +1254,7 @@
   font-weight: var(--font-medium);
   color: var(--color-beige-900);
   margin: 0 0 var(--space-4);
+  overflow-wrap: anywhere;
 }
 
 .inventory-delete-product__details,
@@ -1322,6 +1345,7 @@
 .inventory-stock-subtitle {
   color: var(--color-beige-600);
   margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .inventory-stock-card {
@@ -1367,6 +1391,7 @@
 
 .inventory-stock-card__info {
   flex: 1;
+  min-width: 0;
 }
 
 .inventory-stock-card__name {
@@ -1375,6 +1400,7 @@
   font-weight: var(--font-medium);
   color: var(--color-beige-900);
   margin: 0 0 var(--space-1);
+  overflow-wrap: anywhere;
 }
 
 .inventory-stock-card__sku {
@@ -1427,25 +1453,40 @@
   border-top: 1px solid var(--color-beige-200);
 }
 
+@media (max-width: 479px) {
+  .inventory-stock-form__actions {
+    flex-direction: column-reverse;
+  }
+
+  .inventory-stock-form__actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* ==========================================================================
    Categories Grid
    ========================================================================== */
 
 .inventory-categories-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
+}
+
+.inventory-categories-grid > * {
+  min-width: 0;
 }
 
 @media (min-width: 640px) {
   .inventory-categories-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (min-width: 1024px) {
   .inventory-categories-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -1527,6 +1568,7 @@
   color: var(--color-beige-900);
   margin: 0;
   line-height: var(--leading-snug);
+  overflow-wrap: anywhere;
 }
 
 .inventory-category-card__count {
@@ -1538,7 +1580,8 @@
 .inventory-category-card__meta {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
   margin-top: auto;
   padding-top: var(--space-2);
   border-top: 1px solid var(--color-beige-100);
@@ -1763,6 +1806,20 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+@media (max-width: 479px) {
+  .inventory-header__brand .brand__logo {
+    height: 30px;
+  }
+
+  .inventory-header__brand .brand__name {
+    font-size: var(--text-lg);
+  }
+
+  .inventory-badge {
+    display: none;
+  }
 }
 
 @media (max-width: 1023px) {

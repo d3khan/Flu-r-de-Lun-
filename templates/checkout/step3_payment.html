@@ -43,7 +43,7 @@
                                     {% endwith %}
                                 </div>
                                 <div class="cart-item__info">
-                                    <span class="cart-item__name">{{ item.product.name }}</span>
+                                    <span class="cart-item__name">{{ item.product.name|break_long_word }}</span>
                                     <span class="cart-item__unit-price">{% trans "Qty" %} {{ item.quantity }} × ₦{{ item.product.price|intcomma }}</span>
                                 </div>
                                 <span class="cart-item__total">₦{{ item.total_price|intcomma }}</span>

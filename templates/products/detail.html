@@ -23,7 +23,7 @@
                 {% if product.category %}
                     <li><a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a></li>
                 {% endif %}
-                <li><span aria-current="page">{{ product.name }}</span></li>
+                <li><span aria-current="page">{{ product.name|break_long_word }}</span></li>
             </ol>
         </nav>
 
@@ -83,7 +83,7 @@
                 {% if product.category %}
                     <p class="pd-info__category">{{ product.category.name }}</p>
                 {% endif %}
-                <h1 class="pd-info__title">{{ product.name }}</h1>
+                <h1 class="pd-info__title">{{ product.name|break_long_word }}</h1>
 
                 <div class="pd-price{% if product.is_on_sale %} pd-price--sale{% endif %}">
                     {% if product.is_on_sale %}
