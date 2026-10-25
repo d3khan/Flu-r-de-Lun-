@@ -16,6 +16,8 @@ urlpatterns = [
     # Password reset - self-service is disabled (no email/SMS provider).
     # Staff generate a link in inventory and send it over WhatsApp.
     path('password/reset/', views.password_reset_under_development, name='password_reset'),
+    # TEMPORARY test mode: opens the reset link without delivering it.
+    path('password/reset/instant/', views.password_reset_instant, name='password_reset_instant'),
     path('password/reset/done/', views.CustomPasswordResetDoneView.as_view(), name='password_reset_done'),
     path('password/reset/<uidb64>/<token>/', views.CustomPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('password/reset/complete/', views.CustomPasswordResetCompleteView.as_view(), name='password_reset_complete'),

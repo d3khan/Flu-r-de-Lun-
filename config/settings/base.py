@@ -140,6 +140,14 @@ DEFAULT_FROM_EMAIL = 'Fluér de Luné <noreply@fleurdelune.com>'
 # short-lived. Django's token generator reads this setting.
 PASSWORD_RESET_TIMEOUT = int(os.environ.get('PASSWORD_RESET_TIMEOUT') or 600)
 
+# TEMPORARY: shows a "reset instantly" option that opens the signed link
+# without delivering it. Off by default so production stays safe; enable it
+# with PASSWORD_RESET_TEST_MODE=True (it is set in the local .env). Remove the
+# marked block in accounts/password_reset_under_development.html to hide it.
+PASSWORD_RESET_TEST_MODE = os.environ.get(
+    'PASSWORD_RESET_TEST_MODE', ''
+).lower() in ('true', '1', 'yes')
+
 # App version for cache busting
 APP_VERSION = os.environ.get('APP_VERSION', '1.0.0')
 
