@@ -5,10 +5,9 @@ app_name = 'checkout'
 
 urlpatterns = [
     path('shipping/', views.checkout_step1_shipping, name='step1'),
-    path('payment-method/', views.checkout_step2_payment, name='step2'),
-    path('payment/', views.checkout_step3_payment, name='step3'),
-    path('gateway/<int:order_id>/', views.gateway_payment, name='gateway_payment'),
-    path('manual/<int:order_id>/', views.manual_payment, name='manual_payment'),
+    path('review/', views.checkout_step2_payment, name='step2'),
+    path('confirm/', views.checkout_step3_payment, name='step3'),
+    path('whatsapp/<int:order_id>/', views.whatsapp_payment, name='whatsapp_payment'),
     path('confirmation/<int:order_id>/', views.order_confirmation, name='confirmation'),
     
     # AJAX endpoints

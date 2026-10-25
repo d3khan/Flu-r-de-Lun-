@@ -1,6 +1,9 @@
+import os
+import re
+
+from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-import os
 
 
 def default_contact_email():
@@ -26,9 +29,9 @@ class SiteSettings(models.Model):
     twitter_url = models.URLField(_('Twitter/X'), blank=True)
     tiktok_url = models.URLField(_('TikTok'), blank=True)
     
-    # WhatsApp for manual orders
+    # Business WhatsApp line used for every order hand-off
     whatsapp_number = models.CharField(_('WhatsApp Number'), max_length=20,
-        help_text=_('Format: 2348012345678 (no + or spaces)'), blank=True)
+        help_text=_('Format: 2347080781217 (no + or spaces)'), blank=True)
     whatsapp_message = models.TextField(_('WhatsApp Message Template'),
         default=_('Hi Fluér de Luné, I want to inquire about {product_name}.'), blank=True)
 
@@ -52,27 +55,48 @@ class SiteSettings(models.Model):
     
     def __str__(self):
         return self.site_name
-    
+
+    @property
+    def logo_exists(self):
+        """Return True only when the stored logo file can actually be served."""
+        if not self.logo:
+            return False
+        try:
+            return self.logo.storage.exists(self.logo.name)
+        except Exception:
+            return False
+
+    @property
+    def phone_href(self):
+        """Dial-safe phone value for tel: links."""
+        return re.sub(r'[^\d+]', '', self.phone or '')
+
     def save(self, *args, **kwargs):
-        # Enforce singleton
+        # Enforce singleton and keep the WhatsApp number in wa.me format.
         self.pk = 1
+        if self.whatsapp_number:
+            self.whatsapp_number = re.sub(r'\D', '', self.whatsapp_number)
         super().save(*args, **kwargs)
-    
+
     @classmethod
     def get_settings(cls):
-        """Get or create the singleton instance."""
+        """Get or create the singleton instance and enforce canonical contacts."""
         obj, created = cls.objects.get_or_create(pk=1)
-        # Environment variables are the source of truth for key public-facing
-        # values; keep the stored row in sync so pages stay consistent.
+
+        # Environment variables are the source of truth for editable contact
+        # copy. The WhatsApp number and phone are canonical settings so every
+        # page and template always points at the same business line.
         env_sync = {
-            'email': 'CONTACT_EMAIL',
-            'business_hours': 'BUSINESS_HOURS',
-            'response_time': 'RESPONSE_TIME',
-            'whatsapp_number': 'WHATSAPP_NUMBER',
+            'email': (os.environ.get('CONTACT_EMAIL', '').strip(), None),
+            'business_hours': (os.environ.get('BUSINESS_HOURS', '').strip(), None),
+            'response_time': (os.environ.get('RESPONSE_TIME', '').strip(), None),
+            'whatsapp_number': (getattr(settings, 'WHATSAPP_NUMBER', ''), 'digits'),
+            'phone': (getattr(settings, 'CONTACT_PHONE', ''), None),
         }
         changed = []
-        for field, var in env_sync.items():
-            value = os.environ.get(var, '').strip()
+        for field, (value, transform) in env_sync.items():
+            if transform == 'digits':
+                value = re.sub(r'\D', '', value or '')
             if value and getattr(obj, field) != value:
                 setattr(obj, field, value)
                 changed.append(field)

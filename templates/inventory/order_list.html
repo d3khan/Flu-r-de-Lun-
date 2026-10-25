@@ -25,9 +25,9 @@
                 </select>
             </div>
             <div class="inventory-filters__search">
-                <label for="payment_method" class="visually-hidden">{% trans "Filter by payment method" %}</label>
+                <label for="payment_method" class="visually-hidden">{% trans "Filter by order channel" %}</label>
                 <select name="payment_method" id="payment_method" class="form-control" onchange="this.form.submit()">
-                    <option value="">{% trans "All payment methods" %}</option>
+                    <option value="">{% trans "All channels" %}</option>
                     {% for value, label in payment_method_choices %}
                         <option value="{{ value }}" {% if value == current_payment_method %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}

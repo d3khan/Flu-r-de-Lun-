@@ -1,18 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.utils.translation import gettext_lazy as _
 from django.db import transaction
 from django.http import JsonResponse
-from django.utils import timezone
-from django.conf import settings
 
 from apps.cart.models import Cart, CartItem
 from apps.products.models import Product
 from apps.orders.models import Order, OrderItem
 from apps.accounts.models import Address
-from apps.payments.models import ManualPaymentInfo
+from apps.core.models import SiteSettings
+from apps.core.utils.whatsapp import order_whatsapp_url
 
 
 def get_or_create_cart(request):
@@ -89,6 +87,9 @@ def checkout_step1_shipping(request):
         
         if missing:
             messages.error(request, _('Please fill in all required fields.'))
+            # Keep what the customer already typed instead of resetting the
+            # form to the saved profile values.
+            initial = {**initial, **shipping}
         else:
             return redirect('checkout:step2')
     
@@ -107,74 +108,77 @@ def checkout_step1_shipping(request):
 
 
 def checkout_step2_payment(request):
-    """Step 2: Payment method selection."""
+    """Step 2: Confirm the single WhatsApp ordering path."""
     cart = get_or_create_cart(request)
-    
+
     if not cart.items.exists():
         return redirect('cart:detail')
-    
+
     shipping = request.session.get('checkout_shipping')
     if not shipping:
         return redirect('checkout:step1')
-    
-    payments_enabled = getattr(settings, 'PAYMENTS_ENABLED', False)
-    
+
     subtotal = cart.total_price
     shipping_cost = calculate_shipping(subtotal)
     total = subtotal + shipping_cost
-    
-    payment_info = ManualPaymentInfo.get_active()
-    
+
     if request.method == 'POST':
-        payment_method = request.POST.get('payment_method')
-        
-        if payment_method not in ['gateway', 'manual']:
-            messages.error(request, _('Please select a payment method.'))
-        elif payment_method == 'gateway' and not payments_enabled:
-            # Online payments are not available yet
-            return render(request, 'checkout/payment_under_development.html')
-        else:
-            request.session['checkout_payment_method'] = payment_method
-            return redirect('checkout:step3')
-    
+        request.session['checkout_payment_method'] = 'whatsapp'
+        return redirect('checkout:step3')
+
     context = {
         'cart': cart,
         'shipping': shipping,
         'subtotal': subtotal,
         'shipping_cost': shipping_cost,
         'total': total,
-        'payment_info': payment_info,
         'step': 2,
     }
     return render(request, 'checkout/step2_payment.html', context)
 
 
 def checkout_step3_payment(request):
-    """Step 3: Payment processing."""
+    """Step 3: Review the order, then place it."""
     cart = get_or_create_cart(request)
-    
+
     if not cart.items.exists():
         return redirect('cart:detail')
-    
+
     shipping = request.session.get('checkout_shipping')
     payment_method = request.session.get('checkout_payment_method')
-    
+
     if not shipping or not payment_method:
         return redirect('checkout:step1')
-    
+
+    # Sessions created before the WhatsApp-only flow may still hold an old
+    # value. Normalise instead of sending the customer through a dead route.
+    if payment_method != 'whatsapp':
+        payment_method = request.session['checkout_payment_method'] = 'whatsapp'
+
     subtotal = cart.total_price
     shipping_cost = calculate_shipping(subtotal)
     total = subtotal + shipping_cost
-    
-    payment_info = ManualPaymentInfo.get_active()
-    
-    # Block gateway payment if disabled
-    if payment_method == 'gateway' and not getattr(settings, 'PAYMENTS_ENABLED', False):
-        return render(request, 'checkout/payment_under_development.html')
-    
+
     if request.method == 'POST':
+        # Never create an order for an item that has sold out or whose stock
+        # dropped while the customer was in checkout.
+        unavailable = []
+        for item in cart.items.select_related('product'):
+            if (
+                not item.product
+                or not item.product.in_stock
+                or item.quantity > item.product.stock_quantity
+            ):
+                unavailable.append(item.product.name if item.product else str(item))
+        if unavailable:
+            messages.error(
+                request,
+                _('Some items are no longer available: %(items)s. Please review your cart.')
+                % {'items': ', '.join(unavailable)},
+            )
+            return redirect('cart:detail')
+
         with transaction.atomic():
-            # Create order
             order = Order.objects.create(
                 user=request.user if request.user.is_authenticated else None,
                 session_key=request.session.session_key if not request.user.is_authenticated else '',
@@ -188,112 +192,82 @@ def checkout_step3_payment(request):
                 shipping_state=shipping['state'],
                 shipping_postal_code=shipping['postal_code'],
                 shipping_country='NG',
-                payment_method=payment_method,
+                payment_method='whatsapp',
                 subtotal=subtotal,
                 shipping_cost=shipping_cost,
                 total=total,
                 status='pending',
             )
-            
-            # Create order items
-            for item in cart.items.all():
-                if item.product and item.product.in_stock:
-                    OrderItem.objects.create(
-                        order=order,
-                        product=item.product,
-                        product_name=item.product.name,
-                        product_sku=item.product.sku,
-                        price=item.product.price,
-                        quantity=item.quantity,
-                    )
-                    # Decrease stock
-                    item.product.stock_quantity -= item.quantity
-                    item.product.save()
 
-            # Remove purchased items from the cart
+            for item in cart.items.select_related('product'):
+                OrderItem.objects.create(
+                    order=order,
+                    product=item.product,
+                    product_name=item.product.name,
+                    product_sku=item.product.sku,
+                    price=item.product.price,
+                    quantity=item.quantity,
+                )
+                item.product.stock_quantity -= item.quantity
+                item.product.save(update_fields=['stock_quantity', 'updated_at'])
+
             cart.clear()
-
-            # Save order ID in session for payment step
             request.session['checkout_order_id'] = order.id
-            
-            if payment_method == 'gateway':
-                if not getattr(settings, 'PAYMENTS_ENABLED', False):
-                    return render(request, 'checkout/payment_under_development.html')
-                return redirect('checkout:gateway_payment', order_id=order.id)
-            else:
-                return redirect('checkout:manual_payment', order_id=order.id)
-    
+
+        return redirect('checkout:whatsapp_payment', order_id=order.id)
+
     context = {
         'cart': cart,
         'shipping': shipping,
-        'payment_method': payment_method,
         'subtotal': subtotal,
         'shipping_cost': shipping_cost,
         'total': total,
-        'payment_info': payment_info,
         'step': 3,
     }
     return render(request, 'checkout/step3_payment.html', context)
 
 
-def gateway_payment(request, order_id):
-    """Gateway payment page."""
-    if not getattr(settings, 'PAYMENTS_ENABLED', False):
-        return render(request, 'checkout/payment_under_development.html')
-    
+def _owned_order_or_none(request, order_id):
+    """Return the order only when it belongs to this customer/session."""
     order = get_object_or_404(Order, id=order_id)
-    
-    # Verify ownership
-    if request.user.is_authenticated and order.user != request.user:
-        return redirect('core:home')
-    if not request.user.is_authenticated and order.session_key != request.session.session_key:
-        return redirect('core:home')
-    
-    payment_info = ManualPaymentInfo.get_active()
-    
-    context = {
-        'order': order,
-        'payment_info': payment_info,
-    }
-    return render(request, 'checkout/gateway_payment.html', context)
+    if request.user.is_authenticated and order.user_id == request.user.id:
+        return order
+    if (
+        order.user_id is None
+        and order.session_key
+        and order.session_key == request.session.session_key
+    ):
+        return order
+    return None
 
 
-def manual_payment(request, order_id):
-    """Manual payment instructions page."""
-    order = get_object_or_404(Order, id=order_id)
-    
-    # Verify ownership
-    if request.user.is_authenticated and order.user != request.user:
+def whatsapp_payment(request, order_id):
+    """Show the WhatsApp hand-off for a newly placed order."""
+    order = _owned_order_or_none(request, order_id)
+    if order is None:
         return redirect('core:home')
-    if not request.user.is_authenticated and order.session_key != request.session.session_key:
-        return redirect('core:home')
-    
-    payment_info = ManualPaymentInfo.get_active()
-    
+
     context = {
         'order': order,
-        'payment_info': payment_info,
-        'whatsapp_url': payment_info.get_whatsapp_url(order) if payment_info else '#',
+        'whatsapp_url': order_whatsapp_url(order),
+        'whatsapp_number': SiteSettings.get_settings().whatsapp_number,
     }
-    return render(request, 'checkout/manual_payment.html', context)
+    return render(request, 'checkout/whatsapp_payment.html', context)
 
 
 def order_confirmation(request, order_id):
     """Order confirmation page."""
-    order = get_object_or_404(Order, id=order_id)
-    
-    # Verify ownership
-    if request.user.is_authenticated and order.user != request.user:
+    order = _owned_order_or_none(request, order_id)
+    if order is None:
         return redirect('core:home')
-    if not request.user.is_authenticated and order.session_key != request.session.session_key:
-        return redirect('core:home')
-    
+
     # Clear checkout session data
     for key in ['checkout_shipping', 'checkout_payment_method', 'checkout_order_id']:
         request.session.pop(key, None)
-    
+
     context = {
         'order': order,
+        'whatsapp_url': order_whatsapp_url(order),
     }
     return render(request, 'checkout/confirmation.html', context)
 
@@ -323,6 +297,7 @@ def checkout_validate_stock(request):
     })
 
 
+@require_POST
 def checkout_save_address(request):
     """Save address to user profile from checkout."""
     if not request.user.is_authenticated:

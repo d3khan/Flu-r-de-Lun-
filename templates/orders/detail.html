@@ -71,7 +71,7 @@
                         <h3 class="mb-2">{% trans "Contact" %}</h3>
                         <p class="address-review">{{ order.full_name }}<br>{{ order.email }}<br>{{ order.phone }}</p>
                         <p class="address-review mt-4">
-                            <strong>{% trans "Payment:" %}</strong> {{ order.get_payment_method_display }}
+                            <strong>{% trans "Order via:" %}</strong> {{ order.get_payment_method_display }}
                             {% if order.payment_reference %}<br><small>{{ order.payment_reference }}</small>{% endif %}
                         </p>
                         {% if order.tracking_number %}
@@ -120,7 +120,7 @@
                     {% else %}
                         <p class="text-muted">
                             {% if order.status == 'pending' %}
-                                {% trans "We're reviewing your order. You'll receive updates here and via email." %}
+                                {% trans "We're reviewing your order. We'll keep you updated here and on WhatsApp." %}
                             {% else %}
                                 {% trans "No updates yet." %}
                             {% endif %}
@@ -128,11 +128,12 @@
                     {% endif %}
                 {% endwith %}
 
-                {% if order.payment_method == 'manual' and not order.payment_verified %}
+                {% if not order.payment_verified %}
                     <hr class="divider">
-                    <p class="text-muted mb-4">{% trans "Awaiting bank transfer confirmation." %}</p>
-                    <a href="{% url 'checkout:manual_payment' order.id %}" class="btn btn--whatsapp btn--sm btn--block">
-                        {% trans "View Payment Details" %}
+                    <p class="text-muted mb-4">{% trans "Send this order to our team on WhatsApp so we can confirm the details." %}</p>
+                    <a href="https://wa.me/{{ site_settings.whatsapp_number }}?text={% filter urlencode %}Hello Fluér de Luné! I would like to confirm order {{ order.order_number }}.{% endfilter %}"
+                       target="_blank" rel="noopener noreferrer" class="btn btn--whatsapp btn--sm btn--block">
+                        {% trans "Send Order on WhatsApp" %}
                     </a>
                 {% endif %}
             </aside>

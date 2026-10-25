@@ -11,22 +11,22 @@ Everything below can be changed **without touching code logic** — most content
 | Field | Controls |
 |---|---|
 | Site Name | Browser title, header/footer/mobile-menu wordmark (first word dark, rest gold) |
-| Logo image | **Uploading one replaces the text wordmark everywhere automatically** |
+| Logo image | **Uploading one replaces the text wordmark everywhere automatically**; a missing or broken file safely falls back to the wordmark |
 | Tagline, Meta Description/Keywords | Hero tagline, `<head>` SEO tags |
 | Email / Phone / Address | Footer contact column, contact page |
 | Instagram/Facebook/X/TikTok URLs | Footer social icons (blank = icon hidden) |
-| WhatsApp Number + Message Template | Floating chat button, product "Ask About This Piece", mobile menu |
+| WhatsApp Message Template | Floating chat button, product "Ask About This Piece", mobile menu |
 
-> WhatsApp number format: `2348012345678` (country code, no `+`, no spaces).
+> WhatsApp number format: `2347080781217` (country code, no `+`, no spaces). The number is controlled by `WHATSAPP_NUMBER` in `.env` and is kept consistent across every page by the site settings singleton.
 > The message template supports `{product_name}` on product pages.
 
 ---
 
-## 2. Bank details for manual payments
+## 2. WhatsApp checkout
 
-**Where:** Admin → **Payments → Manual Payment Info** (keep only one active).
+Checkout is a single WhatsApp flow: shipping → review → confirm. Placing an order records it and opens WhatsApp with the order number, customer name and total already filled in. There are no other payment routes or bank-detail screens.
 
-Controls the bank-name/account-number block shown after a manual checkout, plus its WhatsApp confirmation template with placeholders `{order_number}`, `{amount}`, `{name}`. Also previewable in checkout step 2.
+To change the number, set `CONTACT_PHONE` and `WHATSAPP_NUMBER` in `.env`. The fallback default is the business line `+234 708 078 1217`.
 
 ---
 
@@ -86,8 +86,8 @@ After editing CSS, hard-refresh (Ctrl+Shift+R); in production run `python manage
 
 | Change | Variable |
 |---|---|
-| Active gateway | `PAYMENT_GATEWAY=paystack` \| `flutterwave` |
-| Gateway keys | See README table |
+| Business WhatsApp number | `WHATSAPP_NUMBER=2347080781217` |
+| Display phone number | `CONTACT_PHONE=+234 708 078 1217` |
 | Canonical site URL | `SITE_URL=https://yourdomain.com` |
 | Debug mode / hosts / secret key | `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_SECRET_KEY` |
 | ImgBB API key | `IMGBB_API_KEY` |

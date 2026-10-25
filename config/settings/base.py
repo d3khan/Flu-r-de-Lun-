@@ -2,6 +2,7 @@
 Base settings for Fluér de Luné project.
 """
 import os
+import re
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -142,23 +143,34 @@ APP_VERSION = os.environ.get('APP_VERSION', '1.0.0')
 CURRENCY_SYMBOL = '₦'
 CURRENCY_CODE = 'NGN'
 
-# Canonical site URL (used in payment gateway metadata, emails, etc.)
+# Canonical site URL (used in emails, canonical links, etc.)
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
 
-# Paystack settings
-PAYSTACK_SECRET_KEY = os.environ.get('PAYSTACK_SECRET_KEY', '')
-PAYSTACK_PUBLIC_KEY = os.environ.get('PAYSTACK_PUBLIC_KEY', '')
+# Canonical contact details. The current business line is the default, and
+# known stale deployment values are ignored so an old number can never come
+# back across the storefront, checkout or WhatsApp hand-off.
+CANONICAL_WHATSAPP_NUMBER = '2347080781217'
+CANONICAL_CONTACT_PHONE = '+234 708 078 1217'
+_LEGACY_PHONE_DIGITS = {'2348127918480', '2348104260003'}
 
-# Flutterwave settings
-FLUTTERWAVE_SECRET_KEY = os.environ.get('FLUTTERWAVE_SECRET_KEY', '')
-FLUTTERWAVE_PUBLIC_KEY = os.environ.get('FLUTTERWAVE_PUBLIC_KEY', '')
-FLUTTERWAVE_ENCRYPTION_KEY = os.environ.get('FLUTTERWAVE_ENCRYPTION_KEY', '')
 
-# Payment gateway choice: 'paystack' or 'flutterwave'
-PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY', 'paystack')
+def _digits(value):
+    return re.sub(r'\D', '', value or '')
 
-# Enable/disable online payments (Paystack/Flutterwave)
-PAYMENTS_ENABLED = os.environ.get('PAYMENTS_ENABLED', 'false').lower() in ('true', '1', 'yes')
+
+_configured_whatsapp = os.environ.get('WHATSAPP_NUMBER', '').strip()
+WHATSAPP_NUMBER = (
+    _configured_whatsapp
+    if _configured_whatsapp and _digits(_configured_whatsapp) not in _LEGACY_PHONE_DIGITS
+    else CANONICAL_WHATSAPP_NUMBER
+)
+
+_configured_phone = os.environ.get('CONTACT_PHONE', '').strip()
+CONTACT_PHONE = (
+    _configured_phone
+    if _configured_phone and _digits(_configured_phone) not in _LEGACY_PHONE_DIGITS
+    else CANONICAL_CONTACT_PHONE
+)
 
 # Shipping
 SHIPPING_COST = int(os.environ.get('SHIPPING_COST', '1500'))
