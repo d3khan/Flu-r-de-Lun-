@@ -1,0 +1,51 @@
+# Git
+.git/
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+parts/
+var/
+sdist/
+*.egg-info/
+.installed.cfg
+*.egg
+.Python
+venv/
+ENV/
+env/
+.venv/
+
+# Django
+*.log
+staticfiles/
+static/CACHE/
+media/
+
+# Local environment (contains real secrets — never bake into the image)
+.env
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Misc
+db.sqlite3
