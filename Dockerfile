@@ -33,10 +33,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Python dependencies (production + base).
-COPY requirements/base.txt requirements/production.txt ./
+COPY requirements/ requirements/
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements/production.txt
-
 # Copy the application code.
 COPY . .
 
